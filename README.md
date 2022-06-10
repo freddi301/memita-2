@@ -4,5 +4,6 @@ Peer-to-peer chat and microblogging app
 
 ## TODO
 
-- [ ] electron hello world
-- [ ] android hello world
+- [ ] basic data replication 
+- [x] electron hello world
+- [x] android hello world
