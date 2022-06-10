@@ -11,5 +11,6 @@
 
 ### Developing
 
-- folow setup instructions from [here](https://reactnative.dev/docs/environment-setup)
+- follow setup instructions [here](https://reactnative.dev/docs/environment-setup)
+- follow setup instructions [here](https://code.janeasystems.com/nodejs-mobile/getting-started-react-native)
 - `yarn android`
