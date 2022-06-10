@@ -1,0 +1,16 @@
+{
+  "name": "memita-2-desktop-electron",
+  "version": "0.0.0",
+  "description": "Desktop peer-to-peer chat and microblogging app",
+  "main": "index.js",
+  "repository": "https://github.com/freddi301/memita-2.git",
+  "author": "Frederik Batuna",
+  "license": "GPLv3",
+  "scripts": {
+    "start": "electron ."
+  },
+  "private": true,
+  "devDependencies": {
+    "electron": "^19.0.4"
+  }
+}
