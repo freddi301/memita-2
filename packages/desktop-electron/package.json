@@ -1,5 +1,5 @@
 {
-  "name": "memita-2-desktop-electron",
+  "name": "@memita-2/desktop-electron",
   "version": "0.0.0",
   "description": "Desktop peer-to-peer chat and microblogging app",
   "main": "dist/main.js",
@@ -32,5 +32,8 @@
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-query": "^3.39.1"
+  },
+  "publishConfig": {
+    "access": "restricted"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "name": "memita-2",
+  "version": "0.0.0",
+  "description": "Peer-to-peer chat and microbloggin app",
+  "repository": "https://github.com/freddi301/memita-2.git",
+  "author": "Frederik Batuna",
+  "license": "GPLv3",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^5.1.4"
+  }
+}
