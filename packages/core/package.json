@@ -1,0 +1,19 @@
+{
+  "name": "@memita-2/core",
+  "version": "0.0.0",
+  "description": "memita 2 backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Frederik Batuna",
+  "license": "GPLv3",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "hyperswarm": "^3.0.4"
+  }
+}

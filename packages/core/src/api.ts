@@ -1,5 +1,5 @@
 import Hyperswarm from "hyperswarm";
-import { Api } from "@memita-2/ui";
+import type { Api } from "@memita-2/ui";
 
 export const api: Api = {
   async getBlocks() {

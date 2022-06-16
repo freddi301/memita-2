@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { api } from "./api";
+import { api } from "@memita-2/core";
 
 function createWindow() {
   const window = new BrowserWindow({
