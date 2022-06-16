@@ -1,5 +1,5 @@
 {
-  "name": "memita-2-mobile-react-native",
+  "name": "@memita-2/mobile-react-native",
   "version": "0.0.0",
   "private": true,
   "description": "Mobile peer-to-peer chat and microblogging app",
@@ -47,5 +47,8 @@
       "json",
       "node"
     ]
+  },
+  "publishConfig": {
+    "access": "restricted"
   }
 }
