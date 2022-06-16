@@ -7,6 +7,10 @@ module.exports = {
   devtool: "source-map",
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      "react-native": "react-native-web",
+    },
+    modules: [path.resolve(__dirname, "./node_modules"), "node_modules"],
   },
   module: {
     rules: [

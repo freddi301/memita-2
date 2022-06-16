@@ -1,0 +1,19 @@
+{
+  "name": "@memita-2/ui",
+  "version": "0.0.0",
+  "description": "memita 2 react native web ui",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Frederik Batuna",
+  "license": "GPLv3",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "react-query": "^3.39.1"
+  }
+}

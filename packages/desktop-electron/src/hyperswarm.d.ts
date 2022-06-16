@@ -1,6 +1,6 @@
 declare module "hyperswarm" {
-  export default Hyperswarm;
-  declare class Hyperswarm {
+  export default Swarm;
+  declare class Swarm {
     on(
       event: "connection",
       callback: (connection: Connection, info: PeerInfo) => void

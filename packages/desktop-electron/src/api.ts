@@ -1,11 +1,18 @@
 import Hyperswarm from "hyperswarm";
+import { Api } from "@memita-2/ui";
 
-export const api = {
-  addBlock,
-  getBlocks,
+export const api: Api = {
+  async getBlocks() {
+    return Array.from(blocks);
+  },
+  async addBlock(text) {
+    if (blocks.has(text)) return;
+    blocks.add(text);
+    for (const listener of listeners) {
+      listener(text);
+    }
+  },
 };
-
-export type API = typeof api;
 
 const blocks = new Set<string>();
 
@@ -24,24 +31,12 @@ function unsubscribe(listener: Listener) {
   listeners.delete(listener);
 }
 
-async function addBlock(text: string) {
-  if (blocks.has(text)) return;
-  blocks.add(text);
-  for (const listener of listeners) {
-    listener(text);
-  }
-}
-
-async function getBlocks() {
-  return Array.from(blocks);
-}
-
-const topic = Buffer.alloc(32).fill("memita 2");
+const topic = Buffer.alloc(32).fill("memita-2");
 const swarm = new Hyperswarm();
 swarm.join(topic, { server: true, client: true });
 swarm.on("connection", (connection, info) => {
   connection.on("data", (data) => {
-    addBlock(String(data));
+    api.addBlock(String(data));
   });
   const listener: Listener = (block) => {
     connection.write(block);

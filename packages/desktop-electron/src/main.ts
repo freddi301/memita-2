@@ -11,13 +11,17 @@ function createWindow() {
     },
   });
   window.loadFile(path.join(__dirname, "index.html"));
+  return window;
 }
 
 app.whenReady().then(() => {
   for (const [methodName, method] of Object.entries(api)) {
     ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
   }
-  createWindow();
+  const window = createWindow();
+  if (!app.isPackaged) {
+    window.webContents.openDevTools();
+  }
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
