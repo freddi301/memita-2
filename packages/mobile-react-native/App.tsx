@@ -9,66 +9,34 @@
  */
 
 import React from 'react';
-import {
-  Button,
-  FlatList,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TextInput,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-
 import nodejs from 'nodejs-mobile-react-native';
+import {Api, Ui} from '@memita-2/ui';
 
 export default function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  const textStyle = {
-    color: isDarkMode ? Colors.white : Colors.black,
-  };
-
-  const [text, setText] = React.useState('');
-
   React.useEffect(() => {
     nodejs.start('main.js');
-    nodejs.channel.addListener('message', msg => {
-      setText(msg);
-    });
   }, []);
-
-  return (
-    <SafeAreaView style={{...backgroundStyle, flex: 1}}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View
-        style={{
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        }}>
-        <TextInput
-          style={textStyle}
-          value={text}
-          onChangeText={newText => {
-            setText(newText);
-          }}
-        />
-        <Button
-          onPress={() => {
-            nodejs.channel.send('A message!');
-          }}
-          title="add"
-        />
-        <FlatList
-          data={['a', 'b', 'c']}
-          renderItem={({item}) => <Text style={textStyle}>{item}</Text>}
-        />
-      </View>
-    </SafeAreaView>
-  );
+  const api = React.useMemo(() => {
+    return new Proxy(
+      {},
+      {
+        get(target, method, receiver) {
+          return (...args: any[]) =>
+            new Promise((resolve, reject) => {
+              const requestId = Math.random();
+              const listener = (msg: any) => {
+                if (msg.requestId === requestId) {
+                  if (!msg.isError) resolve(msg.result);
+                  else reject(msg.result);
+                  nodejs.channel.removeListener('message', listener);
+                }
+              };
+              nodejs.channel.addListener('message', listener);
+              nodejs.channel.send({requestId, method, args});
+            });
+        },
+      },
+    ) as Api;
+  }, []);
+  return <Ui api={api} />;
 }

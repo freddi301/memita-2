@@ -6,9 +6,15 @@
   "author": "Frederik Batuna",
   "license": "GPLv3",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/react-native",
+      "**/react-native/**"
+    ]
+  },
   "devDependencies": {
     "lerna": "^5.1.4"
   }

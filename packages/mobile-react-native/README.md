@@ -6,9 +6,13 @@
 
 - nodejs
 - yarn
+- npm install -g node-gyp
+- npm install -g node-gyp-build
 - android developer tools
 - java jdk
 - python
+- make
+- gcc
 - intellij
 - node gyp build tools https://github.com/nodejs/node-gyp
 - set environmetn variables

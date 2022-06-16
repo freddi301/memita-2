@@ -1,8 +1,7 @@
 {
-  "name": "sample-node-project",
-  "version": "0.0.1",
-  "description": "node part of the project",
-  "main": "main.js",
-  "author": "Frederik Batuna",
-  "license": "GPLv3"
+  "main": "index.js",
+  "dependencies": {
+    "utp-native-nodejs-mobile": "^2.1.4-0",
+    "sodium-native-nodejs-mobile" : "3.2.0-2"
+  }
 }
