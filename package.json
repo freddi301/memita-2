@@ -15,7 +15,8 @@
       "**/react-dom",
       "**/react-native",
       "**/react-native/**",
-      "nodejs-mobile-react-native"
+      "**/nodejs-mobile-react-native",
+      "**/nodejs-mobile-react-native/**"
     ]
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ include ':app'
 includeBuild('../node_modules/react-native-gradle-plugin')
 
 include ':nodejs-mobile-react-native'
-project(':nodejs-mobile-react-native').projectDir = new File(rootProject.projectDir, '../../../node_modules/nodejs-mobile-react-native/android')
+project(':nodejs-mobile-react-native').projectDir = new File(rootProject.projectDir, '../node_modules/nodejs-mobile-react-native/android')
 
 if (settings.hasProperty("newArchEnabled") && settings.newArchEnabled == "true") {
     include(":ReactAndroid")

@@ -1,0 +1,17 @@
+diff --git a/node_modules/nodejs-mobile-react-native/android/build.gradle b/node_modules/nodejs-mobile-react-native/android/build.gradle
+index a80f197..2ca63d5 100644
+--- a/node_modules/nodejs-mobile-react-native/android/build.gradle
++++ b/node_modules/nodejs-mobile-react-native/android/build.gradle
+@@ -237,11 +237,7 @@ if ("1".equals(shouldRebuildNativeModules)) {
+     }
+     GenerateNodeProjectAssetsLists.dependsOn "ApplyPatchScriptToModules"
+ 
+-    def nativeModulesABIs = android.defaultConfig.ndk.abiFilters;
+-    if (nativeModulesABIs == null) {
+-        // No abiFilter is defined for the build. Build native modules for eevery architecture.
+-        nativeModulesABIs = ["armeabi-v7a", "x86", "arm64-v8a", "x86_64"] as Set<String>;
+-    }
++    def nativeModulesABIs = ["armeabi-v7a", "arm64-v8a"] as Set<String>
+ 
+     nativeModulesABIs.each { abi_name ->
+         String temp_arch = {
