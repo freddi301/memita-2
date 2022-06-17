@@ -1,7 +1,8 @@
 {
-  "main": "index.js",
+  "main": "main.js",
   "dependencies": {
     "utp-native-nodejs-mobile": "^2.1.4-0",
-    "sodium-native-nodejs-mobile" : "3.2.0-2"
+    "sodium-native-nodejs-mobile": "3.2.0-2",
+    "bindings-noderify-nodejs-mobile": "^10.5.0"
   }
 }

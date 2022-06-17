@@ -15,8 +15,9 @@
     "build:backend": "./build-backend.sh"
   },
   "dependencies": {
+    "bindings-noderify-nodejs-mobile": "^10.5.0",
     "nodejs-mobile-react-native": "^0.8.1",
-    "react": "17.0.2",
+    "react": "^18.1.0",
     "react-native": "0.68.2",
     "sodium-native-nodejs-mobile": "^3.2.0-2",
     "utp-native-nodejs-mobile": "^2.1.4-0"

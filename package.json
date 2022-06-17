@@ -11,8 +11,11 @@
       "packages/*"
     ],
     "nohoist": [
+      "**/react",
+      "**/react-dom",
       "**/react-native",
-      "**/react-native/**"
+      "**/react-native/**",
+      "nodejs-mobile-react-native"
     ]
   },
   "devDependencies": {

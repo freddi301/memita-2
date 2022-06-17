@@ -5,13 +5,24 @@
  * @format
  */
 
-const blacklist = require('metro-config/src/defaults/exclusionList');
+// https://mmazzarolo.com/blog/2021-09-18-running-react-native-everywhere-mobile/
+
+var blacklist = require('metro-config/src/defaults/exclusionList');
+var {
+  getMetroTools,
+  getMetroAndroidAssetsResolutionFix,
+} = require('react-native-monorepo-tools');
+
+var monorepoMetroTools = getMetroTools();
+var androidAssetsResolutionFix = getMetroAndroidAssetsResolutionFix();
 
 module.exports = {
   resolver: {
-    blacklistRE: blacklist([/nodejs-assets\/.*/, /android\/.*/, /ios\/.*/]),
+    blockList: blacklist(monorepoMetroTools.blockList),
+    extraNodeModules: monorepoMetroTools.extraNodeModules,
   },
   transformer: {
+    publicPath: androidAssetsResolutionFix.publicPath,
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
@@ -19,4 +30,10 @@ module.exports = {
       },
     }),
   },
+  server: {
+    enhanceMiddleware: middleware => {
+      return androidAssetsResolutionFix.applyMiddleware(middleware);
+    },
+  },
+  watchFolders: monorepoMetroTools.watchFolders,
 };

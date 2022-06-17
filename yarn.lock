@@ -3800,6 +3800,13 @@ bind-easy@^1.0.0, bind-easy@^1.0.1:
   resolved "https://registry.yarnpkg.com/bind-easy/-/bind-easy-1.1.2.tgz#d10f9be896e53fb84f49465be5b1ab9b089dbcff"
   integrity sha512-2+VjZ87WFdOFnsH4tHnmtf0HF6D2T3ZNdU1t1FYIz2jt4N3tyqbg2J0bYbflXdBkVi3xfVc8Pm8NB062SPvVVA==
 
+bindings-noderify-nodejs-mobile@^10.5.0:
+  version "10.5.0"
+  resolved "https://registry.yarnpkg.com/bindings-noderify-nodejs-mobile/-/bindings-noderify-nodejs-mobile-10.5.0.tgz#fc7045ba5cd5826f96599a4b530853d8810956ef"
+  integrity sha512-8mtLAYnUYJbyyxGosKZuPcbs7/hJkE/dvrYQdRdzwipkE4YmyPgslFJFZQn7mt0GL1JjsrIZhKwNgFbacnn0uA==
+  dependencies:
+    file-uri-to-path "1.0.0"
+
 bindings@~1.3.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.3.1.tgz#21fc7c6d67c18516ec5aaa2815b145ff77b26ea5"
@@ -5675,6 +5682,11 @@ file-entry-cache@^6.0.1:
   integrity sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==
   dependencies:
     flat-cache "^3.0.4"
+
+file-uri-to-path@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
+  integrity sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
 
 fill-range@^4.0.0:
   version "4.0.0"
@@ -9957,14 +9969,6 @@ react-test-renderer@17.0.2:
     react-is "^17.0.2"
     react-shallow-renderer "^16.13.1"
     scheduler "^0.20.2"
-
-react@17.0.2:
-  version "17.0.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-17.0.2.tgz#d0b5cc516d29eb3eee383f75b62864cfb6800037"
-  integrity sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA==
-  dependencies:
-    loose-envify "^1.1.0"
-    object-assign "^4.1.1"
 
 react@^18.1.0:
   version "18.2.0"

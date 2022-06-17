@@ -1,7 +1,10 @@
 {
-  "filter": ["rn-bridge"],
+  "filter": [
+    "rn-bridge"
+  ],
   "replace": {
     "utp-native": "utp-native-nodejs-mobile",
-    "sodium-native": "sodium-native-nodejs-mobile"
+    "sodium-native": "sodium-native-nodejs-mobile",
+    "bindings": "bindings-noderify-nodejs-mobile"
   }
 }

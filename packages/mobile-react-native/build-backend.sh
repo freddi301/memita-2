@@ -4,12 +4,12 @@
 rm -rf dist && yarn tsc --noEmit false --outDir dist
 
 # bundle
-yarn noderify dist/backend.js -o nodejs-assets/nodejs-project/index.js
+yarn noderify dist/backend.js -o nodejs-assets/nodejs-project/main.js
 
 # install dependendencies
 (cd nodejs-assets/nodejs-project; yarn)
 
-# copy *.so files because nodej-mobile diesn't
+# copy *.so files because nodej-mobile doesn't
 declare -a archs=(
   "armeabi-v7a;arm"
   "arm64-v8a;arm64"
@@ -25,4 +25,6 @@ do
 done
 
 # delete node_modules otherwise it clutters apk, we already boundled the whole app
-rm -rf nodejs-assets/nodejs-project/node_modules
+# for now just the biggest offender
+# TODO copy over only *.node files
+rm -rf nodejs-assets/nodejs-project/node_modules/sodium-native-nodejs-mobile/libsodium
