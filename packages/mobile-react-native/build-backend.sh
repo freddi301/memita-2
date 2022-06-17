@@ -24,7 +24,15 @@ do
     android/app/src/main/jniLibs/$arch/libsodium.so;
 done
 
+# build native modules *.node files
+cd android;
+for entry in "${archs[@]}"
+do
+  IFS=";" read -r -a arr <<< "${entry}" # entry.split(';')
+  arch="${arr[0]}"
+  ./gradlew nodejs-mobile-react-native:GenerateNodeNativeAssetsLists$arch
+done
+cd ..;
+
 # delete node_modules otherwise it clutters apk, we already boundled the whole app
-# for now just the biggest offender
-# TODO copy over only *.node files
-rm -rf nodejs-assets/nodejs-project/node_modules/sodium-native-nodejs-mobile/libsodium
+rm -rf nodejs-assets/nodejs-project/node_modules
