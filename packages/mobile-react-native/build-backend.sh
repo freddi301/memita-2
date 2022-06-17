@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xe
+
 # compile typescript
 rm -rf dist && yarn tsc --noEmit false --outDir dist
 

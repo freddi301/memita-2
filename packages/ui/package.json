@@ -11,6 +11,8 @@
     "build": "tsc"
   },
   "devDependencies": {
+    "@types/react": "^18.0.14",
+    "@types/react-native": "^0.67.8",
     "typescript": "^4.7.3"
   },
   "dependencies": {
