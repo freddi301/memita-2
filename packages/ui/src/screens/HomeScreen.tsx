@@ -1,23 +1,42 @@
 import React from "react";
-import { Button, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useRouting } from "../routing";
+import { useTheme } from "../theme";
 
 export function HomeScreen() {
   const routing = useRouting();
+  const theme = useTheme();
+  const entryStyle = {
+    padding: "16px",
+    color: theme.textColor,
+  };
   return (
-    <View>
-      <Button
-        title="Blocks"
+    <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
+      <Text
+        style={{
+          color: theme.textColor,
+          fontWeight: "bold",
+          padding: "16px",
+          borderBottomColor: "gray",
+          backgroundColor: theme.backgroundColorSecondary,
+        }}
+      >
+        Home
+      </Text>
+      <Pressable
         onPress={() => {
           routing.push("Blocks", {});
         }}
-      />
-      <Button
-        title="Profiles"
+      >
+        <Text style={entryStyle}>Blocks</Text>
+      </Pressable>
+      <Pressable
         onPress={() => {
           routing.push("Profiles", {});
         }}
-      />
+      >
+        <Text style={entryStyle}>Profiles</Text>
+      </Pressable>
     </View>
   );
 }

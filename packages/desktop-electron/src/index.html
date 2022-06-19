@@ -1,13 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Memita 2</title>
   </head>
   <body>
     <div id="root"></div>
     <script src="./index.js"></script>
+    <!-- react-native-web fixes -->
+    <style>
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+      }
+    </style>
+    <!-- customizations -->
+    <style>
+      input {
+        outline: none;
+      }
+
+      textarea {
+        outline: none;
+      }
+
+      button {
+        outline: none;
+      }
+
+      ::-webkit-scrollbar {
+        background-color: transparent;
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-corner {
+        background-color: transparent;
+      }
+    </style>
   </body>
 </html>

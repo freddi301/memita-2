@@ -27,7 +27,11 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  window.loadFile(path.join(__dirname, "index.html"));
+  if (process.env.NODE_ENV === "development") {
+    window.loadURL("http://localhost:9000");
+  } else {
+    window.loadFile(path.join(__dirname, "index.html"));
+  }
   return window;
 }
 

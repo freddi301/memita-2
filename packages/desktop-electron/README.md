@@ -9,5 +9,17 @@
 
 ### Developing
 
+### Build and start
+
 - `yarn`
 - `yarn start`
+
+### With auto reloading
+
+- `yarn`
+- `yarn dev`
+
+In `ui` directory
+
+- `yarn`
+- `yarn watch`

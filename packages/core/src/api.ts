@@ -58,7 +58,7 @@ export function createApi(sql: Sql) {
     });
   });
 
-  sql`CREATE TABLE profile (id TEXT)`;
+  sql`CREATE TABLE profile (id TEXT PRIMARY KEY)`;
 
   return api;
 }

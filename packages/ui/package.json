@@ -8,7 +8,8 @@
   "license": "GPLv3",
   "private": true,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "devDependencies": {
     "@types/react": "^18.0.14",
@@ -16,6 +17,9 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/react-native-fontawesome": "^0.3.0",
     "react-query": "^3.39.1"
   }
 }

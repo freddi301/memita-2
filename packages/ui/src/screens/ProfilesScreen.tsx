@@ -1,56 +1,86 @@
 import React from "react";
-import { Button, FlatList, Text, TextInput, View } from "react-native";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { FlatList, Pressable, Text, View } from "react-native";
+import { useQuery } from "react-query";
 import { useRouting } from "../routing";
 import { ApiContext } from "../ui";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { BackButton } from "../components/BackButton";
+import { useTheme } from "../theme";
 
 export function ProfilesScreen() {
-  const [text, setText] = React.useState("");
   const api = React.useContext(ApiContext);
-  const queryClient = useQueryClient();
-  const profilesMutation = useMutation(
-    async (id: string) => {
-      await api.addProfile(id);
-    },
-    {
-      onSuccess() {
-        queryClient.invalidateQueries("profiles");
-        setText("");
-      },
-    }
-  );
-  const blocksQuery = useQuery(["profiles"], async () => {
+  const profilesQuery = useQuery(["profiles"], async () => {
     return api.getProfiles();
   });
   const routing = useRouting();
+  const theme = useTheme();
   return (
-    <View
-      style={{
-        flex: 1,
-      }}
-    >
-      <Button
-        onPress={() => {
-          routing.back();
+    <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: theme.backgroundColorSecondary,
         }}
-        title="Back"
-      />
-      <TextInput
-        value={text}
-        onChangeText={(newText) => {
-          setText(newText);
-        }}
-      />
-      <Button
-        onPress={() => {
-          profilesMutation.mutate(text);
-        }}
-        title="add"
-      />
+      >
+        <BackButton />
+        <Text
+          style={{
+            flex: 1,
+            color: theme.textColor,
+            fontWeight: "bold",
+            paddingVertical: "16px",
+            borderBottomColor: "gray",
+          }}
+        >
+          Profiles
+        </Text>
+        <Pressable
+          onPress={() => {
+            routing.push("AddProfile", {});
+          }}
+          style={{ padding: "16px" }}
+        >
+          <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
+        </Pressable>
+      </View>
       <FlatList
-        data={blocksQuery.data}
-        renderItem={({ item }) => <Text>{item.id}</Text>}
+        data={profilesQuery.data}
+        renderItem={({ item }) => (
+          <View style={{ flexDirection: "row", padding: 8 }}>
+            <Avatar />
+            <View style={{ marginLeft: 8 }}>
+              <Text
+                style={{
+                  color: theme.textColor,
+                  fontWeight: "bold",
+                }}
+              >
+                {item.id}
+              </Text>
+              <Text
+                style={{
+                  color: theme.textColor,
+                }}
+              >
+                Some description
+              </Text>
+            </View>
+          </View>
+        )}
       />
     </View>
+  );
+}
+
+function Avatar() {
+  return (
+    <Pressable
+      style={{
+        backgroundColor: "white",
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+      }}
+    ></Pressable>
   );
 }

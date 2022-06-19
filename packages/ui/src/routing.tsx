@@ -1,4 +1,5 @@
 import React from "react";
+import { AddProfileScreen } from "./screens/AddProfileScreen";
 import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { ProfilesScreen } from "./screens/ProfilesScreen";
@@ -7,6 +8,7 @@ export type Routes = {
   Home: {};
   Blocks: {};
   Profiles: {};
+  AddProfile: {};
 };
 
 type Route = {
@@ -19,6 +21,7 @@ const mapping: {
   Home: HomeScreen,
   Blocks: BlocksScreen,
   Profiles: ProfilesScreen,
+  AddProfile: AddProfileScreen,
 };
 
 type Routing = {
@@ -36,7 +39,7 @@ type RoutesProps = {
 };
 export function Routes({ initial }: RoutesProps) {
   const [stack, setStack] = React.useState<Array<Route>>([]);
-  const route = stack[0] ?? initial;
+  const route = stack[stack.length - 1] ?? initial;
   const Screen = mapping[route.screen];
   const push = React.useCallback<Routing["push"]>((screen, parameters) => {
     setStack((stack) => [...stack, { screen, parameters }]);
