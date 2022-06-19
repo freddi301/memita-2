@@ -10,7 +10,7 @@
     "build": "tsc && webpack && cp src/index.html dist/index.html",
     "start": "yarn build && electron .",
     "serve": "webpack serve",
-    "dev": "cross-env NODE_ENV=development concurrently \"yarn:serve\" \"yarn:start\""
+    "dev": "cross-env NODE_ENV=development concurrently --kill-others \"yarn:serve\" \"yarn:start\""
   },
   "private": true,
   "devDependencies": {

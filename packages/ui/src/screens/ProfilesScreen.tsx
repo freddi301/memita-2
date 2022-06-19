@@ -6,6 +6,7 @@ import { ApiContext } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
+import { Avatar } from "./Avatar";
 
 export function ProfilesScreen() {
   const api = React.useContext(ApiContext);
@@ -46,41 +47,34 @@ export function ProfilesScreen() {
       <FlatList
         data={profilesQuery.data}
         renderItem={({ item }) => (
-          <View style={{ flexDirection: "row", padding: 8 }}>
-            <Avatar />
-            <View style={{ marginLeft: 8 }}>
-              <Text
-                style={{
-                  color: theme.textColor,
-                  fontWeight: "bold",
-                }}
-              >
-                {item.id}
-              </Text>
-              <Text
-                style={{
-                  color: theme.textColor,
-                }}
-              >
-                Some description
-              </Text>
+          <Pressable
+            onPress={() => {
+              routing.push("Profile", { id: item.id });
+            }}
+          >
+            <View style={{ flexDirection: "row", padding: 8 }}>
+              <Avatar />
+              <View style={{ marginLeft: 8 }}>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.id}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                  }}
+                >
+                  Some description
+                </Text>
+              </View>
             </View>
-          </View>
+          </Pressable>
         )}
       />
     </View>
-  );
-}
-
-function Avatar() {
-  return (
-    <Pressable
-      style={{
-        backgroundColor: "white",
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-      }}
-    ></Pressable>
   );
 }

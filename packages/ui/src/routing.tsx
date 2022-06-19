@@ -2,6 +2,7 @@ import React from "react";
 import { AddProfileScreen } from "./screens/AddProfileScreen";
 import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
 import { ProfilesScreen } from "./screens/ProfilesScreen";
 
 export type Routes = {
@@ -9,6 +10,7 @@ export type Routes = {
   Blocks: {};
   Profiles: {};
   AddProfile: {};
+  Profile: { id: string };
 };
 
 type Route = {
@@ -22,6 +24,7 @@ const mapping: {
   Blocks: BlocksScreen,
   Profiles: ProfilesScreen,
   AddProfile: AddProfileScreen,
+  Profile: ProfileScreen,
 };
 
 type Routing = {
@@ -42,7 +45,7 @@ export function Routes({ initial }: RoutesProps) {
   const route = stack[stack.length - 1] ?? initial;
   const Screen = mapping[route.screen];
   const push = React.useCallback<Routing["push"]>((screen, parameters) => {
-    setStack((stack) => [...stack, { screen, parameters }]);
+    setStack((stack) => [...stack, { screen, parameters: parameters as any }]);
   }, []);
   const back = React.useCallback(() => {
     setStack((stack) => stack.slice(0, -1));
