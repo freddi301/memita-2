@@ -1,5 +1,7 @@
 import rn_bridge from 'rn-bridge';
-import {api} from '@memita-2/core';
+import {createApi} from '@memita-2/core';
+
+const api = createApi(null as any); // TODO
 
 rn_bridge.channel.on('message', ({requestId, method, args}: any) => {
   (api as any)[method](...args).then(

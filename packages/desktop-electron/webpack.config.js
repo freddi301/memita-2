@@ -38,7 +38,7 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.svg/,
+        test: /\.svg|png/,
         type: "asset/inline",
       },
     ],
