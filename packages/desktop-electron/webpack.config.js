@@ -32,6 +32,7 @@ module.exports = {
                 },
               ],
               isDevelopment && "react-refresh/babel",
+              ["react-native-web", { commonjs: true }],
             ].filter(Boolean),
             presets: ["@babel/preset-env", "@babel/react", "@babel/typescript"],
           },

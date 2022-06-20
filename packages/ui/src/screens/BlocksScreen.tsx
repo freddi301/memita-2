@@ -1,23 +1,16 @@
 import React from "react";
-import {
-  Button,
-  FlatList,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { BackButton } from "../components/BackButton";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { ApiContext } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { SimpleInput } from "../components/SimpleInput";
+import { useApi } from "../ui";
 
 export function BlocksScreen() {
   const [text, setText] = React.useState("");
-  const api = React.useContext(ApiContext);
+  const api = useApi();
   const queryClient = useQueryClient();
   const blockMutation = useMutation(
     async (block: string) => {

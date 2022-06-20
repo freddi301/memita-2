@@ -1,7 +1,7 @@
 import { Sql } from "@memita-2/core/dist/sql";
 import sqlite3 from "sqlite3";
 
-const db = new sqlite3.Database(":memory:");
+const db = sqlite3.cached.Database(":memory:");
 sqlite3.verbose();
 
 export const sql: Sql = (strings, values) =>
