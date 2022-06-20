@@ -8,13 +8,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 
-export function AddProfileScreen() {
+export function AddAuthorScreen() {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
-  const addProfileMutation = useMutation(
-    async (id: string) => {
-      await api.addProfile(id);
+  const addAuthorMutation = useMutation(
+    async ({ author, nickname }: { author: string; nickname: string }) => {
+      const version_timestamp = Date.now();
+      await api.addAuthor({
+        author,
+        nickname,
+        deleted: false,
+        version_timestamp,
+      });
     },
     {
       onSuccess() {
@@ -22,7 +28,8 @@ export function AddProfileScreen() {
       },
     }
   );
-  const [id, setId] = React.useState("");
+  const [author, setAuthor] = React.useState("");
+  const [nickname, setNickname] = React.useState("");
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -41,18 +48,23 @@ export function AddProfileScreen() {
             flex: 1,
           }}
         >
-          Add profile
+          Add Author
         </Text>
         <Pressable
           onPress={() => {
-            addProfileMutation.mutate(id);
+            addAuthorMutation.mutate({ author, nickname });
           }}
           style={{ padding: "16px" }}
         >
           <FontAwesomeIcon icon={"check"} color={theme.textColor} />
         </Pressable>
       </View>
-      <SimpleInput label="id" value={id} onChangeText={setId} />
+      <SimpleInput label="author" value={author} onChangeText={setAuthor} />
+      <SimpleInput
+        label="nickname"
+        value={nickname}
+        onChangeText={setNickname}
+      />
     </View>
   );
 }

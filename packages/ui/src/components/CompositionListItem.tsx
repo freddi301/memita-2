@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useTheme } from "../theme";
-import { Avatar } from "../screens/Avatar";
+import { Avatar } from "./Avatar";
 import { DateTime } from "luxon";
 import { Composition } from "../api";
 
@@ -13,9 +13,9 @@ export function CompositionListItem({
   channel,
   recipient,
   salt,
-  thread,
-  text,
-  timestamp,
+  quote,
+  content,
+  version_timestamp,
   versions,
 }: CompositionListItemProps): React.ReactElement<
   any,
@@ -26,13 +26,13 @@ export function CompositionListItem({
   return (
     <Pressable
       onPress={() => {
-        routing.push("Compose", {
+        routing.push("Composition", {
           author,
           channel,
           recipient,
-          thread,
+          quote,
           salt,
-          ...(text ? { text } : {}),
+          ...(content ? { content } : {}),
         });
       }}
     >
@@ -40,7 +40,7 @@ export function CompositionListItem({
         <Avatar />
         <View style={{ marginHorizontal: 8, flex: 1 }}>
           <View style={{ flexDirection: "row" }}>
-            {channel && (
+            {!!channel && (
               <Text style={{ color: theme.textColor }}>{channel} | </Text>
             )}
             <Text
@@ -51,7 +51,7 @@ export function CompositionListItem({
             >
               {author}
             </Text>
-            {recipient && (
+            {!!recipient && (
               <React.Fragment>
                 <View style={{ marginHorizontal: 4 }}>
                   <FontAwesomeIcon
@@ -75,12 +75,12 @@ export function CompositionListItem({
               color: theme.textColor,
             }}
           >
-            {text}
+            {content}
           </Text>
         </View>
         <View>
           <View style={{ flexDirection: "row" }}>
-            {thread && (
+            {!!quote && (
               <View style={{ marginRight: 8 }}>
                 <FontAwesomeIcon icon={"reply"} color={theme.textColor} />
               </View>
@@ -100,15 +100,16 @@ export function CompositionListItem({
                 flex: 1,
               }}
             >
-              {DateTime.fromMillis(timestamp).toLocaleString(
+              {DateTime.fromMillis(version_timestamp).toLocaleString(
                 DateTime.TIME_WITH_SECONDS
               )}
             </Text>
           </View>
           <Text style={{ color: theme.textColor, textAlign: "right" }}>
-            {DateTime.fromMillis(timestamp).toLocaleString(DateTime.DATE_MED)}
+            {DateTime.fromMillis(version_timestamp).toLocaleString(
+              DateTime.DATE_MED
+            )}
           </Text>
-          <Text></Text>
         </View>
       </View>
     </Pressable>

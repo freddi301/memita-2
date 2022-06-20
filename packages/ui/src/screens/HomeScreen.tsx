@@ -32,10 +32,10 @@ export function HomeScreen() {
       </Pressable>
       <Pressable
         onPress={() => {
-          routing.push("Profiles", {});
+          routing.push("Authors", {});
         }}
       >
-        <Text style={entryStyle}>Profiles</Text>
+        <Text style={entryStyle}>Authors</Text>
       </Pressable>
       <Pressable
         onPress={() => {

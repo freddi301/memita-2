@@ -7,6 +7,7 @@ import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { CompositionListItem } from "../components/CompositionListItem";
+import { useDebounce } from "../components/useDebounce";
 
 export function CompositionsScreen() {
   const api = useApi();
@@ -14,10 +15,11 @@ export function CompositionsScreen() {
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
+  const searchTextDebounced = useDebounce(searchText, 300);
   const compositionsQuery = useQuery(
-    ["compositions", { searchText }],
+    ["compositions", { searchTextDebounced }],
     async () => {
-      return api.getCompositions({ searchText });
+      return api.getCompositions({ content: searchTextDebounced || undefined });
     }
   );
   return (
@@ -79,7 +81,7 @@ export function CompositionsScreen() {
             </Pressable>
             <Pressable
               onPress={() => {
-                routing.push("Compose", {});
+                routing.push("Composition", {});
               }}
               style={{ padding: "16px" }}
             >

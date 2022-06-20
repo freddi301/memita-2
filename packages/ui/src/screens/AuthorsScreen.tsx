@@ -5,18 +5,26 @@ import { useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { Avatar } from "./Avatar";
+import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
+import { useDebounce } from "../components/useDebounce";
 
-export function ProfilesScreen() {
+export function AuthorsScreen() {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const profilesQuery = useQuery(["profiles", { searchText }], async () => {
-    return api.getProfiles({ searchText });
-  });
+  const searchTextDebounced = useDebounce(searchText, 300);
+  const profilesQuery = useQuery(
+    ["profiles", { searchTextDebounced }],
+    async () => {
+      return api.getAuthors({
+        nickname: searchTextDebounced || undefined,
+        deleted: false,
+      });
+    }
+  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -64,7 +72,7 @@ export function ProfilesScreen() {
                 borderBottomColor: "gray",
               }}
             >
-              Profiles
+              Authors
             </Text>
             <Pressable
               onPress={() => {
@@ -76,7 +84,7 @@ export function ProfilesScreen() {
             </Pressable>
             <Pressable
               onPress={() => {
-                routing.push("AddProfile", {});
+                routing.push("AddAuthor", {});
               }}
               style={{ padding: "16px" }}
             >
@@ -87,10 +95,10 @@ export function ProfilesScreen() {
       </View>
       <FlatList
         data={profilesQuery.data}
-        renderItem={({ item }) => (
+        renderItem={({ item: { author, nickname } }) => (
           <Pressable
             onPress={() => {
-              routing.push("Profile", { id: item.id });
+              routing.push("Author", { author, nickname });
             }}
           >
             <View style={{ flexDirection: "row", padding: 8 }}>
@@ -102,14 +110,14 @@ export function ProfilesScreen() {
                     fontWeight: "bold",
                   }}
                 >
-                  {item.id}
+                  {nickname}
                 </Text>
                 <Text
                   style={{
                     color: theme.textColor,
                   }}
                 >
-                  Some description
+                  {author}
                 </Text>
               </View>
             </View>

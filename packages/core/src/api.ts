@@ -14,53 +14,72 @@ export function createApi(sql: Sql) {
         listener(text);
       }
     },
-    async getProfiles({ searchText }) {
-      if (searchText) {
-        return await sql`
-          SELECT * 
-          FROM profile_search 
-          WHERE profile_search = ${searchText.replace(/[^a-zA-Z]/g, "") + "*"}
-          ORDER BY rank
-        `;
-      }
-      return await sql`SELECT * FROM profile`;
-    },
-    async addProfile(id: string) {
-      sql.serialize(async () => {
-        sql`BEGIN`;
-        sql`INSERT INTO profile VALUES (${id})`;
-        sql`INSERT INTO profile_search VALUES (${id})`;
-        sql`COMMIT`;
-      });
-    },
-    async deleteProfile(id: string) {
-      sql.serialize(async () => {
-        sql`BEGIN`;
-        sql`DELETE from profile WHERE id = (${id})`;
-        sql`DELETE from profile_search WHERE id = (${id})`;
-        sql`COMMIT`;
-      });
-    },
-    async getCompositions({ author, channel, recipient, thread, searchText }) {
+    async getAuthors({ nickname = "DONTFILTER", deleted = "DONTFILTER" }) {
       await dbSetupDone;
-      return await sql`
-        SELECT author, channel, recipient, thread, salt, Max(timestamp) AS timestamp, text, Count(timestamp) AS versions FROM comunication
-        GROUP BY author, channel, recipient, thread, salt
-        ORDER BY MAX(timestamp) DESC
+      const nicknameSearch = "%" + asSearch(nickname) + "%";
+      return (
+        await sql`
+          SELECT author, nickname, deleted, MAX(version_timestamp) AS version_timestamp FROM authors
+          GROUP BY author
+          HAVING
+            (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
+            (deleted = CASE WHEN ${deleted} = 'DONTFILTER' THEN deleted ELSE ${deleted} END)
+          ORDER BY nickname ASC
+        `
+      ).map((author: any) => ({
+        ...author,
+        deleted: Boolean(author.deleted),
+      }));
+    },
+    async addAuthor({ author, nickname, deleted, version_timestamp }) {
+      await dbSetupDone;
+      await sql`
+        INSERT INTO authors (author, nickname, deleted, version_timestamp)
+        VALUES (${author}, ${nickname}, ${deleted}, ${version_timestamp})
       `;
     },
-    // TODO
-    // WHERE author=${author} AND channel=${channel} AND recipient=${recipient} AND thread=${thread}
-    async addComposition(params) {
+    async getCompositions({
+      author = "DONTFILTER",
+      channel = "DONTFILTER",
+      recipient = "DONTFILTER",
+      quote = "DONTFILTER",
+      content = "DONTFILTER",
+    }) {
       await dbSetupDone;
-      const { author, channel, recipient, thread, salt, timestamp, text } =
-        params;
+      const contentSearch = "%" + asSearch(content) + "%";
+      return await sql`
+        SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp, COUNT(version_timestamp) AS versions FROM compositions
+        WHERE
+          (author = CASE WHEN ${author} = 'DONTFILTER' THEN author ELSE ${author} END) AND
+          (channel = CASE WHEN ${channel} = 'DONTFILTER' THEN channel ELSE ${channel} END) AND
+          (recipient = CASE WHEN ${recipient} = 'DONTFILTER' THEN recipient ELSE ${recipient} END) AND
+          (quote = CASE WHEN ${quote} = 'DONTFILTER' THEN quote ELSE ${quote} END)
+        GROUP BY author, channel, recipient, quote, salt
+        HAVING
+          (content LIKE CASE WHEN ${content} = 'DONTFILTER' THEN content ELSE ${contentSearch} END)
+        ORDER BY MAX(version_timestamp) DESC
+      `;
+    },
+    async addComposition({
+      author,
+      channel,
+      recipient,
+      quote,
+      salt,
+      content,
+      version_timestamp,
+    }) {
+      await dbSetupDone;
       await sql`
-        INSERT INTO comunication (author, channel, recipient, thread, salt, timestamp, text)
-        VALUES (${author}, ${channel}, ${recipient}, ${thread}, ${salt}, ${timestamp}, ${text})
+        INSERT INTO compositions (author, channel, recipient, quote, salt, content, version_timestamp)
+        VALUES (${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
       `;
     },
   };
+
+  function asSearch(string: string) {
+    return string.replace(/[^a-zA-z0-9]/g, "");
+  }
 
   const blocks = new Set<string>();
 
@@ -101,18 +120,23 @@ export function createApi(sql: Sql) {
   }
 
   const dbSetupDone = Promise.all([
-    sql`CREATE TABLE profile (id TEXT PRIMARY KEY)`,
-    sql`CREATE VIRTUAL TABLE profile_search USING FTS5(id)`,
-
-    sql`CREATE TABLE comunication (
+    sql`CREATE TABLE authors (
       author TEXT NOT NULL,
-      channel TEXT,
-      recipient TEXT,
-      thread TEXT,
+      nickname TEXT NOT NULL,
+      deleted BOOLEAN NOT NULL,
+      version_timestamp INT NOT NUll,
+      PRIMARY KEY (author, nickname, deleted, version_timestamp)
+    )`,
+
+    sql`CREATE TABLE compositions (
+      author TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      recipient TEXT NOT NULL,
+      quote TEXT NOT NULL,
       salt TEXT NOT NULL,
-      timestamp INTEGER NOT NULL,
-      text TEXT,
-      PRIMARY KEY (author, channel, recipient, thread, salt, timestamp, text)
+      content TEXT NOT NULL,
+      version_timestamp INTEGER NOT NULL,
+      PRIMARY KEY (author, channel, recipient, quote, salt, content, version_timestamp)
     )`,
   ]);
 

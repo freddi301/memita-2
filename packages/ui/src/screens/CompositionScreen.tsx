@@ -9,7 +9,7 @@ import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { Composition } from "../api";
 
-export function ComposeScreen(props: Routes["Compose"]) {
+export function CompositionScreen(props: Routes["Composition"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
@@ -26,19 +26,19 @@ export function ComposeScreen(props: Routes["Compose"]) {
   const [author, setAuthor] = React.useState(props.author ?? "");
   const [channel, setChannel] = React.useState(props.channel ?? "");
   const [recipient, setRecipient] = React.useState(props.recipient ?? "");
-  const [thread, setThread] = React.useState(props.thread ?? "");
-  const [text, setText] = React.useState(props.text ?? "");
+  const [quote, setQuote] = React.useState(props.quote ?? "");
+  const [content, setContent] = React.useState(props.content ?? "");
   const add = () => {
-    const timestamp = Date.now();
+    const version_timestamp = Date.now();
     const salt = props.salt ?? String(Math.random());
     addComunicationMutation.mutate({
       author,
-      channel: channel || null,
-      recipient: recipient || null,
-      thread: thread || null,
+      channel,
+      recipient,
+      quote,
       salt,
-      timestamp,
-      text,
+      content,
+      version_timestamp,
     });
   };
   return (
@@ -84,12 +84,17 @@ export function ComposeScreen(props: Routes["Compose"]) {
         editable={props.recipient === undefined}
       />
       <SimpleInput
-        label="Thread"
-        value={thread}
-        onChangeText={setThread}
-        editable={props.thread === undefined}
+        label="Quote"
+        value={quote}
+        onChangeText={setQuote}
+        editable={props.quote === undefined}
       />
-      <SimpleInput label="Text" value={text} onChangeText={setText} multiline />
+      <SimpleInput
+        label="Content"
+        value={content}
+        onChangeText={setContent}
+        multiline
+      />
     </View>
   );
 }

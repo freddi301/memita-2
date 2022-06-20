@@ -1,25 +1,34 @@
 export type Api = {
   getBlocks(): Promise<Array<string>>;
   addBlock(block: string): Promise<void>;
-  getProfiles(params: { searchText?: string }): Promise<Array<{ id: string }>>;
-  addProfile(id: string): Promise<void>;
-  deleteProfile(id: string): Promise<void>;
-  getCompositions(parasm: {
-    author?: string;
-    channel?: string | null;
-    recipient?: string | null;
-    thread?: string | null;
-    searchText?: string;
-  }): Promise<Array<Composition & { versions: number }>>;
+  addAuthor(params: Author): Promise<void>;
+  getAuthors(params: {
+    nickname?: string;
+    deleted?: boolean;
+  }): Promise<Array<Author>>;
   addComposition(params: Composition): Promise<void>;
+  getCompositions(params: {
+    author?: string;
+    channel?: string;
+    recipient?: string;
+    quote?: string;
+    content?: string;
+  }): Promise<Array<Composition & { versions: number }>>;
+};
+
+export type Author = {
+  author: string;
+  nickname: string;
+  deleted: boolean;
+  version_timestamp: number;
 };
 
 export type Composition = {
   author: string;
-  channel: string | null;
-  recipient: string | null;
-  thread: string | null;
+  channel: string;
+  recipient: string;
+  quote: string;
   salt: string;
-  timestamp: number;
-  text: string | null;
+  content: string;
+  version_timestamp: number;
 };

@@ -1,27 +1,27 @@
 import React from "react";
-import { ComposeScreen } from "./screens/ComposeScreen";
-import { AddProfileScreen } from "./screens/AddProfileScreen";
+import { CompositionScreen } from "./screens/CompositionScreen";
+import { AddAuthorScreen } from "./screens/AddAuthorScreen";
 import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
-import { ProfilesScreen } from "./screens/ProfilesScreen";
+import { AuthorScreen } from "./screens/AuthorScreen";
+import { AuthorsScreen } from "./screens/AuthorsScreen";
 import { CompositionsScreen } from "./screens/CompositionsScreen";
 
 export type Routes = {
   Home: {};
   Blocks: {};
-  Profiles: {};
-  AddProfile: {};
-  Profile: { id: string };
-  Compose: {
+  Authors: {};
+  AddAuthor: {};
+  Author: { author: string; nickname: string };
+  Compositions: {};
+  Composition: {
     author?: string;
     channel?: string | null;
     recipient?: string | null;
-    thread?: string | null;
+    quote?: string | null;
     salt?: string;
-    text?: string;
+    content?: string;
   };
-  Compositions: {};
 };
 
 type Route = {
@@ -33,11 +33,11 @@ const mapping: {
 } = {
   Home: HomeScreen,
   Blocks: BlocksScreen,
-  Profiles: ProfilesScreen,
-  AddProfile: AddProfileScreen,
-  Profile: ProfileScreen,
-  Compose: ComposeScreen,
+  Authors: AuthorsScreen,
+  AddAuthor: AddAuthorScreen,
+  Author: AuthorScreen,
   Compositions: CompositionsScreen,
+  Composition: CompositionScreen,
 };
 
 type Routing = {

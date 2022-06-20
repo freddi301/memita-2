@@ -3,19 +3,25 @@ import { FlatList, Pressable, Text, View } from "react-native";
 import { BackButton } from "../components/BackButton";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { Avatar } from "./Avatar";
+import { Avatar } from "../components/Avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useMutation, useQuery } from "react-query";
 import { useApi } from "../ui";
 import { CompositionListItem } from "../components/CompositionListItem";
 
-export function ProfileScreen({ id }: Routes["Profile"]) {
+export function AuthorScreen({ author, nickname }: Routes["Author"]) {
   const theme = useTheme();
   const routing = useRouting();
   const api = useApi();
-  const deleteProfileMutation = useMutation(
-    async (id: string) => {
-      await api.deleteProfile(id);
+  const deleteAuthorMutation = useMutation(
+    async (author: string) => {
+      const version_timestamp = Date.now();
+      await api.addAuthor({
+        author,
+        nickname,
+        deleted: true,
+        version_timestamp,
+      });
     },
     {
       onSuccess() {
@@ -24,9 +30,9 @@ export function ProfileScreen({ id }: Routes["Profile"]) {
     }
   );
   const compositionsQuery = useQuery(
-    ["compositions", { author: id }],
+    ["compositions", { author: author }],
     async () => {
-      return api.getCompositions({ author: id });
+      return api.getCompositions({ author: author });
     }
   );
   return (
@@ -40,21 +46,26 @@ export function ProfileScreen({ id }: Routes["Profile"]) {
       >
         <BackButton />
         <Avatar />
-        <Text
-          style={{
-            color: theme.textColor,
-            fontWeight: "bold",
-            paddingVertical: "16px",
-            borderBottomColor: "gray",
-            flex: 1,
-            marginLeft: 8,
-          }}
-        >
-          {id}
-        </Text>
+        <View style={{ flex: 1, marginLeft: 16 }}>
+          <Text
+            style={{
+              color: theme.textColor,
+              fontWeight: "bold",
+            }}
+          >
+            {nickname}
+          </Text>
+          <Text
+            style={{
+              color: theme.textColor,
+            }}
+          >
+            {author}
+          </Text>
+        </View>
         <Pressable
           onPress={() => {
-            deleteProfileMutation.mutate(id);
+            deleteAuthorMutation.mutate(author);
           }}
           style={{ padding: "16px" }}
         >

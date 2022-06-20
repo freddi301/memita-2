@@ -14,6 +14,3 @@ export const sql: Sql = (strings, ...values) =>
       }
     });
   });
-sql.serialize = (callback) => {
-  db.serialize(callback);
-};
