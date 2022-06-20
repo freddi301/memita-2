@@ -4,6 +4,7 @@ const darkTheme = {
   backgroundColorPrimary: "#282c34",
   backgroundColorSecondary: "#21252b",
   textColor: "#abb2bf",
+  loadingColor: "#61afef",
 };
 
 const ThemeContext = React.createContext(darkTheme);

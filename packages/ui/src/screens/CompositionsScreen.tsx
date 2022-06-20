@@ -8,6 +8,7 @@ import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { CompositionListItem } from "../components/CompositionListItem";
 import { useDebounce } from "../components/useDebounce";
+import { HorizontalLoader } from "../components/HorizontalLoader";
 
 export function CompositionsScreen() {
   const api = useApi();
@@ -90,28 +91,31 @@ export function CompositionsScreen() {
           </React.Fragment>
         )}
       </View>
+      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
       <FlatList
         data={compositionsQuery.data}
         renderItem={({ item }) => <CompositionListItem {...item} />}
         ListEmptyComponent={
-          <Text
-            style={{
-              color: theme.textColor,
-              textAlign: "center",
-              padding: 16,
-            }}
-          >
-            {isSearching ? (
-              <React.Fragment>
-                There are no compositions for term{" "}
-                <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                There are no compositions. Write some!
-              </React.Fragment>
-            )}
-          </Text>
+          compositionsQuery.isLoading ? null : (
+            <Text
+              style={{
+                color: theme.textColor,
+                textAlign: "center",
+                padding: 16,
+              }}
+            >
+              {isSearching ? (
+                <React.Fragment>
+                  There are no compositions for term{" "}
+                  <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  There are no compositions. Write some!
+                </React.Fragment>
+              )}
+            </Text>
+          )
         }
       />
     </View>

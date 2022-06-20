@@ -8,6 +8,7 @@ import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
+import { HorizontalLoader } from "../components/HorizontalLoader";
 
 export function AuthorsScreen() {
   const api = useApi();
@@ -16,8 +17,8 @@ export function AuthorsScreen() {
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const profilesQuery = useQuery(
-    ["profiles", { searchTextDebounced }],
+  const authorsQuery = useQuery(
+    ["authors", { searchTextDebounced, deleted: false }],
     async () => {
       return api.getAuthors({
         nickname: searchTextDebounced || undefined,
@@ -93,8 +94,9 @@ export function AuthorsScreen() {
           </React.Fragment>
         )}
       </View>
+      <HorizontalLoader isLoading={authorsQuery.isFetching} />
       <FlatList
-        data={profilesQuery.data}
+        data={authorsQuery.data}
         renderItem={({ item: { author, nickname } }) => (
           <Pressable
             onPress={() => {
@@ -124,22 +126,24 @@ export function AuthorsScreen() {
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text
-            style={{
-              color: theme.textColor,
-              textAlign: "center",
-              padding: 16,
-            }}
-          >
-            {isSearching ? (
-              <React.Fragment>
-                There are no profiles for term{" "}
-                <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>There are no profiles. Add some!</React.Fragment>
-            )}
-          </Text>
+          authorsQuery.isLoading ? null : (
+            <Text
+              style={{
+                color: theme.textColor,
+                textAlign: "center",
+                padding: 16,
+              }}
+            >
+              {isSearching ? (
+                <React.Fragment>
+                  There are no Authors for term{" "}
+                  <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>There are no Authors. Add some!</React.Fragment>
+              )}
+            </Text>
+          )
         }
       />
     </View>

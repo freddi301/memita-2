@@ -29,12 +29,9 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
       },
     }
   );
-  const compositionsQuery = useQuery(
-    ["compositions", { author: author }],
-    async () => {
-      return api.getCompositions({ author: author });
-    }
-  );
+  const compositionsQuery = useQuery(["compositions", { author }], async () => {
+    return api.getCompositions({ author });
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
