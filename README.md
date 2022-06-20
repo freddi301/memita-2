@@ -18,6 +18,7 @@ code --install-extension frigus02.vscode-sql-tagged-template-literals
 
 ## TODO
 
+- [ ] private conversation screen
 - [ ] rename ui and core modules to frontend and backend
 - [ ] degrow bundle sizes
 - [ ] generate schema for https://github.com/frigus02/typescript-sql-tagged-template-plugin#configuration

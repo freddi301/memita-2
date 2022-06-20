@@ -36,18 +36,16 @@ export function AuthorsScreen() {
       >
         {isSearching ? (
           <React.Fragment>
-            <View style={{ padding: 16 }}>
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
-            </View>
             <TextInput
               value={searchText}
+              placeholder={"🔍"}
               onChangeText={(newText) => {
                 setSearchText(newText);
               }}
               style={{
                 color: theme.textColor,
                 flex: 1,
-                paddingVertical: 16,
+                padding: 16,
               }}
               autoFocus
             />
@@ -56,7 +54,7 @@ export function AuthorsScreen() {
                 setIsSearching(false);
                 setSearchText("");
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
               <FontAwesomeIcon icon={"times"} color={theme.textColor} />
             </Pressable>
@@ -69,7 +67,7 @@ export function AuthorsScreen() {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                paddingVertical: "16px",
+                paddingVertical: 16,
                 borderBottomColor: "gray",
               }}
             >
@@ -79,7 +77,7 @@ export function AuthorsScreen() {
               onPress={() => {
                 setIsSearching(true);
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
               <FontAwesomeIcon icon={"search"} color={theme.textColor} />
             </Pressable>
@@ -87,7 +85,7 @@ export function AuthorsScreen() {
               onPress={() => {
                 routing.push("AddAuthor", {});
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
               <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
             </Pressable>

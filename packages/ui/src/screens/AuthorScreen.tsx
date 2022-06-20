@@ -29,9 +29,17 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
       },
     }
   );
-  const compositionsQuery = useQuery(["compositions", { author }], async () => {
-    return api.getCompositions({ author });
-  });
+  const compositionsQuery = useQuery(
+    ["compositions", { author, channel: "", quote: "", recipient: "" }],
+    async () => {
+      return api.getCompositions({
+        author,
+        channel: "",
+        quote: "",
+        recipient: "",
+      });
+    }
+  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -64,14 +72,44 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
           onPress={() => {
             deleteAuthorMutation.mutate(author);
           }}
-          style={{ padding: "16px" }}
+          style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
+        </Pressable>
+      </View>
+      <View style={{ flexDirection: "row" }}>
+        <Pressable>
+          <Text
+            style={{
+              color: theme.textColor,
+              fontWeight: "bold",
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              borderBottomWidth: 4,
+              borderColor: theme.activeColor,
+            }}
+          >
+            Posts
+          </Text>
         </Pressable>
       </View>
       <FlatList
         data={compositionsQuery.data}
         renderItem={({ item }) => <CompositionListItem {...item} />}
+        style={{ paddingVertical: 8 }}
+        ListEmptyComponent={
+          compositionsQuery.isLoading ? null : (
+            <Text
+              style={{
+                color: theme.textColor,
+                textAlign: "center",
+                padding: 16,
+              }}
+            >
+              No posts
+            </Text>
+          )
+        }
       />
     </View>
   );

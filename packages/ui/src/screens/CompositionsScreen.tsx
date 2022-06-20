@@ -33,18 +33,16 @@ export function CompositionsScreen() {
       >
         {isSearching ? (
           <React.Fragment>
-            <View style={{ padding: 16 }}>
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
-            </View>
             <TextInput
               value={searchText}
               onChangeText={(newText) => {
                 setSearchText(newText);
               }}
+              placeholder={"🔍"}
               style={{
                 color: theme.textColor,
                 flex: 1,
-                paddingVertical: 16,
+                padding: 16,
               }}
               autoFocus
             />
@@ -53,7 +51,7 @@ export function CompositionsScreen() {
                 setIsSearching(false);
                 setSearchText("");
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
               <FontAwesomeIcon icon={"times"} color={theme.textColor} />
             </Pressable>
@@ -66,7 +64,7 @@ export function CompositionsScreen() {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                paddingVertical: "16px",
+                paddingVertical: 16,
                 borderBottomColor: "gray",
               }}
             >
@@ -76,7 +74,7 @@ export function CompositionsScreen() {
               onPress={() => {
                 setIsSearching(true);
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
               <FontAwesomeIcon icon={"search"} color={theme.textColor} />
             </Pressable>
@@ -84,9 +82,12 @@ export function CompositionsScreen() {
               onPress={() => {
                 routing.push("Composition", {});
               }}
-              style={{ padding: "16px" }}
+              style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"pen"} color={theme.textColor} />
+              <FontAwesomeIcon
+                icon={"feather-pointed"}
+                color={theme.textColor}
+              />
             </Pressable>
           </React.Fragment>
         )}

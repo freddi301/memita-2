@@ -21,8 +21,8 @@ export function SimpleInput({
     <View
       style={{
         flexDirection: multiline ? "column" : "row",
-        paddingVertical: "8px",
-        paddingHorizontal: "16px",
+        paddingVertical: 8,
+        paddingHorizontal: 16,
       }}
     >
       <Text style={{ color: theme.textColor, fontWeight: "bold" }}>

@@ -43,7 +43,7 @@ export function AddAuthorScreen() {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            paddingVertical: "16px",
+            paddingVertical: 16,
             borderBottomColor: "gray",
             flex: 1,
           }}
@@ -54,14 +54,14 @@ export function AddAuthorScreen() {
           onPress={() => {
             addAuthorMutation.mutate({ author, nickname });
           }}
-          style={{ padding: "16px" }}
+          style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"check"} color={theme.textColor} />
         </Pressable>
       </View>
-      <SimpleInput label="author" value={author} onChangeText={setAuthor} />
+      <SimpleInput label="Author" value={author} onChangeText={setAuthor} />
       <SimpleInput
-        label="nickname"
+        label="Nickname"
         value={nickname}
         onChangeText={setNickname}
       />

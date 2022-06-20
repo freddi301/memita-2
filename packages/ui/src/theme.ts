@@ -5,6 +5,7 @@ const darkTheme = {
   backgroundColorSecondary: "#21252b",
   textColor: "#abb2bf",
   loadingColor: "#61afef",
+  activeColor: "#61afef",
 };
 
 const ThemeContext = React.createContext(darkTheme);

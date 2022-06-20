@@ -42,7 +42,7 @@ export function BlocksScreen() {
             flex: 1,
             color: theme.textColor,
             fontWeight: "bold",
-            paddingVertical: "16px",
+            paddingVertical: 16,
             borderBottomColor: "gray",
           }}
         >
@@ -52,7 +52,7 @@ export function BlocksScreen() {
           onPress={() => {
             blockMutation.mutate(text);
           }}
-          style={{ padding: "16px" }}
+          style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
         </Pressable>
@@ -69,10 +69,10 @@ export function BlocksScreen() {
         renderItem={({ item }) => (
           <Text
             style={{
-              padding: "16px",
+              padding: 16,
               color: theme.textColor,
               backgroundColor: theme.backgroundColorPrimary,
-              margin: "8px",
+              margin: 8,
               borderRadius: 8,
               fontFamily: "monospace",
             }}

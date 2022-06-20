@@ -13,7 +13,7 @@ export function BackButton() {
         routing.back();
       }}
       style={{
-        padding: "16px",
+        padding: 16,
       }}
     >
       <FontAwesomeIcon icon={"chevron-left"} color={theme.textColor} />

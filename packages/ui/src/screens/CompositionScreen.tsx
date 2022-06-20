@@ -47,6 +47,7 @@ export function CompositionScreen(props: Routes["Composition"]) {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          marginBottom: 8,
         }}
       >
         <BackButton />
@@ -54,14 +55,14 @@ export function CompositionScreen(props: Routes["Composition"]) {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            paddingVertical: "16px",
+            paddingVertical: 16,
             borderBottomColor: "gray",
             flex: 1,
           }}
         >
           Compose
         </Text>
-        <Pressable onPress={add} style={{ padding: "16px" }}>
+        <Pressable onPress={add} style={{ padding: 16 }}>
           <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />
         </Pressable>
       </View>
@@ -71,24 +72,30 @@ export function CompositionScreen(props: Routes["Composition"]) {
         onChangeText={setAuthor}
         editable={props.author === undefined}
       />
-      <SimpleInput
-        label="Channel"
-        value={channel}
-        onChangeText={setChannel}
-        editable={props.channel === undefined}
-      />
-      <SimpleInput
-        label="Recipient"
-        value={recipient}
-        onChangeText={setRecipient}
-        editable={props.recipient === undefined}
-      />
-      <SimpleInput
-        label="Quote"
-        value={quote}
-        onChangeText={setQuote}
-        editable={props.quote === undefined}
-      />
+      {!(props.channel === "") && (
+        <SimpleInput
+          label="Channel"
+          value={channel}
+          onChangeText={setChannel}
+          editable={props.channel === undefined}
+        />
+      )}
+      {!(props.recipient === "") && (
+        <SimpleInput
+          label="Recipient"
+          value={recipient}
+          onChangeText={setRecipient}
+          editable={props.recipient === undefined}
+        />
+      )}
+      {!(props.quote === "") && (
+        <SimpleInput
+          label="Quote"
+          value={quote}
+          onChangeText={setQuote}
+          editable={props.quote === undefined}
+        />
+      )}
       <SimpleInput
         label="Content"
         value={content}
