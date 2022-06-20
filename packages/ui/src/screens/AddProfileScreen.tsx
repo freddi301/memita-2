@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useMutation, useQueryClient } from "react-query";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { ApiContext } from "../ui";
+import { useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
@@ -11,9 +11,9 @@ import { SimpleInput } from "../components/SimpleInput";
 export function AddProfileScreen() {
   const routing = useRouting();
   const theme = useTheme();
-  const api = React.useContext(ApiContext);
+  const api = useApi();
   const queryClient = useQueryClient();
-  const profilesMutation = useMutation(
+  const addProfileMutation = useMutation(
     async (id: string) => {
       await api.addProfile(id);
     },
@@ -47,7 +47,7 @@ export function AddProfileScreen() {
         </Text>
         <Pressable
           onPress={() => {
-            profilesMutation.mutate(id);
+            addProfileMutation.mutate(id);
           }}
           style={{ padding: "16px" }}
         >

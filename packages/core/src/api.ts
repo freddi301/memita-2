@@ -14,11 +14,32 @@ export function createApi(sql: Sql) {
         listener(text);
       }
     },
-    async getProfiles() {
+    async getProfiles({ searchText }) {
+      if (searchText) {
+        return await sql`
+          SELECT * 
+          FROM profile_search 
+          WHERE profile_search = ${searchText.replace(/[^a-zA-Z]/g, "") + "*"}
+          ORDER BY rank
+        `;
+      }
       return await sql`SELECT * FROM profile`;
     },
     async addProfile(id: string) {
-      await sql`INSERT INTO profile VALUES (${id})`;
+      sql.serialize(async () => {
+        sql`BEGIN`;
+        sql`INSERT INTO profile VALUES (${id})`;
+        sql`INSERT INTO profile_search VALUES (${id})`;
+        sql`COMMIT`;
+      });
+    },
+    async deleteProfile(id: string) {
+      sql.serialize(async () => {
+        sql`BEGIN`;
+        sql`DELETE from profile WHERE id = (${id})`;
+        sql`DELETE from profile_search WHERE id = (${id})`;
+        sql`COMMIT`;
+      });
     },
   };
 
@@ -59,6 +80,8 @@ export function createApi(sql: Sql) {
   });
 
   sql`CREATE TABLE profile (id TEXT PRIMARY KEY)`;
+
+  sql`CREATE VIRTUAL TABLE profile_search USING FTS5(id)`;
 
   return api;
 }

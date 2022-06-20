@@ -1,23 +1,9 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import { createApi } from "@memita-2/core";
-import sqlite3 from "sqlite3";
+import { sql } from "./sql";
 
-const db = new sqlite3.Database(":memory:");
-sqlite3.verbose();
-
-const api = createApi(
-  (strings, values) =>
-    new Promise((resolve, reject) => {
-      db.all(strings.join("?"), values, (error, rows) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(rows);
-        }
-      });
-    })
-);
+const api = createApi(sql);
 
 function createWindow() {
   const window = new BrowserWindow({

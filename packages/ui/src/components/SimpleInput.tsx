@@ -30,7 +30,6 @@ export function SimpleInput({
         multiline={multiline}
         style={{
           color: theme.textColor,
-          borderWidth: 0,
           flex: 1,
         }}
         numberOfLines={4}

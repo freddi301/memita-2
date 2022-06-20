@@ -23,3 +23,8 @@ In `ui` directory
 
 - `yarn`
 - `yarn watch`
+
+In `core` directory
+
+- `yarn`
+- `yarn watch`

@@ -1,13 +1,27 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { BackButton } from "../components/BackButton";
-import { SimpleInput } from "../components/SimpleInput";
-import { Routes } from "../routing";
+import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { Avatar } from "./Avatar";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { useMutation } from "react-query";
+import { useApi } from "../ui";
 
 export function ProfileScreen({ id }: Routes["Profile"]) {
   const theme = useTheme();
+  const routing = useRouting();
+  const api = useApi();
+  const deleteProfileMutation = useMutation(
+    async (id: string) => {
+      await api.deleteProfile(id);
+    },
+    {
+      onSuccess() {
+        routing.back();
+      },
+    }
+  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -31,6 +45,14 @@ export function ProfileScreen({ id }: Routes["Profile"]) {
         >
           {id}
         </Text>
+        <Pressable
+          onPress={() => {
+            deleteProfileMutation.mutate(id);
+          }}
+          style={{ padding: "16px" }}
+        >
+          <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
+        </Pressable>
       </View>
     </View>
   );

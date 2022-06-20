@@ -9,7 +9,11 @@ library.add(fas);
 
 const queryClient = new QueryClient();
 
-export const ApiContext = React.createContext<Api>(null as any);
+const ApiContext = React.createContext<Api>(null as any);
+
+export function useApi() {
+  return React.useContext(ApiContext);
+}
 
 type UiProps = {
   api: Api;
