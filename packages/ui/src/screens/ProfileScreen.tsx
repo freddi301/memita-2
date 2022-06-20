@@ -1,12 +1,13 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { BackButton } from "../components/BackButton";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { Avatar } from "./Avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useApi } from "../ui";
+import { CompositionListItem } from "../components/CompositionListItem";
 
 export function ProfileScreen({ id }: Routes["Profile"]) {
   const theme = useTheme();
@@ -20,6 +21,12 @@ export function ProfileScreen({ id }: Routes["Profile"]) {
       onSuccess() {
         routing.back();
       },
+    }
+  );
+  const compositionsQuery = useQuery(
+    ["compositions", { author: id }],
+    async () => {
+      return api.getCompositions({ author: id });
     }
   );
   return (
@@ -54,6 +61,10 @@ export function ProfileScreen({ id }: Routes["Profile"]) {
           <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
         </Pressable>
       </View>
+      <FlatList
+        data={compositionsQuery.data}
+        renderItem={({ item }) => <CompositionListItem {...item} />}
+      />
     </View>
   );
 }

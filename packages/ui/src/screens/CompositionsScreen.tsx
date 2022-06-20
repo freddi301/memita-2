@@ -5,18 +5,21 @@ import { useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { Avatar } from "./Avatar";
 import { useApi } from "../ui";
+import { CompositionListItem } from "../components/CompositionListItem";
 
-export function ProfilesScreen() {
+export function CompositionsScreen() {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const profilesQuery = useQuery(["profiles", { searchText }], async () => {
-    return api.getProfiles({ searchText });
-  });
+  const compositionsQuery = useQuery(
+    ["compositions", { searchText }],
+    async () => {
+      return api.getCompositions({ searchText });
+    }
+  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -64,7 +67,7 @@ export function ProfilesScreen() {
                 borderBottomColor: "gray",
               }}
             >
-              Profiles
+              Compositions
             </Text>
             <Pressable
               onPress={() => {
@@ -76,45 +79,18 @@ export function ProfilesScreen() {
             </Pressable>
             <Pressable
               onPress={() => {
-                routing.push("AddProfile", {});
+                routing.push("Compose", {});
               }}
               style={{ padding: "16px" }}
             >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"pen"} color={theme.textColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
       <FlatList
-        data={profilesQuery.data}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => {
-              routing.push("Profile", { id: item.id });
-            }}
-          >
-            <View style={{ flexDirection: "row", padding: 8 }}>
-              <Avatar />
-              <View style={{ marginLeft: 8 }}>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {item.id}
-                </Text>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                  }}
-                >
-                  Some description
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-        )}
+        data={compositionsQuery.data}
+        renderItem={({ item }) => <CompositionListItem {...item} />}
         ListEmptyComponent={
           <Text
             style={{
@@ -125,11 +101,13 @@ export function ProfilesScreen() {
           >
             {isSearching ? (
               <React.Fragment>
-                There are no profiles for term{" "}
+                There are no compositions for term{" "}
                 <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
               </React.Fragment>
             ) : (
-              <React.Fragment>There are no profiles. Add some!</React.Fragment>
+              <React.Fragment>
+                There are no compositions. Write some!
+              </React.Fragment>
             )}
           </Text>
         }

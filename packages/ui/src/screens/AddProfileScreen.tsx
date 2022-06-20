@@ -12,14 +12,12 @@ export function AddProfileScreen() {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
-  const queryClient = useQueryClient();
   const addProfileMutation = useMutation(
     async (id: string) => {
       await api.addProfile(id);
     },
     {
       onSuccess() {
-        queryClient.invalidateQueries("profiles");
         routing.back();
       },
     }

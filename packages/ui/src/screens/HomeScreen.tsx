@@ -37,6 +37,13 @@ export function HomeScreen() {
       >
         <Text style={entryStyle}>Profiles</Text>
       </Pressable>
+      <Pressable
+        onPress={() => {
+          routing.push("Compositions", {});
+        }}
+      >
+        <Text style={entryStyle}>Compositions</Text>
+      </Pressable>
     </View>
   );
 }

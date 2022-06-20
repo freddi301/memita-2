@@ -1,9 +1,11 @@
 import React from "react";
+import { ComposeScreen } from "./screens/ComposeScreen";
 import { AddProfileScreen } from "./screens/AddProfileScreen";
 import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { ProfilesScreen } from "./screens/ProfilesScreen";
+import { CompositionsScreen } from "./screens/CompositionsScreen";
 
 export type Routes = {
   Home: {};
@@ -11,6 +13,15 @@ export type Routes = {
   Profiles: {};
   AddProfile: {};
   Profile: { id: string };
+  Compose: {
+    author?: string;
+    channel?: string | null;
+    recipient?: string | null;
+    thread?: string | null;
+    salt?: string;
+    text?: string;
+  };
+  Compositions: {};
 };
 
 type Route = {
@@ -25,6 +36,8 @@ const mapping: {
   Profiles: ProfilesScreen,
   AddProfile: AddProfileScreen,
   Profile: ProfileScreen,
+  Compose: ComposeScreen,
+  Compositions: CompositionsScreen,
 };
 
 type Routing = {
