@@ -75,6 +75,36 @@ export function createApi(sql: Sql) {
         VALUES (${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
       `;
     },
+    async getConversation({
+      author = "DONTFILTER",
+      channel = "DONTFILTER",
+      recipient = "DONTFILTER",
+      quote = "DONTFILTER",
+      content = "DONTFILTER",
+    }) {
+      await dbSetupDone;
+      const contentSearch = "%" + asSearch(content) + "%";
+      return await sql`
+        SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp, COUNT(version_timestamp) AS versions FROM compositions
+        WHERE
+          (
+            (
+              (author = CASE WHEN ${author} = 'DONTFILTER' THEN author ELSE ${author} END) AND
+              (recipient = CASE WHEN ${recipient} = 'DONTFILTER' THEN recipient ELSE ${recipient} END)
+            ) OR
+            (
+              (recipient = CASE WHEN ${author} = 'DONTFILTER' THEN recipient ELSE ${author} END) AND
+              (author = CASE WHEN ${recipient} = 'DONTFILTER' THEN author ELSE ${recipient} END)
+            )
+          ) AND
+          (channel = CASE WHEN ${channel} = 'DONTFILTER' THEN channel ELSE ${channel} END) AND
+          (quote = CASE WHEN ${quote} = 'DONTFILTER' THEN quote ELSE ${quote} END)
+        GROUP BY author, channel, recipient, quote, salt
+        HAVING
+          (content LIKE CASE WHEN ${content} = 'DONTFILTER' THEN content ELSE ${contentSearch} END)
+        ORDER BY MAX(version_timestamp) ASC
+      `;
+    },
   };
 
   function asSearch(string: string) {

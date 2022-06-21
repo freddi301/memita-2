@@ -14,6 +14,13 @@ export type Api = {
     quote?: string;
     content?: string;
   }): Promise<Array<Composition & { versions: number }>>;
+  getConversation(params: {
+    author?: string;
+    channel?: string;
+    recipient?: string;
+    quote?: string;
+    content?: string;
+  }): Promise<Array<Composition & { versions: number }>>;
 };
 
 export type Author = {

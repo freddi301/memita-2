@@ -6,9 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { CompositionListItem } from "../components/CompositionListItem";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { Avatar } from "../components/Avatar";
+import { DateTime } from "luxon";
 
 export function CompositionsScreen() {
   const api = useApi();
@@ -96,7 +97,125 @@ export function CompositionsScreen() {
       <HorizontalLoader isLoading={compositionsQuery.isFetching} />
       <FlatList
         data={compositionsQuery.data}
-        renderItem={({ item }) => <CompositionListItem {...item} />}
+        renderItem={({
+          item: {
+            author,
+            channel,
+            recipient,
+            quote,
+            salt,
+            version_timestamp,
+            content,
+            versions,
+          },
+        }) => {
+          const datetime = DateTime.fromMillis(version_timestamp);
+          return (
+            <Pressable
+              onPress={() => {
+                routing.push("Composition", {
+                  author,
+                  channel,
+                  recipient,
+                  quote,
+                  salt,
+                  ...(content ? { content } : {}),
+                });
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Avatar />
+                <View style={{ marginHorizontal: 8, flex: 1 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {!!channel && (
+                      <Text style={{ color: theme.textColor }}>
+                        {channel} |{" "}
+                      </Text>
+                    )}
+                    <Text
+                      style={{
+                        color: theme.textColor,
+                        fontWeight: "bold",
+                        flex: 1,
+                      }}
+                    >
+                      {author}
+                    </Text>
+                    {!!recipient && (
+                      <React.Fragment>
+                        <View style={{ marginHorizontal: 8 }}>
+                          <FontAwesomeIcon
+                            icon={"arrow-right"}
+                            color={theme.textColor}
+                          />
+                        </View>
+                        <Text
+                          style={{
+                            color: theme.textColor,
+                            fontWeight: "bold",
+                            flex: 1,
+                          }}
+                        >
+                          {recipient}
+                        </Text>
+                      </React.Fragment>
+                    )}
+                  </View>
+                  <Text
+                    style={{
+                      color: theme.textColor,
+                    }}
+                  >
+                    {content}
+                  </Text>
+                </View>
+                <View>
+                  <View style={{ flexDirection: "row" }}>
+                    {!!quote && (
+                      <View style={{ marginRight: 8 }}>
+                        <FontAwesomeIcon
+                          icon={"reply"}
+                          color={theme.textColor}
+                        />
+                      </View>
+                    )}
+                    {versions > 1 && (
+                      <View style={{ marginRight: 8 }}>
+                        <FontAwesomeIcon
+                          icon={"clock-rotate-left"}
+                          color={theme.textColor}
+                        />
+                      </View>
+                    )}
+                    <Text
+                      style={{
+                        color: theme.textColor,
+                        textAlign: "right",
+                        flex: 1,
+                      }}
+                    >
+                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                    </Text>
+                  </View>
+                  {!datetime.hasSame(DateTime.now(), "day") && (
+                    <Text
+                      style={{ color: theme.textColor, textAlign: "right" }}
+                    >
+                      {datetime.toLocaleString(DateTime.DATE_MED)}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           compositionsQuery.isLoading ? null : (
             <Text

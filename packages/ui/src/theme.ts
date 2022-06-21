@@ -4,7 +4,6 @@ const darkTheme = {
   backgroundColorPrimary: "#282c34",
   backgroundColorSecondary: "#21252b",
   textColor: "#abb2bf",
-  loadingColor: "#61afef",
   activeColor: "#61afef",
   headerHeight: 48,
 };

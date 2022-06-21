@@ -40,7 +40,7 @@ export function HorizontalLoader({ isLoading }: HorizontalLoaderProps) {
     <Animated.View
       style={{
         height: 4,
-        backgroundColor: theme.loadingColor,
+        backgroundColor: theme.activeColor,
         opacity: fadeAnimation,
       }}
     ></Animated.View>
