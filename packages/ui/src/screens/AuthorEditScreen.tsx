@@ -49,7 +49,7 @@ export function AuthotEditScren(props: Routes["AuthorEdit"]) {
             flex: 1,
           }}
         >
-          Add Author
+          Edit Author
         </Text>
         <Pressable
           onPress={() => {

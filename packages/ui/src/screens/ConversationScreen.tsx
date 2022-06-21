@@ -1,31 +1,53 @@
 import React from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
-import { useQuery } from "react-query";
-import { useRouting } from "../routing";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
+import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
+import { CompositionListItem } from "../components/CompositionListItem";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { Composition } from "../api";
 
-export function AuthorsScreen() {
+export function ConversationScreen({
+  author,
+  recipient,
+}: Routes["Conversation"]) {
   const api = useApi();
-  const routing = useRouting();
   const theme = useTheme();
+  const queryClient = useQueryClient();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const authorsQuery = useQuery(
-    ["authors", { searchTextDebounced, deleted: false }],
+  const compositionsQuery = useQuery(
+    ["compositions", { searchTextDebounced, author, recipient }],
     async () => {
-      return api.getAuthors({
-        nickname: searchTextDebounced || undefined,
-        deleted: false,
+      return api.getCompositions({
+        content: searchTextDebounced || undefined,
+        author,
+        recipient,
       });
     }
   );
+  const addCompositionMutation = useMutation(
+    async (comunication: Composition) => {
+      await api.addComposition(comunication);
+    },
+    {
+      onSuccess() {
+        queryClient.invalidateQueries(["compositions"]);
+        setContent("");
+      },
+    }
+  );
+  const [content, setContent] = React.useState("");
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -40,10 +62,10 @@ export function AuthorsScreen() {
           <React.Fragment>
             <TextInput
               value={searchText}
-              placeholder={"🔍"}
               onChangeText={(newText) => {
                 setSearchText(newText);
               }}
+              placeholder={"🔍"}
               style={{
                 color: theme.textColor,
                 flex: 1,
@@ -72,7 +94,7 @@ export function AuthorsScreen() {
                 borderBottomColor: "gray",
               }}
             >
-              Authors
+              Conversation
             </Text>
             <Pressable
               onPress={() => {
@@ -82,56 +104,15 @@ export function AuthorsScreen() {
             >
               <FontAwesomeIcon icon={"search"} color={theme.textColor} />
             </Pressable>
-            <Pressable
-              onPress={() => {
-                routing.push("AuthorEdit", {});
-              }}
-              style={{ padding: 16 }}
-            >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
-            </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={authorsQuery.isFetching} />
+      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
       <FlatList
-        data={authorsQuery.data}
-        renderItem={({ item: { author, nickname } }) => (
-          <Pressable
-            onPress={() => {
-              routing.push("Author", { author, nickname });
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                padding: 8,
-                alignItems: "center",
-              }}
-            >
-              <Avatar />
-              <View style={{ marginLeft: 8 }}>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {nickname}
-                </Text>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                  }}
-                >
-                  {author}
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-        )}
+        data={compositionsQuery.data}
+        renderItem={({ item }) => <CompositionListItem {...item} />}
         ListEmptyComponent={
-          authorsQuery.isLoading ? null : (
+          compositionsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -141,16 +122,60 @@ export function AuthorsScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Authors for term{" "}
+                  There are no compositions for term{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
-                <React.Fragment>There are no Authors. Add some!</React.Fragment>
+                <React.Fragment>
+                  There are no compositions. Write some!
+                </React.Fragment>
               )}
             </Text>
           )
         }
       />
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: theme.backgroundColorSecondary,
+          alignItems: "center",
+        }}
+      >
+        <TextInput
+          value={content}
+          onChangeText={setContent}
+          style={{
+            flex: 1,
+            color: theme.textColor,
+            marginLeft: 16,
+            paddingVertical: 0,
+            marginVertical: 8,
+          }}
+          multiline
+          numberOfLines={content.split("\n").length}
+        ></TextInput>
+        <View>
+          <View style={{ flex: 1 }}></View>
+          <Pressable
+            onPress={() => {
+              const version_timestamp = Date.now();
+              const salt = String(Math.random());
+              addCompositionMutation.mutate({
+                author,
+                channel: "",
+                recipient,
+                quote: "",
+                salt,
+                content,
+                version_timestamp,
+              });
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }

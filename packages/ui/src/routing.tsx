@@ -6,6 +6,7 @@ import { HomeScreen } from "./screens/HomeScreen";
 import { AuthorScreen } from "./screens/AuthorScreen";
 import { AuthorsScreen } from "./screens/AuthorsScreen";
 import { CompositionsScreen } from "./screens/CompositionsScreen";
+import { ConversationScreen } from "./screens/ConversationScreen";
 
 export type Routes = {
   Home: {};
@@ -21,6 +22,10 @@ export type Routes = {
     quote?: string | null;
     salt?: string;
     content?: string;
+  };
+  Conversation: {
+    author: string;
+    recipient: string;
   };
 };
 
@@ -38,6 +43,7 @@ const mapping: {
   Author: AuthorScreen,
   Compositions: CompositionsScreen,
   Composition: CompositionScreen,
+  Conversation: ConversationScreen,
 };
 
 type Routing = {

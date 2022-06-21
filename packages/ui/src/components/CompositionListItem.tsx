@@ -39,7 +39,7 @@ export function CompositionListItem({
       <View style={{ flexDirection: "row", padding: 8, alignItems: "center" }}>
         <Avatar />
         <View style={{ marginHorizontal: 8, flex: 1 }}>
-          <View style={{ flexDirection: "row" }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             {!!channel && (
               <Text style={{ color: theme.textColor }}>{channel} | </Text>
             )}
@@ -47,13 +47,14 @@ export function CompositionListItem({
               style={{
                 color: theme.textColor,
                 fontWeight: "bold",
+                flex: 1,
               }}
             >
               {author}
             </Text>
             {!!recipient && (
               <React.Fragment>
-                <View style={{ marginHorizontal: 4 }}>
+                <View style={{ marginHorizontal: 8 }}>
                   <FontAwesomeIcon
                     icon={"arrow-right"}
                     color={theme.textColor}
@@ -63,6 +64,7 @@ export function CompositionListItem({
                   style={{
                     color: theme.textColor,
                     fontWeight: "bold",
+                    flex: 1,
                   }}
                 >
                   {recipient}

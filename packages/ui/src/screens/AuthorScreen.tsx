@@ -86,13 +86,31 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
           <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
         </Pressable>
       </View>
-      <View style={{ flexDirection: "row" }}>
+      <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+        <Pressable
+          onPress={() => {
+            routing.push("Conversation", {
+              author: "fred" /* TODO */,
+              recipient: author,
+            });
+          }}
+          style={{ padding: 16 }}
+        >
+          <FontAwesomeIcon icon={"envelope"} color={theme.textColor} />
+        </Pressable>
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: theme.backgroundColorSecondary,
+        }}
+      >
         <Pressable>
           <Text
             style={{
               color: theme.textColor,
               fontWeight: "bold",
-              paddingVertical: 8,
+              paddingVertical: 16 - 2,
               paddingHorizontal: 16,
               borderBottomWidth: 4,
               borderColor: theme.activeColor,

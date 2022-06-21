@@ -13,7 +13,7 @@ export function CompositionScreen(props: Routes["Composition"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
-  const addComunicationMutation = useMutation(
+  const addCompositionMutation = useMutation(
     async (comunication: Composition) => {
       await api.addComposition(comunication);
     },
@@ -31,7 +31,7 @@ export function CompositionScreen(props: Routes["Composition"]) {
   const add = () => {
     const version_timestamp = Date.now();
     const salt = props.salt ?? String(Math.random());
-    addComunicationMutation.mutate({
+    addCompositionMutation.mutate({
       author,
       channel,
       recipient,

@@ -20,6 +20,14 @@ export function HomeScreen() {
         <View style={{ flex: 1 }}></View>
         <Pressable
           onPress={() => {
+            routing.push("Blocks", {});
+          }}
+          style={{ padding: 16 }}
+        >
+          <FontAwesomeIcon icon={"square"} color={theme.textColor} />
+        </Pressable>
+        <Pressable
+          onPress={() => {
             routing.push("Authors", {});
           }}
           style={{ padding: 16 }}
@@ -32,7 +40,7 @@ export function HomeScreen() {
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"envelope"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"inbox"} color={theme.textColor} />
         </Pressable>
       </View>
     </View>
