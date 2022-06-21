@@ -3,6 +3,7 @@
   "dependencies": {
     "utp-native-nodejs-mobile": "^2.1.4-0",
     "sodium-native-nodejs-mobile": "3.2.0-2",
-    "bindings-noderify-nodejs-mobile": "^10.5.0"
+    "bindings-noderify-nodejs-mobile": "^10.5.0",
+    "sql.js": "^1.7.0"
   }
 }

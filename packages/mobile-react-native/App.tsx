@@ -13,7 +13,7 @@ import nodejs from 'nodejs-mobile-react-native';
 import {Api, Ui} from '@memita-2/ui';
 import {FlatList, Text, View} from 'react-native';
 
-const SHOW_NODEJS_MESSAGES = true;
+const SHOW_NODEJS_MESSAGES = false;
 
 export default function App() {
   const [messages, setMessages] = React.useState<Array<string>>([]);
@@ -33,14 +33,17 @@ export default function App() {
           return (...args: any[]) =>
             new Promise((resolve, reject) => {
               const requestId = Math.random();
-              const listener = (msg: any) => {
-                if (msg.requestId === requestId) {
-                  if (!msg.isError) resolve(msg.result);
-                  else reject(msg.result);
-                  nodejs.channel.removeListener('message', listener);
-                }
-              };
-              nodejs.channel.addListener('message', listener);
+              const subscription = nodejs.channel.addListener(
+                'message',
+                (msg: any) => {
+                  if (msg.requestId === requestId) {
+                    if (!msg.isError) resolve(msg.result);
+                    else reject(msg.result);
+                    (subscription as any).remove();
+                  }
+                },
+              );
+
               nodejs.channel.send({requestId, method, args});
             });
         },
