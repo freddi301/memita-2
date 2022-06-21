@@ -2,7 +2,8 @@ import React from "react";
 import { Pressable, View } from "react-native";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+
 export function HomeScreen() {
   const routing = useRouting();
   const theme = useTheme();
@@ -12,6 +13,8 @@ export function HomeScreen() {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         <View style={{ flex: 1 }}></View>

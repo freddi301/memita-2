@@ -3,6 +3,10 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { Api } from "./api";
 import { Routes } from "./routing";
 
+const { library } = require("@fortawesome/fontawesome-svg-core");
+const { fas } = require("@fortawesome/free-solid-svg-icons");
+library.add(fas);
+
 const queryClient = new QueryClient();
 
 const ApiContext = React.createContext<Api>(null as any);

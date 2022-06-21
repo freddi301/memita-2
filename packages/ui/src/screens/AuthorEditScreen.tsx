@@ -1,14 +1,14 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useMutation } from "react-query";
-import { useRouting } from "../routing";
+import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 
-export function AddAuthorScreen() {
+export function AuthotEditScren(props: Routes["AuthorEdit"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
@@ -28,14 +28,16 @@ export function AddAuthorScreen() {
       },
     }
   );
-  const [author, setAuthor] = React.useState("");
-  const [nickname, setNickname] = React.useState("");
+  const [author, setAuthor] = React.useState(props.author ?? "");
+  const [nickname, setNickname] = React.useState(props.nickname ?? "");
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         <BackButton />
@@ -43,7 +45,6 @@ export function AddAuthorScreen() {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            paddingVertical: 16,
             borderBottomColor: "gray",
             flex: 1,
           }}
@@ -60,7 +61,12 @@ export function AddAuthorScreen() {
         </Pressable>
       </View>
       <ScrollView style={{ paddingTop: 8 }}>
-        <SimpleInput label="Author" value={author} onChangeText={setAuthor} />
+        <SimpleInput
+          label="Author"
+          value={author}
+          onChangeText={setAuthor}
+          editable={props.author === undefined}
+        />
         <SimpleInput
           label="Nickname"
           value={nickname}

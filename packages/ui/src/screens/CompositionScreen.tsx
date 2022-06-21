@@ -4,10 +4,10 @@ import { useMutation } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { Composition } from "../api";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 
 export function CompositionScreen(props: Routes["Composition"]) {
   const routing = useRouting();
@@ -47,6 +47,8 @@ export function CompositionScreen(props: Routes["Composition"]) {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         <BackButton />
@@ -54,12 +56,11 @@ export function CompositionScreen(props: Routes["Composition"]) {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            paddingVertical: 16,
             borderBottomColor: "gray",
             flex: 1,
           }}
         >
-          Compose
+          Composition
         </Text>
         <Pressable onPress={add} style={{ padding: 16 }}>
           <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />

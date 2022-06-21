@@ -6,6 +6,7 @@ const darkTheme = {
   textColor: "#abb2bf",
   loadingColor: "#61afef",
   activeColor: "#61afef",
+  headerHeight: 48,
 };
 
 const ThemeContext = React.createContext(darkTheme);

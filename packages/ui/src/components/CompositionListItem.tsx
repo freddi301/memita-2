@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "./FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useTheme } from "../theme";
 import { Avatar } from "./Avatar";
 import { DateTime } from "luxon";
@@ -36,7 +36,7 @@ export function CompositionListItem({
         });
       }}
     >
-      <View style={{ flexDirection: "row", padding: 8 }}>
+      <View style={{ flexDirection: "row", padding: 8, alignItems: "center" }}>
         <Avatar />
         <View style={{ marginHorizontal: 8, flex: 1 }}>
           <View style={{ flexDirection: "row" }}>

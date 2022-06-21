@@ -2,7 +2,7 @@ import React from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { useQuery } from "react-query";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
@@ -29,6 +29,8 @@ export function CompositionsScreen() {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         {isSearching ? (
@@ -64,7 +66,6 @@ export function CompositionsScreen() {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                paddingVertical: 16,
                 borderBottomColor: "gray",
               }}
             >

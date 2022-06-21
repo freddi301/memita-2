@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { BackButton } from "../components/BackButton";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { SimpleInput } from "../components/SimpleInput";
 import { useApi } from "../ui";
 
@@ -34,6 +34,8 @@ export function BlocksScreen() {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         <BackButton />

@@ -1,6 +1,6 @@
 import React from "react";
 import { CompositionScreen } from "./screens/CompositionScreen";
-import { AddAuthorScreen } from "./screens/AddAuthorScreen";
+import { AuthotEditScren } from "./screens/AuthorEditScreen";
 import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { AuthorScreen } from "./screens/AuthorScreen";
@@ -11,7 +11,7 @@ export type Routes = {
   Home: {};
   Blocks: {};
   Authors: {};
-  AddAuthor: {};
+  AuthorEdit: { author?: string; nickname?: string };
   Author: { author: string; nickname: string };
   Compositions: {};
   Composition: {
@@ -34,7 +34,7 @@ const mapping: {
   Home: HomeScreen,
   Blocks: BlocksScreen,
   Authors: AuthorsScreen,
-  AddAuthor: AddAuthorScreen,
+  AuthorEdit: AuthotEditScren,
   Author: AuthorScreen,
   Compositions: CompositionsScreen,
   Composition: CompositionScreen,

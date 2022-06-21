@@ -4,7 +4,7 @@ import { BackButton } from "../components/BackButton";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useMutation, useQuery } from "react-query";
 import { useApi } from "../ui";
 import { CompositionListItem } from "../components/CompositionListItem";
@@ -46,6 +46,7 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
           alignItems: "center",
         }}
       >
@@ -68,6 +69,14 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
             {author}
           </Text>
         </View>
+        <Pressable
+          onPress={() => {
+            routing.push("AuthorEdit", { author, nickname });
+          }}
+          style={{ padding: 16 }}
+        >
+          <FontAwesomeIcon icon={"pen"} color={theme.textColor} />
+        </Pressable>
         <Pressable
           onPress={() => {
             deleteAuthorMutation.mutate(author);

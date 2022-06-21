@@ -2,7 +2,7 @@ import React from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { useQuery } from "react-query";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
@@ -32,6 +32,8 @@ export function AuthorsScreen() {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
+          height: theme.headerHeight,
+          alignItems: "center",
         }}
       >
         {isSearching ? (
@@ -67,7 +69,6 @@ export function AuthorsScreen() {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                paddingVertical: 16,
                 borderBottomColor: "gray",
               }}
             >
@@ -101,7 +102,13 @@ export function AuthorsScreen() {
               routing.push("Author", { author, nickname });
             }}
           >
-            <View style={{ flexDirection: "row", padding: 8 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                padding: 8,
+                alignItems: "center",
+              }}
+            >
               <Avatar />
               <View style={{ marginLeft: 8 }}>
                 <Text
