@@ -1,8 +1,8 @@
 import { createApi } from "../src";
-import { createSql } from "./sql";
+import { createSql } from "./sql.js";
 
 test("authors aggregation", async () => {
-  const api = createApi(createSql());
+  const api = createApi(await createSql());
   expect(await api.getAuthors({})).toEqual([]);
   const authorA = {
     author: "Frederik",

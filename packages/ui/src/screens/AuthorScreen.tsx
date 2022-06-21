@@ -4,7 +4,7 @@ import { BackButton } from "../components/BackButton";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { useMutation, useQuery } from "react-query";
 import { useApi } from "../ui";
 import { CompositionListItem } from "../components/CompositionListItem";

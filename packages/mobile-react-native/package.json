@@ -9,7 +9,7 @@
   "scripts": {
     "android": "./build-backend.sh && react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start",
+    "start": "react-native start --reset-cache",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "postinstall": "patch-package"
@@ -19,7 +19,9 @@
     "nodejs-mobile-react-native": "^0.8.1",
     "react": "^18.1.0",
     "react-native": "0.68.2",
+    "react-native-svg": "^12.3.0",
     "sodium-native-nodejs-mobile": "^3.2.0-2",
+    "sql.js": "^1.7.0",
     "utp-native-nodejs-mobile": "^2.1.4-0"
   },
   "devDependencies": {
@@ -29,6 +31,7 @@
     "@types/jest": "^26.0.23",
     "@types/react-native": "^0.67.3",
     "@types/react-test-renderer": "^17.0.1",
+    "@types/sql.js": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "babel-jest": "^26.6.3",

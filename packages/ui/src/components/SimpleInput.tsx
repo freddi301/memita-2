@@ -6,23 +6,21 @@ type SimpleInputProps = {
   label: string;
   value: string;
   onChangeText(text: string): void;
-  multiline?: boolean;
   editable?: boolean;
 };
 export function SimpleInput({
   label,
   value,
   onChangeText,
-  multiline,
   editable,
 }: SimpleInputProps) {
   const theme = useTheme();
   return (
     <View
       style={{
-        flexDirection: multiline ? "column" : "row",
-        paddingVertical: 8,
+        flexDirection: "row",
         paddingHorizontal: 16,
+        alignItems: "center",
       }}
     >
       <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
@@ -33,12 +31,12 @@ export function SimpleInput({
         onChangeText={(newText) => {
           onChangeText(newText);
         }}
-        multiline={multiline}
         editable={editable}
-        numberOfLines={4}
         style={{
           color: theme.textColor,
           flex: 1,
+          padding: 0,
+          height: 32,
         }}
       />
     </View>

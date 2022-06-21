@@ -2,7 +2,7 @@ import React from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { useQuery } from "react-query";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
@@ -42,7 +42,7 @@ export function CompositionsScreen() {
               style={{
                 color: theme.textColor,
                 flex: 1,
-                padding: 16,
+                paddingHorizontal: 16,
               }}
               autoFocus
             />

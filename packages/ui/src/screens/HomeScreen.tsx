@@ -1,9 +1,8 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 export function HomeScreen() {
   const routing = useRouting();
   const theme = useTheme();

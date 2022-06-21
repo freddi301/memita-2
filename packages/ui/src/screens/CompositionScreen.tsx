@@ -1,10 +1,10 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useMutation } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { Composition } from "../api";
@@ -47,7 +47,6 @@ export function CompositionScreen(props: Routes["Composition"]) {
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
-          marginBottom: 8,
         }}
       >
         <BackButton />
@@ -66,42 +65,43 @@ export function CompositionScreen(props: Routes["Composition"]) {
           <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />
         </Pressable>
       </View>
-      <SimpleInput
-        label="Author"
-        value={author}
-        onChangeText={setAuthor}
-        editable={props.author === undefined}
-      />
-      {!(props.channel === "") && (
+      <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Channel"
-          value={channel}
-          onChangeText={setChannel}
-          editable={props.channel === undefined}
+          label="Author"
+          value={author}
+          onChangeText={setAuthor}
+          editable={props.author === undefined}
         />
-      )}
-      {!(props.recipient === "") && (
+        {!(props.channel === "") && (
+          <SimpleInput
+            label="Channel"
+            value={channel}
+            onChangeText={setChannel}
+            editable={props.channel === undefined}
+          />
+        )}
+        {!(props.recipient === "") && (
+          <SimpleInput
+            label="Recipient"
+            value={recipient}
+            onChangeText={setRecipient}
+            editable={props.recipient === undefined}
+          />
+        )}
+        {!(props.quote === "") && (
+          <SimpleInput
+            label="Quote"
+            value={quote}
+            onChangeText={setQuote}
+            editable={props.quote === undefined}
+          />
+        )}
         <SimpleInput
-          label="Recipient"
-          value={recipient}
-          onChangeText={setRecipient}
-          editable={props.recipient === undefined}
+          label="Content"
+          value={content}
+          onChangeText={setContent}
         />
-      )}
-      {!(props.quote === "") && (
-        <SimpleInput
-          label="Quote"
-          value={quote}
-          onChangeText={setQuote}
-          editable={props.quote === undefined}
-        />
-      )}
-      <SimpleInput
-        label="Content"
-        value={content}
-        onChangeText={setContent}
-        multiline
-      />
+      </ScrollView>
     </View>
   );
 }

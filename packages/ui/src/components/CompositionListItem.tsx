@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "./FontAwesomeIcon";
 import { useTheme } from "../theme";
 import { Avatar } from "./Avatar";
 import { DateTime } from "luxon";

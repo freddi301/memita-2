@@ -26,6 +26,10 @@ do
     android/app/src/main/jniLibs/$arch/libsodium.so;
 done
 
+# copy wasm files
+mkdir -p ./nodejs-assets/nodejs-project/sql.js/dist
+cp -r ./nodejs-assets/nodejs-project/node_modules/sql.js/dist/* ./nodejs-assets/nodejs-project/sql.js/dist/
+
 # build native modules *.node files
 cd android;
 for entry in "${archs[@]}"

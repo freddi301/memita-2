@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { BackButton } from "../components/BackButton";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { SimpleInput } from "../components/SimpleInput";
 import { useApi } from "../ui";
 
@@ -57,12 +57,7 @@ export function BlocksScreen() {
           <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
         </Pressable>
       </View>
-      <SimpleInput
-        label="block"
-        value={text}
-        onChangeText={setText}
-        multiline
-      />
+      <SimpleInput label="block" value={text} onChangeText={setText} />
       <FlatList
         data={blocksQuery.data}
         style={{ backgroundColor: theme.backgroundColorSecondary }}

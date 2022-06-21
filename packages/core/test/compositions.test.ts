@@ -1,8 +1,8 @@
 import { createApi } from "../src";
-import { createSql } from "./sql";
+import { createSql } from "./sql.js";
 
 test("compositions aggregation", async () => {
-  const api = createApi(createSql());
+  const api = createApi(await createSql());
   expect(await api.getCompositions({})).toEqual([]);
   const compositionA = {
     author: "fred",
@@ -61,7 +61,7 @@ test("compositions aggregation", async () => {
 });
 
 test("compositions aggregation filters", async () => {
-  const api = createApi(createSql());
+  const api = createApi(await createSql());
   expect(await api.getCompositions({})).toEqual([]);
   const compositionA = {
     author: "fred",

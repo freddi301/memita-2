@@ -1,10 +1,10 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
-import { useMutation, useQueryClient } from "react-query";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useMutation } from "react-query";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "../components/FontAwesomeIcon";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 
@@ -59,12 +59,14 @@ export function AddAuthorScreen() {
           <FontAwesomeIcon icon={"check"} color={theme.textColor} />
         </Pressable>
       </View>
-      <SimpleInput label="Author" value={author} onChangeText={setAuthor} />
-      <SimpleInput
-        label="Nickname"
-        value={nickname}
-        onChangeText={setNickname}
-      />
+      <ScrollView style={{ paddingTop: 8 }}>
+        <SimpleInput label="Author" value={author} onChangeText={setAuthor} />
+        <SimpleInput
+          label="Nickname"
+          value={nickname}
+          onChangeText={setNickname}
+        />
+      </ScrollView>
     </View>
   );
 }

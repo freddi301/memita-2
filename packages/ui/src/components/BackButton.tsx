@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable } from "react-native";
 import { useRouting } from "../routing";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { FontAwesomeIcon } from "./FontAwesomeIcon";
 import { useTheme } from "../theme";
 
 export function BackButton() {
