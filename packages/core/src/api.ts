@@ -150,6 +150,8 @@ export function createApi(sql: Sql) {
   }
 
   const dbSetupDone = Promise.all([
+    optimizeDd(),
+
     sql`CREATE TABLE authors (
       author TEXT NOT NULL,
       nickname TEXT NOT NULL,
@@ -169,6 +171,17 @@ export function createApi(sql: Sql) {
       PRIMARY KEY (author, channel, recipient, quote, salt, content, version_timestamp)
     )`,
   ]);
+
+  async function optimizeDd() {
+    // https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+    // https://blog.devart.com/increasing-sqlite-performance.html
+    await sql`PRAGMA journal_mode = WAL`;
+    await sql`PRAGMA synchronous = normal`;
+    await sql`PRAGMA temp_store = memory`;
+    await sql`PRAGMA mmap_size = 30000000000`;
+    await sql`PRAGMA optimize`;
+    await sql`PRAGMA locking_mode = exclusive`;
+  }
 
   return api;
 }
