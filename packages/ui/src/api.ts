@@ -1,6 +1,5 @@
 export type Api = {
-  getBlocks(): Promise<Array<string>>;
-  addBlock(block: string): Promise<void>;
+  getDatabase(): Promise<Array<unknown>>;
   addAuthor(params: Author): Promise<void>;
   getAuthors(params: {
     nickname?: string;
@@ -21,6 +20,14 @@ export type Api = {
     quote?: string;
     content?: string;
   }): Promise<Array<Composition & { versions: number }>>;
+  getConversations(params: { author: string; content?: string }): Promise<
+    Array<{
+      author: string;
+      recipient: string;
+      content: string;
+      version_timestamp: number;
+    }>
+  >;
 };
 
 export type Author = {

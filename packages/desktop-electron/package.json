@@ -7,10 +7,11 @@
   "author": "Frederik Batuna",
   "license": "GPLv3",
   "scripts": {
-    "build": "yarn electron-rebuild -f -w better-sqlite3 && tsc && webpack && cp src/index.html dist/index.html",
+    "build": "tsc && webpack && cp src/index.html dist/index.html",
     "start": "yarn build && electron .",
     "serve": "webpack serve",
-    "dev": "cross-env NODE_ENV=development concurrently --kill-others \"yarn:serve\" \"yarn:start\""
+    "dev": "cross-env NODE_ENV=development concurrently --kill-others \"yarn:serve\" \"yarn:start\"",
+    "postinstall": "yarn electron-rebuild -f -w better-sqlite3"
   },
   "private": true,
   "devDependencies": {

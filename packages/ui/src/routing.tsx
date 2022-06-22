@@ -1,20 +1,19 @@
 import React from "react";
 import { CompositionScreen } from "./screens/CompositionScreen";
 import { AuthotEditScren } from "./screens/AuthorEditScreen";
-import { BlocksScreen } from "./screens/BlocksScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { AuthorScreen } from "./screens/AuthorScreen";
 import { AuthorsScreen } from "./screens/AuthorsScreen";
-import { CompositionsScreen } from "./screens/CompositionsScreen";
 import { ConversationScreen } from "./screens/ConversationScreen";
+import { DatabaseScreen } from "./screens/DatabaseScreen";
+import { ConversationsScreen } from "./screens/ConversationsScreen";
 
 export type Routes = {
   Home: {};
-  Blocks: {};
+  Database: {};
   Authors: {};
   AuthorEdit: { author?: string; nickname?: string };
   Author: { author: string; nickname: string };
-  Compositions: {};
   Composition: {
     author?: string;
     channel?: string | null;
@@ -22,6 +21,9 @@ export type Routes = {
     quote?: string | null;
     salt?: string;
     content?: string;
+  };
+  Conversations: {
+    author: string;
   };
   Conversation: {
     author: string;
@@ -37,12 +39,12 @@ const mapping: {
   [Screen in keyof Routes]: React.ComponentType<Routes[Screen]>;
 } = {
   Home: HomeScreen,
-  Blocks: BlocksScreen,
+  Database: DatabaseScreen,
   Authors: AuthorsScreen,
   AuthorEdit: AuthotEditScren,
   Author: AuthorScreen,
-  Compositions: CompositionsScreen,
   Composition: CompositionScreen,
+  Conversations: ConversationsScreen,
   Conversation: ConversationScreen,
 };
 
@@ -57,11 +59,11 @@ type Routing = {
 const RoutingContext = React.createContext<Routing>(null as any);
 
 type RoutesProps = {
-  initial: Route;
+  initial: Route[];
 };
 export function Routes({ initial }: RoutesProps) {
-  const [stack, setStack] = React.useState<Array<Route>>([]);
-  const route = stack[stack.length - 1] ?? initial;
+  const [stack, setStack] = React.useState<Array<Route>>(initial);
+  const route = stack[stack.length - 1] ?? initial[0];
   const Screen = mapping[route.screen];
   const push = React.useCallback<Routing["push"]>((screen, parameters) => {
     setStack((stack) => [...stack, { screen, parameters: parameters as any }]);

@@ -1,7 +1,7 @@
 import React from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { useQuery } from "react-query";
-import { useRouting } from "../routing";
+import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
@@ -11,17 +11,20 @@ import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 
-export function CompositionsScreen() {
+export function ConversationsScreen({ author }: Routes["Conversations"]) {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const compositionsQuery = useQuery(
-    ["compositions", { searchTextDebounced }],
+  const conversationsQuery = useQuery(
+    ["conversations", { searchTextDebounced }],
     async () => {
-      return api.getCompositions({ content: searchTextDebounced || undefined });
+      return api.getConversations({
+        author,
+        content: searchTextDebounced || undefined,
+      });
     }
   );
   return (
@@ -70,7 +73,7 @@ export function CompositionsScreen() {
                 borderBottomColor: "gray",
               }}
             >
-              Compositions
+              Conversations
             </Text>
             <Pressable
               onPress={() => {
@@ -86,40 +89,23 @@ export function CompositionsScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon
-                icon={"feather-pointed"}
-                color={theme.textColor}
-              />
+              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
+      <HorizontalLoader isLoading={conversationsQuery.isFetching} />
       <FlatList
-        data={compositionsQuery.data}
-        renderItem={({
-          item: {
-            author,
-            channel,
-            recipient,
-            quote,
-            salt,
-            version_timestamp,
-            content,
-            versions,
-          },
-        }) => {
-          const datetime = DateTime.fromMillis(version_timestamp);
+        data={conversationsQuery.data}
+        renderItem={({ item }) => {
+          const datetime = DateTime.fromMillis(item.version_timestamp);
+          const other = item.author === author ? item.recipient : item.author;
           return (
             <Pressable
               onPress={() => {
-                routing.push("Composition", {
+                routing.push("Conversation", {
                   author,
-                  channel,
-                  recipient,
-                  quote,
-                  salt,
-                  ...(content ? { content } : {}),
+                  recipient: other,
                 });
               }}
             >
@@ -134,11 +120,6 @@ export function CompositionsScreen() {
                 <Avatar />
                 <View style={{ marginHorizontal: 8, flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {!!channel && (
-                      <Text style={{ color: theme.textColor }}>
-                        {channel} |{" "}
-                      </Text>
-                    )}
                     <Text
                       style={{
                         color: theme.textColor,
@@ -146,64 +127,27 @@ export function CompositionsScreen() {
                         flex: 1,
                       }}
                     >
-                      {author}
+                      {other}
                     </Text>
-                    {!!recipient && (
-                      <React.Fragment>
-                        <View style={{ marginHorizontal: 8 }}>
-                          <FontAwesomeIcon
-                            icon={"arrow-right"}
-                            color={theme.textColor}
-                          />
-                        </View>
-                        <Text
-                          style={{
-                            color: theme.textColor,
-                            fontWeight: "bold",
-                            flex: 1,
-                          }}
-                        >
-                          {recipient}
-                        </Text>
-                      </React.Fragment>
-                    )}
                   </View>
                   <Text
                     style={{
                       color: theme.textColor,
                     }}
                   >
-                    {content}
+                    {item.content}
                   </Text>
                 </View>
                 <View>
-                  <View style={{ flexDirection: "row" }}>
-                    {!!quote && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"reply"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
-                    {versions > 1 && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"clock-rotate-left"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        textAlign: "right",
-                        flex: 1,
-                      }}
-                    >
-                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
-                    </Text>
-                  </View>
+                  <Text
+                    style={{
+                      color: theme.textColor,
+                      textAlign: "right",
+                      flex: 1,
+                    }}
+                  >
+                    {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                  </Text>
                   {!datetime.hasSame(DateTime.now(), "day") && (
                     <Text
                       style={{ color: theme.textColor, textAlign: "right" }}
@@ -217,7 +161,7 @@ export function CompositionsScreen() {
           );
         }}
         ListEmptyComponent={
-          compositionsQuery.isLoading ? null : (
+          conversationsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -227,12 +171,12 @@ export function CompositionsScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no compositions for term{" "}
+                  There are no messages for term{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no compositions. Write some!
+                  There are no messages. Write some!
                 </React.Fragment>
               )}
             </Text>

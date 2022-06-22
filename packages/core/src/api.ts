@@ -4,15 +4,12 @@ import { Sql } from "./sql";
 
 export function createApi(sql: Sql) {
   const api: Api = {
-    async getBlocks() {
-      return Array.from(blocks);
-    },
-    async addBlock(text) {
-      if (blocks.has(text)) return;
-      blocks.add(text);
-      for (const listener of listeners) {
-        listener(text);
-      }
+    async getDatabase() {
+      await dbSetupDone;
+      return [
+        ...(await sql`SELECT * from authors`.all()),
+        ...(await sql`SELECT * from compositions`.all()),
+      ];
     },
     async getAuthors({ nickname = "DONTFILTER", label = "DONTFILTER" }) {
       await dbSetupDone;
@@ -100,27 +97,22 @@ export function createApi(sql: Sql) {
         ORDER BY MAX(version_timestamp) ASC
       `.all()) as any;
     },
+    async getConversations({ author, content = "DONTFILTER" }) {
+      await dbSetupDone;
+      const contentSearch = "%" + asSearch(content) + "%";
+      return (await sql`
+        SELECT author, recipient, content, MAX(version_timestamp) AS version_timestamp FROM compositions
+        WHERE (author=${author} OR recipient=${author})
+        GROUP BY MAX(author, recipient), MIN(author, recipient), channel, quote, salt
+        HAVING
+          (content LIKE CASE WHEN ${content} = 'DONTFILTER' THEN content ELSE ${contentSearch} END)
+        ORDER BY MAX(version_timestamp) DESC
+      `.all()) as any;
+    },
   };
 
   function asSearch(string: string) {
     return string.replace(/[^a-zA-z0-9]/g, "");
-  }
-
-  const blocks = new Set<string>();
-
-  type Listener = (block: string) => void;
-
-  const listeners = new Set<Listener>();
-
-  function subscribe(listener: Listener) {
-    for (const block of blocks) {
-      listener(block);
-    }
-    listeners.add(listener);
-  }
-
-  function unsubscribe(listener: Listener) {
-    listeners.delete(listener);
   }
 
   function replicate() {
@@ -129,17 +121,13 @@ export function createApi(sql: Sql) {
     swarm.join(topic, { server: true, client: true });
     swarm.on("connection", (connection, info) => {
       connection.on("data", (data) => {
-        api.addBlock(String(data));
+        // TODO
       });
-      const listener: Listener = (block) => {
-        connection.write(block);
-      };
-      subscribe(listener);
       connection.on("close", () => {
-        unsubscribe(listener);
+        // TODO
       });
       connection.on("error", () => {
-        unsubscribe(listener);
+        //TODO
       });
     });
   }

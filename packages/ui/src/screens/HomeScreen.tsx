@@ -20,11 +20,11 @@ export function HomeScreen() {
         <View style={{ flex: 1 }}></View>
         <Pressable
           onPress={() => {
-            routing.push("Blocks", {});
+            routing.push("Database", {});
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"square"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"database"} color={theme.textColor} />
         </Pressable>
         <Pressable
           onPress={() => {
@@ -36,11 +36,11 @@ export function HomeScreen() {
         </Pressable>
         <Pressable
           onPress={() => {
-            routing.push("Compositions", {});
+            routing.push("Conversations", { author: "fred" /* TODO */ });
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"inbox"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"envelope"} color={theme.textColor} />
         </Pressable>
       </View>
     </View>

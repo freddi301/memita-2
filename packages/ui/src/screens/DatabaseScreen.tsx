@@ -5,27 +5,20 @@ import { useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 
-export function AuthorsScreen() {
+export function DatabaseScreen() {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const authorsQuery = useQuery(
-    ["authors", { searchTextDebounced, deleted: false }],
-    async () => {
-      return api.getAuthors({
-        nickname: searchTextDebounced || undefined,
-        label: "",
-      });
-    }
-  );
+  const compositionsQuery = useQuery(["database", {}], async () => {
+    return api.getDatabase();
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -40,10 +33,10 @@ export function AuthorsScreen() {
           <React.Fragment>
             <TextInput
               value={searchText}
-              placeholder={"🔍"}
               onChangeText={(newText) => {
                 setSearchText(newText);
               }}
+              placeholder={"🔍"}
               style={{
                 color: theme.textColor,
                 flex: 1,
@@ -72,7 +65,7 @@ export function AuthorsScreen() {
                 borderBottomColor: "gray",
               }}
             >
-              Authors
+              Database
             </Text>
             <Pressable
               onPress={() => {
@@ -82,57 +75,27 @@ export function AuthorsScreen() {
             >
               <FontAwesomeIcon icon={"search"} color={theme.textColor} />
             </Pressable>
-            <Pressable
-              onPress={() => {
-                routing.push("AuthorEdit", {});
-              }}
-              style={{ padding: 16 }}
-            >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
-            </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={authorsQuery.isFetching} />
+      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
       <FlatList
-        data={authorsQuery.data}
-        renderItem={({ item: { author, nickname } }) => (
-          <Pressable
-            onPress={() => {
-              routing.push("Author", { author, nickname });
-            }}
-          >
-            <View
+        data={compositionsQuery.data}
+        renderItem={({ item }) => {
+          return (
+            <Text
               style={{
-                flexDirection: "row",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                alignItems: "center",
+                color: theme.textColor,
+                padding: 16,
+                fontFamily: "monospace",
               }}
             >
-              <Avatar />
-              <View style={{ marginLeft: 8 }}>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {nickname}
-                </Text>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                  }}
-                >
-                  {author}
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-        )}
+              {JSON.stringify(item, null, 2)}
+            </Text>
+          );
+        }}
         ListEmptyComponent={
-          authorsQuery.isLoading ? null : (
+          compositionsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -142,11 +105,11 @@ export function AuthorsScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Authors for term{" "}
+                  There are no database entries for term{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
-                <React.Fragment>There are no Authors. Add some!</React.Fragment>
+                <React.Fragment>The database is empty</React.Fragment>
               )}
             </Text>
           )

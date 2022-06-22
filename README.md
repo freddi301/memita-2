@@ -18,14 +18,15 @@ code --install-extension frigus02.vscode-sql-tagged-template-literals
 
 ## TODO
 
-- [ ] private conversation screen
+- [ ] compositions basic replication
 - [ ] rename ui and core modules to frontend and backend
 - [ ] degrow bundle sizes
 - [ ] generate schema for https://github.com/frigus02/typescript-sql-tagged-template-plugin#configuration
 - [ ] light dark theme
 - [ ] i18n
-- [x] basic data replication
 - [ ] fresh install on windows and linux and write setup documentation
 - [ ] tidy up package.json files
+- [x] basic data replication
+- [x] private conversation screen
 - [x] electron hello world
 - [x] android hello world
