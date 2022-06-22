@@ -10,10 +10,15 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "yarn build"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.5.0",
     "@types/jest": "^28.1.2",
+    "@types/sql.js": "^1.4.3",
+    "@types/sqlite3": "^3.1.8",
+    "better-sqlite3": "^7.5.3",
     "jest": "^28.1.1",
     "sql.js": "^1.7.0",
     "sqlite3": "^5.0.8",

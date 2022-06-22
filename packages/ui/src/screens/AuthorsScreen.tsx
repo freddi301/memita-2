@@ -22,7 +22,7 @@ export function AuthorsScreen() {
     async () => {
       return api.getAuthors({
         nickname: searchTextDebounced || undefined,
-        deleted: false,
+        label: "",
       });
     }
   );

@@ -17,7 +17,7 @@
   "dependencies": {
     "bindings-noderify-nodejs-mobile": "^10.5.0",
     "nodejs-mobile-react-native": "^0.8.1",
-    "react": "^18.1.0",
+    "react": "17.0.2",
     "react-native": "0.68.2",
     "react-native-svg": "^12.3.0",
     "sodium-native-nodejs-mobile": "^3.2.0-2",
@@ -29,7 +29,7 @@
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^2.0.0",
     "@types/jest": "^26.0.23",
-    "@types/react-native": "^0.67.3",
+    "@types/react-native": "^0.67.8",
     "@types/react-test-renderer": "^17.0.1",
     "@types/sql.js": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^5.17.0",

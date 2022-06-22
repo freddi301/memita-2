@@ -9,11 +9,12 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "postinstall": "yarn build"
   },
   "devDependencies": {
     "@types/luxon": "^2.3.2",
-    "@types/react": "^18.0.14",
+    "@types/react": "17.0.2",
     "@types/react-native": "^0.67.8",
     "typescript": "^4.7.3"
   },

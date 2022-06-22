@@ -4,7 +4,7 @@ export type Api = {
   addAuthor(params: Author): Promise<void>;
   getAuthors(params: {
     nickname?: string;
-    deleted?: boolean;
+    label?: string;
   }): Promise<Array<Author>>;
   addComposition(params: Composition): Promise<void>;
   getCompositions(params: {
@@ -26,7 +26,7 @@ export type Api = {
 export type Author = {
   author: string;
   nickname: string;
-  deleted: boolean;
+  label: string;
   version_timestamp: number;
 };
 

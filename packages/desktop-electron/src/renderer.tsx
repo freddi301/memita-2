@@ -1,6 +1,6 @@
 import { Api, Ui } from "@memita-2/ui";
 import React from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom";
 
 const api = new Proxy(
   {},
@@ -11,4 +11,4 @@ const api = new Proxy(
   }
 ) as Api;
 
-createRoot(document.getElementById("root") as Element).render(<Ui api={api} />);
+ReactDOM.render(<Ui api={api} />, document.getElementById("root"));

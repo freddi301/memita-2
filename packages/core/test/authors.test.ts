@@ -1,13 +1,13 @@
 import { createApi } from "../src";
-import { createSql } from "./sql.js";
+import { createSql } from "./sqlite/sql.js";
 
 test("authors aggregation", async () => {
-  const api = createApi(await createSql());
+  const api = createApi(createSql());
   expect(await api.getAuthors({})).toEqual([]);
   const authorA = {
     author: "Frederik",
     nickname: "Fred",
-    deleted: false,
+    label: "",
     version_timestamp: 1,
   };
   await api.addAuthor(authorA);
@@ -15,13 +15,15 @@ test("authors aggregation", async () => {
   const authorB = {
     author: "Frederik",
     nickname: "Macco",
-    deleted: true,
+    label: "delted",
     version_timestamp: 2,
   };
   await api.addAuthor(authorB);
-  expect(await api.getAuthors({ deleted: false })).toEqual([]);
-  expect(await api.getAuthors({ nickname: "Macco", deleted: true })).toEqual([
+  expect(await api.getAuthors({ label: "" })).toEqual([]);
+  expect(await api.getAuthors({ nickname: "Macco", label: "delted" })).toEqual([
     authorB,
   ]);
-  expect(await api.getAuthors({ nickname: "Fred", deleted: true })).toEqual([]);
+  expect(await api.getAuthors({ nickname: "Fred", label: "delted" })).toEqual(
+    []
+  );
 });

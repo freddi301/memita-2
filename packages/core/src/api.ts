@@ -14,29 +14,24 @@ export function createApi(sql: Sql) {
         listener(text);
       }
     },
-    async getAuthors({ nickname = "DONTFILTER", deleted = "DONTFILTER" }) {
+    async getAuthors({ nickname = "DONTFILTER", label = "DONTFILTER" }) {
       await dbSetupDone;
       const nicknameSearch = "%" + asSearch(nickname) + "%";
-      return (
-        await sql`
-          SELECT author, nickname, deleted, MAX(version_timestamp) AS version_timestamp FROM authors
+      return (await sql`
+          SELECT author, nickname, label, MAX(version_timestamp) AS version_timestamp FROM authors
           GROUP BY author
           HAVING
             (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
-            (deleted = CASE WHEN ${deleted} = 'DONTFILTER' THEN deleted ELSE ${deleted} END)
+            (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
           ORDER BY nickname ASC
-        `
-      ).map((author: any) => ({
-        ...author,
-        deleted: Boolean(author.deleted),
-      }));
+        `.all()) as any;
     },
-    async addAuthor({ author, nickname, deleted, version_timestamp }) {
+    async addAuthor({ author, nickname, label, version_timestamp }) {
       await dbSetupDone;
       await sql`
-        INSERT INTO authors (author, nickname, deleted, version_timestamp)
-        VALUES (${author}, ${nickname}, ${deleted}, ${version_timestamp})
-      `;
+        INSERT INTO authors (author, nickname, label, version_timestamp)
+        VALUES (${author}, ${nickname}, ${label}, ${version_timestamp})
+      `.run();
     },
     async getCompositions({
       author = "DONTFILTER",
@@ -47,7 +42,7 @@ export function createApi(sql: Sql) {
     }) {
       await dbSetupDone;
       const contentSearch = "%" + asSearch(content) + "%";
-      return await sql`
+      return (await sql`
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp, COUNT(version_timestamp) AS versions FROM compositions
         WHERE
           (author = CASE WHEN ${author} = 'DONTFILTER' THEN author ELSE ${author} END) AND
@@ -58,7 +53,7 @@ export function createApi(sql: Sql) {
         HAVING
           (content LIKE CASE WHEN ${content} = 'DONTFILTER' THEN content ELSE ${contentSearch} END)
         ORDER BY MAX(version_timestamp) DESC
-      `;
+      `.all()) as any;
     },
     async addComposition({
       author,
@@ -73,7 +68,7 @@ export function createApi(sql: Sql) {
       await sql`
         INSERT INTO compositions (author, channel, recipient, quote, salt, content, version_timestamp)
         VALUES (${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
-      `;
+      `.run();
     },
     async getConversation({
       author = "DONTFILTER",
@@ -84,7 +79,7 @@ export function createApi(sql: Sql) {
     }) {
       await dbSetupDone;
       const contentSearch = "%" + asSearch(content) + "%";
-      return await sql`
+      return (await sql`
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp, COUNT(version_timestamp) AS versions FROM compositions
         WHERE
           (
@@ -103,7 +98,7 @@ export function createApi(sql: Sql) {
         HAVING
           (content LIKE CASE WHEN ${content} = 'DONTFILTER' THEN content ELSE ${contentSearch} END)
         ORDER BY MAX(version_timestamp) ASC
-      `;
+      `.all()) as any;
     },
   };
 
@@ -155,10 +150,10 @@ export function createApi(sql: Sql) {
     sql`CREATE TABLE authors (
       author TEXT NOT NULL,
       nickname TEXT NOT NULL,
-      deleted BOOLEAN NOT NULL,
+      label TEXT NOT NULL,
       version_timestamp INT NOT NUll,
-      PRIMARY KEY (author, nickname, deleted, version_timestamp)
-    )`,
+      PRIMARY KEY (author, nickname, label, version_timestamp)
+    )`.run(),
 
     sql`CREATE TABLE compositions (
       author TEXT NOT NULL,
@@ -169,18 +164,18 @@ export function createApi(sql: Sql) {
       content TEXT NOT NULL,
       version_timestamp INTEGER NOT NULL,
       PRIMARY KEY (author, channel, recipient, quote, salt, content, version_timestamp)
-    )`,
+    )`.run(),
   ]);
 
   async function optimizeDd() {
     // https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
     // https://blog.devart.com/increasing-sqlite-performance.html
-    await sql`PRAGMA journal_mode = WAL`;
-    await sql`PRAGMA synchronous = normal`;
-    await sql`PRAGMA temp_store = memory`;
-    await sql`PRAGMA mmap_size = 30000000000`;
-    await sql`PRAGMA optimize`;
-    await sql`PRAGMA locking_mode = exclusive`;
+    await sql`PRAGMA journal_mode = WAL`.run();
+    await sql`PRAGMA synchronous = normal`.run();
+    await sql`PRAGMA temp_store = memory`.run();
+    await sql`PRAGMA mmap_size = 30000000000`.run();
+    await sql`PRAGMA optimize`.run();
+    await sql`PRAGMA locking_mode = exclusive`.run();
   }
 
   return api;

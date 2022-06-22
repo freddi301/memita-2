@@ -1,3 +1,6 @@
 export type Sql = {
-  <Row>(strings: TemplateStringsArray, ...values: any[]): Promise<Array<Row>>;
+  <Row>(strings: TemplateStringsArray, ...values: any[]): {
+    run(): Promise<void>;
+    all(): Promise<Array<Row>>;
+  };
 };

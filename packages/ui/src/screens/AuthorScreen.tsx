@@ -7,7 +7,7 @@ import { Avatar } from "../components/Avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useMutation, useQuery } from "react-query";
 import { useApi } from "../ui";
-import { CompositionListItem } from "../components/CompositionListItem";
+import { DateTime } from "luxon";
 
 export function AuthorScreen({ author, nickname }: Routes["Author"]) {
   const theme = useTheme();
@@ -19,7 +19,7 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
       await api.addAuthor({
         author,
         nickname,
-        deleted: true,
+        label: "deleted",
         version_timestamp,
       });
     },
@@ -122,7 +122,99 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
       </View>
       <FlatList
         data={compositionsQuery.data}
-        renderItem={({ item }) => <CompositionListItem {...item} />}
+        renderItem={({
+          item: {
+            author,
+            channel,
+            recipient,
+            quote,
+            salt,
+            version_timestamp,
+            content,
+            versions,
+          },
+        }) => {
+          const datetime = DateTime.fromMillis(version_timestamp);
+          return (
+            <Pressable
+              onPress={() => {
+                routing.push("Composition", {
+                  author,
+                  channel,
+                  recipient,
+                  quote,
+                  salt,
+                  ...(content ? { content } : {}),
+                });
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Avatar />
+                <View style={{ marginHorizontal: 8, flex: 1 }}>
+                  <Text
+                    style={{
+                      color: theme.textColor,
+                      fontWeight: "bold",
+                      flex: 1,
+                    }}
+                  >
+                    {author}
+                  </Text>
+                  <Text
+                    style={{
+                      color: theme.textColor,
+                    }}
+                  >
+                    {content}
+                  </Text>
+                </View>
+                <View>
+                  <View style={{ flexDirection: "row" }}>
+                    {!!quote && (
+                      <View style={{ marginRight: 8 }}>
+                        <FontAwesomeIcon
+                          icon={"reply"}
+                          color={theme.textColor}
+                        />
+                      </View>
+                    )}
+                    {versions > 1 && (
+                      <View style={{ marginRight: 8 }}>
+                        <FontAwesomeIcon
+                          icon={"clock-rotate-left"}
+                          color={theme.textColor}
+                        />
+                      </View>
+                    )}
+                    <Text
+                      style={{
+                        color: theme.textColor,
+                        textAlign: "right",
+                        flex: 1,
+                      }}
+                    >
+                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                    </Text>
+                  </View>
+                  {!datetime.hasSame(DateTime.now(), "day") && (
+                    <Text
+                      style={{ color: theme.textColor, textAlign: "right" }}
+                    >
+                      {datetime.toLocaleString(DateTime.DATE_MED)}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </Pressable>
+          );
+        }}
         style={{ paddingVertical: 8 }}
         ListEmptyComponent={
           compositionsQuery.isLoading ? null : (

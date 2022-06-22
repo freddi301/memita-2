@@ -16,7 +16,9 @@
       "**/react-native",
       "**/react-native/**",
       "**/nodejs-mobile-react-native",
-      "**/nodejs-mobile-react-native/**"
+      "**/nodejs-mobile-react-native/**",
+      "**/better-sqlite3",
+      "**/better-sqlite3/**"
     ]
   },
   "devDependencies": {

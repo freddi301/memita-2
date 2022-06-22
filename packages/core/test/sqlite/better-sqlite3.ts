@@ -1,5 +1,5 @@
-import { Sql } from "@memita-2/core";
 import Database from "better-sqlite3";
+import { Sql } from "../../src";
 
 export function createSql(): Sql {
   const db = new Database(":memory:");

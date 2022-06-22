@@ -1,8 +1,8 @@
 import { createApi } from "../src";
-import { createSql } from "./sqlite3";
+import { createSql } from "./sqlite/better-sqlite3";
 
 test("conversation aggregation", async () => {
-  const api = createApi(await createSql());
+  const api = createApi(createSql());
   expect(await api.getConversation({})).toEqual([]);
   const compositionA = {
     author: "fred",

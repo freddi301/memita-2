@@ -18,7 +18,7 @@ export function AuthotEditScren(props: Routes["AuthorEdit"]) {
       await api.addAuthor({
         author,
         nickname,
-        deleted: false,
+        label: "",
         version_timestamp,
       });
     },
