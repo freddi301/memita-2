@@ -67,6 +67,21 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
+            routing.push("Settings", { account });
+          }}
+        >
+          <Text
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              color: theme.textColor,
+            }}
+          >
+            Settings
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
             routing.push("Database", { account });
           }}
         >

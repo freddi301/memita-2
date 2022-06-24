@@ -79,7 +79,6 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            borderBottomColor: "gray",
             flex: 1,
           }}
         >

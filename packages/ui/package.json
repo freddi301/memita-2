@@ -9,13 +9,14 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch",
-    "postinstall": "yarn build"
+    "watch": "tsc --watch"
   },
   "devDependencies": {
     "@types/luxon": "^2.3.2",
     "@types/react": "17.0.2",
     "@types/react-native": "^0.67.8",
+    "eslint": "^8.18.0",
+    "eslint-config-react-app": "^7.0.1",
     "typescript": "^4.7.3"
   },
   "dependencies": {

@@ -56,7 +56,6 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            borderBottomColor: "gray",
             flex: 1,
           }}
         >

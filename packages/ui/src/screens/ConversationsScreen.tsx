@@ -74,7 +74,6 @@ export function ConversationsScreen({
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                borderBottomColor: "gray",
               }}
             >
               Conversations

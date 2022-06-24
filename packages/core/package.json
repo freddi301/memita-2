@@ -10,8 +10,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "jest",
-    "postinstall": "yarn build"
+    "test": "jest"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.5.0",

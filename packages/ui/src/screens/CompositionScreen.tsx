@@ -74,7 +74,6 @@ export function CompositionScreen({
           style={{
             color: theme.textColor,
             fontWeight: "bold",
-            borderBottomColor: "gray",
             flex: 1,
           }}
         >

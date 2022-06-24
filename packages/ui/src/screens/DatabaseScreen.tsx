@@ -62,7 +62,6 @@ export function DatabaseScreen() {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                borderBottomColor: "gray",
               }}
             >
               Database

@@ -70,7 +70,6 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
-                borderBottomColor: "gray",
               }}
             >
               Contacts
