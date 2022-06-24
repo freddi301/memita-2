@@ -5,29 +5,25 @@ import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
+import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
-import { Avatar } from "../components/Avatar";
-import { DateTime } from "luxon";
 
-export function ConversationsScreen({
-  account,
-  channel,
-}: Routes["Conversations"]) {
+export function ContactsScreen({ account }: Routes["Contacts"]) {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const conversationsQuery = useQuery(
-    ["conversations", { account, channel, searchTextDebounced }],
+  const contactsQuery = useQuery(
+    ["contacts", { account, label: "", searchTextDebounced }],
     async () => {
-      return await api.getConversations({
+      return await api.getContacts({
         account,
-        channel,
-        content: searchTextDebounced || undefined,
+        label: "",
+        nickname: searchTextDebounced || undefined,
       });
     }
   );
@@ -45,10 +41,10 @@ export function ConversationsScreen({
           <React.Fragment>
             <TextInput
               value={searchText}
+              placeholder={"🔍"}
               onChangeText={(newText) => {
                 setSearchText(newText);
               }}
-              placeholder={"🔍"}
               style={{
                 color: theme.textColor,
                 flex: 1,
@@ -77,7 +73,7 @@ export function ConversationsScreen({
                 borderBottomColor: "gray",
               }}
             >
-              Conversations
+              Contacts
             </Text>
             <Pressable
               onPress={() => {
@@ -89,10 +85,7 @@ export function ConversationsScreen({
             </Pressable>
             <Pressable
               onPress={() => {
-                routing.push("Composition", {
-                  account,
-                  channel,
-                });
+                routing.push("Contact", { account });
               }}
               style={{ padding: 16 }}
             >
@@ -101,75 +94,46 @@ export function ConversationsScreen({
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={conversationsQuery.isFetching} />
+      <HorizontalLoader isLoading={contactsQuery.isFetching} />
       <FlatList
-        data={conversationsQuery.data}
-        renderItem={({ item }) => {
-          const datetime = DateTime.fromMillis(item.version_timestamp);
-          const other = item.author === account ? item.recipient : item.author;
-          return (
-            <Pressable
-              onPress={() => {
-                routing.push("Conversation", {
-                  account,
-                  channel: item.channel,
-                  recipient: item.recipient ? other : "",
-                });
+        data={contactsQuery.data}
+        renderItem={({ item: { author, nickname } }) => (
+          <Pressable
+            onPress={() => {
+              routing.push("Profile", { account, author });
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                alignItems: "center",
               }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                  paddingHorizontal: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Avatar />
-                <View style={{ marginHorizontal: 8, flex: 1 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        fontWeight: "bold",
-                        flex: 1,
-                      }}
-                    >
-                      {item.channel || other}
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      color: theme.textColor,
-                    }}
-                  >
-                    {item.content}
-                  </Text>
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      color: theme.textColor,
-                      textAlign: "right",
-                      flex: 1,
-                    }}
-                  >
-                    {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
-                  </Text>
-                  {!datetime.hasSame(DateTime.now(), "day") && (
-                    <Text
-                      style={{ color: theme.textColor, textAlign: "right" }}
-                    >
-                      {datetime.toLocaleString(DateTime.DATE_MED)}
-                    </Text>
-                  )}
-                </View>
+              <Avatar />
+              <View style={{ marginLeft: 8 }}>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {nickname}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                  }}
+                >
+                  {author}
+                </Text>
               </View>
-            </Pressable>
-          );
-        }}
+            </View>
+          </Pressable>
+        )}
         ListEmptyComponent={
-          conversationsQuery.isLoading ? null : (
+          contactsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -179,12 +143,12 @@ export function ConversationsScreen({
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no messages for term{" "}
+                  There are no Contacts for term{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no messages. Write some!
+                  There are no Contacts. Add some!
                 </React.Fragment>
               )}
             </Text>

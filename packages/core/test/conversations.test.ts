@@ -3,7 +3,7 @@ import { createSql } from "./sqlite/sqlite3";
 
 test("conversations aggregation", async () => {
   const api = createApi(createSql());
-  expect(await api.getConversations({ author: "fred" })).toEqual([]);
+  expect(await api.getConversations({ account: "fred" })).toEqual([]);
   await api.addComposition({
     author: "fred",
     channel: "",
@@ -13,9 +13,10 @@ test("conversations aggregation", async () => {
     content: "hello",
     version_timestamp: 1,
   });
-  expect(await api.getConversations({ author: "fred" })).toEqual([
+  expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "fred",
+      channel: "",
       recipient: "alice",
       content: "hello",
       version_timestamp: 1,
@@ -30,9 +31,10 @@ test("conversations aggregation", async () => {
     content: "bye",
     version_timestamp: 2,
   });
-  expect(await api.getConversations({ author: "fred" })).toEqual([
+  expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "alice",
+      channel: "",
       recipient: "fred",
       content: "bye",
       version_timestamp: 2,
@@ -47,41 +49,74 @@ test("conversations aggregation", async () => {
     content: "test",
     version_timestamp: 3,
   });
-  expect(await api.getConversations({ author: "fred" })).toEqual([
+  expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "fred",
+      channel: "",
       recipient: "chris",
       content: "test",
       version_timestamp: 3,
     },
     {
       author: "alice",
+      channel: "",
       recipient: "fred",
       content: "bye",
       version_timestamp: 2,
     },
   ]);
+});
+
+test("conversations aggregation group/private", async () => {
+  const api = createApi(createSql());
+  expect(await api.getAccounts({})).toEqual([]);
+  const accountA = { author: "fred", nickname: "Fred", version_timestamp: 1 };
+  await api.addAccount(accountA);
+  expect(await api.getAccounts({})).toEqual([accountA]);
+  const accountB = { author: "ali", nickname: "Ali", version_timestamp: 2 };
+  await api.addAccount(accountB);
+  expect(await api.getAccounts({})).toEqual([accountB, accountA]);
   await api.addComposition({
-    author: "alice",
-    channel: "",
-    recipient: "chris",
+    author: "fred",
+    channel: "home",
+    recipient: "",
     quote: "",
+    content: "buy",
     salt: "1",
-    content: "test",
-    version_timestamp: 4,
+    version_timestamp: 1,
   });
-  expect(await api.getConversations({ author: "fred" })).toEqual([
+  expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "fred",
-      recipient: "chris",
-      content: "test",
-      version_timestamp: 3,
+      channel: "home",
+      recipient: "",
+      content: "buy",
+      version_timestamp: 1,
+    },
+  ]);
+  await api.addComposition({
+    author: "fred",
+    channel: "",
+    recipient: "ali",
+    quote: "",
+    content: "hi",
+    salt: "2",
+    version_timestamp: 2,
+  });
+  expect(await api.getConversations({ account: "fred" })).toEqual([
+    {
+      author: "fred",
+      channel: "",
+      recipient: "ali",
+      content: "hi",
+      version_timestamp: 2,
     },
     {
-      author: "alice",
-      recipient: "fred",
-      content: "bye",
-      version_timestamp: 2,
+      author: "fred",
+      channel: "home",
+      recipient: "",
+      content: "buy",
+      version_timestamp: 1,
     },
   ]);
 });

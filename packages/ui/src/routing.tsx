@@ -1,32 +1,38 @@
 import React from "react";
 import { CompositionScreen } from "./screens/CompositionScreen";
-import { AuthotEditScren } from "./screens/AuthorEditScreen";
-import { HomeScreen } from "./screens/HomeScreen";
-import { AuthorScreen } from "./screens/AuthorScreen";
-import { AuthorsScreen } from "./screens/AuthorsScreen";
+import { ContactScreen } from "./screens/ContactScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
+import { ContactsScreen } from "./screens/ContactsScreen";
 import { ConversationScreen } from "./screens/ConversationScreen";
 import { DatabaseScreen } from "./screens/DatabaseScreen";
 import { ConversationsScreen } from "./screens/ConversationsScreen";
+import { NavigationScreen } from "./screens/NavigationScreen";
+import { AccountsScreen } from "./screens/AccountsScreen";
+import { AccountScreen } from "./screens/AccountScreen";
 
 export type Routes = {
-  Home: {};
-  Database: {};
-  Authors: {};
-  AuthorEdit: { author?: string; nickname?: string };
-  Author: { author: string; nickname: string };
+  Accounts: {};
+  Account: { author?: string };
+  Navigation: { account: string };
+  Database: { account: string };
+  Contacts: { account: string };
+  Contact: { account: string; author?: string };
+  Profile: { account: string; author: string };
   Composition: {
+    account: string;
     author?: string;
-    channel?: string | null;
-    recipient?: string | null;
-    quote?: string | null;
+    channel?: string;
+    recipient?: string;
+    quote?: string;
     salt?: string;
-    content?: string;
   };
   Conversations: {
-    author: string;
+    account: string;
+    channel?: string;
   };
   Conversation: {
-    author: string;
+    account: string;
+    channel: string;
     recipient: string;
   };
 };
@@ -38,11 +44,13 @@ type Route = {
 const mapping: {
   [Screen in keyof Routes]: React.ComponentType<Routes[Screen]>;
 } = {
-  Home: HomeScreen,
+  Accounts: AccountsScreen,
+  Account: AccountScreen,
+  Navigation: NavigationScreen,
   Database: DatabaseScreen,
-  Authors: AuthorsScreen,
-  AuthorEdit: AuthotEditScren,
-  Author: AuthorScreen,
+  Contacts: ContactsScreen,
+  Contact: ContactScreen,
+  Profile: ProfileScreen,
   Composition: CompositionScreen,
   Conversations: ConversationsScreen,
   Conversation: ConversationScreen,
@@ -59,11 +67,11 @@ type Routing = {
 const RoutingContext = React.createContext<Routing>(null as any);
 
 type RoutesProps = {
-  initial: Route[];
+  initial: Route;
 };
 export function Routes({ initial }: RoutesProps) {
-  const [stack, setStack] = React.useState<Array<Route>>(initial);
-  const route = stack[stack.length - 1] ?? initial[0];
+  const [stack, setStack] = React.useState<Array<Route>>([]);
+  const route = stack[stack.length - 1] ?? initial;
   const Screen = mapping[route.screen];
   const push = React.useCallback<Routing["push"]>((screen, parameters) => {
     setStack((stack) => [...stack, { screen, parameters: parameters as any }]);

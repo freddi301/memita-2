@@ -17,7 +17,7 @@ export function DatabaseScreen() {
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
   const compositionsQuery = useQuery(["database", {}], async () => {
-    return api.getDatabase();
+    return await api.getDatabase();
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

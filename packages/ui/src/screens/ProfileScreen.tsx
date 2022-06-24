@@ -5,34 +5,23 @@ import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useMutation, useQuery } from "react-query";
+import { useQuery } from "react-query";
 import { useApi } from "../ui";
 import { DateTime } from "luxon";
+import { HorizontalLoader } from "../components/HorizontalLoader";
 
-export function AuthorScreen({ author, nickname }: Routes["Author"]) {
+export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
   const routing = useRouting();
   const api = useApi();
-  const deleteAuthorMutation = useMutation(
-    async (author: string) => {
-      const version_timestamp = Date.now();
-      await api.addAuthor({
-        author,
-        nickname,
-        label: "deleted",
-        version_timestamp,
-      });
-    },
-    {
-      onSuccess() {
-        routing.back();
-      },
-    }
-  );
-  const compositionsQuery = useQuery(
+  const contactQuery = useQuery(["contact", { account, author }], async () => {
+    return await api.getContact({ account, author });
+  });
+  const postsQuery = useQuery(
     ["compositions", { author, channel: "", quote: "", recipient: "" }],
     async () => {
-      return api.getCompositions({
+      return await api.getCompositions({
+        account,
         author,
         channel: "",
         quote: "",
@@ -59,7 +48,7 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
               fontWeight: "bold",
             }}
           >
-            {nickname}
+            {contactQuery.data?.nickname ?? ""}
           </Text>
           <Text
             style={{
@@ -71,26 +60,19 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
         </View>
         <Pressable
           onPress={() => {
-            routing.push("AuthorEdit", { author, nickname });
+            routing.push("Contact", { account, author });
           }}
           style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"pen"} color={theme.textColor} />
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            deleteAuthorMutation.mutate(author);
-          }}
-          style={{ padding: 16 }}
-        >
-          <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
         </Pressable>
       </View>
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
         <Pressable
           onPress={() => {
             routing.push("Conversation", {
-              author: "fred" /* TODO */,
+              account,
+              channel: "",
               recipient: author,
             });
           }}
@@ -120,8 +102,9 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
           </Text>
         </Pressable>
       </View>
+      <HorizontalLoader isLoading={postsQuery.isFetching} />
       <FlatList
-        data={compositionsQuery.data}
+        data={postsQuery.data}
         renderItem={({
           item: {
             author,
@@ -131,7 +114,6 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
             salt,
             version_timestamp,
             content,
-            versions,
           },
         }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
@@ -139,12 +121,12 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
             <Pressable
               onPress={() => {
                 routing.push("Composition", {
+                  account,
                   author,
                   channel,
                   recipient,
                   quote,
                   salt,
-                  ...(content ? { content } : {}),
                 });
               }}
             >
@@ -185,14 +167,6 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
                         />
                       </View>
                     )}
-                    {versions > 1 && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"clock-rotate-left"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
                     <Text
                       style={{
                         color: theme.textColor,
@@ -217,7 +191,7 @@ export function AuthorScreen({ author, nickname }: Routes["Author"]) {
         }}
         style={{ paddingVertical: 8 }}
         ListEmptyComponent={
-          compositionsQuery.isLoading ? null : (
+          postsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,

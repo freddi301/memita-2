@@ -3,7 +3,7 @@ import { createSql } from "./sqlite/sqlite3";
 
 test("compositions aggregation", async () => {
   const api = createApi(createSql());
-  expect(await api.getCompositions({})).toEqual([]);
+  expect(await api.getCompositions({ account: "fred" })).toEqual([]);
   const compositionA = {
     author: "fred",
     channel: "",
@@ -14,8 +14,8 @@ test("compositions aggregation", async () => {
     version_timestamp: 1,
   };
   await api.addComposition(compositionA);
-  expect(await api.getCompositions({})).toEqual([
-    { ...compositionA, versions: 1 },
+  expect(await api.getCompositions({ account: "fred" })).toEqual([
+    compositionA,
   ]);
   const compositionB = {
     author: "fred",
@@ -27,8 +27,8 @@ test("compositions aggregation", async () => {
     version_timestamp: 2,
   };
   await api.addComposition(compositionB);
-  expect(await api.getCompositions({})).toEqual([
-    { ...compositionB, versions: 2 },
+  expect(await api.getCompositions({ account: "fred" })).toEqual([
+    compositionB,
   ]);
   const compositionC = {
     author: "alice",
@@ -40,9 +40,9 @@ test("compositions aggregation", async () => {
     version_timestamp: 4,
   };
   await api.addComposition(compositionC);
-  expect(await api.getCompositions({})).toEqual([
-    { ...compositionC, versions: 1 },
-    { ...compositionB, versions: 2 },
+  expect(await api.getCompositions({ account: "fred" })).toEqual([
+    compositionC,
+    compositionB,
   ]);
   const compositionD = {
     author: "alice",
@@ -54,15 +54,15 @@ test("compositions aggregation", async () => {
     version_timestamp: 3,
   };
   await api.addComposition(compositionD);
-  expect(await api.getCompositions({})).toEqual([
-    { ...compositionC, versions: 2 },
-    { ...compositionB, versions: 2 },
+  expect(await api.getCompositions({ account: "fred" })).toEqual([
+    compositionC,
+    compositionB,
   ]);
 });
 
 test("compositions aggregation filters", async () => {
   const api = createApi(createSql());
-  expect(await api.getCompositions({})).toEqual([]);
+  expect(await api.getCompositions({ account: "fred" })).toEqual([]);
   const compositionA = {
     author: "fred",
     channel: "news",
@@ -73,13 +73,15 @@ test("compositions aggregation filters", async () => {
     version_timestamp: 1,
   };
   await api.addComposition(compositionA);
-  expect(await api.getCompositions({ channel: undefined })).toEqual([
-    { ...compositionA, versions: 1 },
-  ]);
-  expect(await api.getCompositions({ channel: "news" })).toEqual([
-    { ...compositionA, versions: 1 },
-  ]);
-  expect(await api.getCompositions({ channel: "" })).toEqual([]);
+  expect(
+    await api.getCompositions({ account: "fred", channel: undefined })
+  ).toEqual([compositionA]);
+  expect(
+    await api.getCompositions({ account: "fred", channel: "news" })
+  ).toEqual([compositionA]);
+  expect(await api.getCompositions({ account: "fred", channel: "" })).toEqual(
+    []
+  );
   const compositionB = {
     author: "fred",
     channel: "articles",
@@ -90,14 +92,14 @@ test("compositions aggregation filters", async () => {
     version_timestamp: 2,
   };
   await api.addComposition(compositionB);
-  expect(await api.getCompositions({})).toEqual([
-    { ...compositionB, versions: 1 },
-    { ...compositionA, versions: 1 },
+  expect(await api.getCompositions({ account: "fred" })).toEqual([
+    compositionB,
+    compositionA,
   ]);
-  expect(await api.getCompositions({ channel: "news" })).toEqual([
-    { ...compositionA, versions: 1 },
-  ]);
-  expect(await api.getCompositions({ channel: "articles" })).toEqual([
-    { ...compositionB, versions: 1 },
-  ]);
+  expect(
+    await api.getCompositions({ account: "fred", channel: "news" })
+  ).toEqual([compositionA]);
+  expect(
+    await api.getCompositions({ account: "fred", channel: "articles" })
+  ).toEqual([compositionB]);
 });

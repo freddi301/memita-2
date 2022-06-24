@@ -13,7 +13,8 @@ import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 
 export function ConversationScreen({
-  author,
+  account,
+  channel,
   recipient,
 }: Routes["Conversation"]) {
   const api = useApi();
@@ -23,13 +24,14 @@ export function ConversationScreen({
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const compositionsQuery = useQuery(
-    ["conversation", { searchTextDebounced, author, recipient }],
+  const conversationQuery = useQuery(
+    ["conversation", { account, channel, recipient, searchTextDebounced }],
     async () => {
-      return api.getConversation({
-        content: searchTextDebounced || undefined,
-        author,
+      return await api.getConversation({
+        account,
+        channel,
         recipient,
+        content: searchTextDebounced || undefined,
       });
     }
   );
@@ -49,9 +51,9 @@ export function ConversationScreen({
     const version_timestamp = Date.now();
     const salt = String(Math.random());
     addCompositionMutation.mutate({
-      author,
-      channel: "",
-      recipient,
+      author: account,
+      channel: channel ?? "",
+      recipient: recipient ?? "",
       quote: "",
       salt,
       content,
@@ -118,7 +120,7 @@ export function ConversationScreen({
                     color: theme.textColor,
                   }}
                 >
-                  {recipient}
+                  {channel ?? recipient}
                 </Text>
               </View>
             </View>{" "}
@@ -133,9 +135,9 @@ export function ConversationScreen({
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
+      <HorizontalLoader isLoading={conversationQuery.isFetching} />
       <FlatList
-        data={compositionsQuery.data}
+        data={conversationQuery.data}
         renderItem={({
           item: {
             author,
@@ -145,7 +147,6 @@ export function ConversationScreen({
             salt,
             content,
             version_timestamp,
-            versions,
           },
         }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
@@ -153,12 +154,12 @@ export function ConversationScreen({
             <Pressable
               onPress={() => {
                 routing.push("Composition", {
+                  account,
                   author,
                   channel,
                   recipient,
                   quote,
                   salt,
-                  ...(content ? { content } : {}),
                 });
               }}
             >
@@ -172,22 +173,15 @@ export function ConversationScreen({
               >
                 <Avatar />
                 <View style={{ marginHorizontal: 8, flex: 1 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {!!channel && (
-                      <Text style={{ color: theme.textColor }}>
-                        {channel} |{" "}
-                      </Text>
-                    )}
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        fontWeight: "bold",
-                        flex: 1,
-                      }}
-                    >
-                      {author}
-                    </Text>
-                  </View>
+                  <Text
+                    style={{
+                      color: theme.textColor,
+                      fontWeight: "bold",
+                      flex: 1,
+                    }}
+                  >
+                    {author}
+                  </Text>
                   <Text
                     style={{
                       color: theme.textColor,
@@ -202,14 +196,6 @@ export function ConversationScreen({
                       <View style={{ marginRight: 8 }}>
                         <FontAwesomeIcon
                           icon={"reply"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
-                    {versions > 1 && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"clock-rotate-left"}
                           color={theme.textColor}
                         />
                       </View>
@@ -237,7 +223,7 @@ export function ConversationScreen({
           );
         }}
         ListEmptyComponent={
-          compositionsQuery.isLoading ? null : (
+          conversationQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,

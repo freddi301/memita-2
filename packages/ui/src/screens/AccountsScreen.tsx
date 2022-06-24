@@ -10,19 +10,18 @@ import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 
-export function AuthorsScreen() {
+export function AccountsScreen() {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const authorsQuery = useQuery(
-    ["authors", { searchTextDebounced, deleted: false }],
+  const accountsQuery = useQuery(
+    ["accounts", { searchTextDebounced }],
     async () => {
-      return api.getAuthors({
+      return await api.getAccounts({
         nickname: searchTextDebounced || undefined,
-        label: "",
       });
     }
   );
@@ -63,16 +62,16 @@ export function AuthorsScreen() {
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <BackButton />
             <Text
               style={{
                 flex: 1,
                 color: theme.textColor,
                 fontWeight: "bold",
                 borderBottomColor: "gray",
+                marginLeft: 48,
               }}
             >
-              Authors
+              Accounts
             </Text>
             <Pressable
               onPress={() => {
@@ -84,7 +83,7 @@ export function AuthorsScreen() {
             </Pressable>
             <Pressable
               onPress={() => {
-                routing.push("AuthorEdit", {});
+                routing.push("Account", {});
               }}
               style={{ padding: 16 }}
             >
@@ -93,13 +92,13 @@ export function AuthorsScreen() {
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={authorsQuery.isFetching} />
+      <HorizontalLoader isLoading={accountsQuery.isFetching} />
       <FlatList
-        data={authorsQuery.data}
+        data={accountsQuery.data}
         renderItem={({ item: { author, nickname } }) => (
           <Pressable
             onPress={() => {
-              routing.push("Author", { author, nickname });
+              routing.push("Navigation", { account: author });
             }}
           >
             <View
@@ -132,7 +131,7 @@ export function AuthorsScreen() {
           </Pressable>
         )}
         ListEmptyComponent={
-          authorsQuery.isLoading ? null : (
+          accountsQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -142,11 +141,13 @@ export function AuthorsScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Authors for term{" "}
+                  There are no Accounts for term{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
-                <React.Fragment>There are no Authors. Add some!</React.Fragment>
+                <React.Fragment>
+                  There are no Accounts. Add some!
+                </React.Fragment>
               )}
             </Text>
           )
