@@ -33,8 +33,7 @@ process.on('uncaughtException', (err: Error | string) => {
   });
 });
 
-const sql = createSql();
-const api = createApi(async (...args) => (await sql)(...args));
+const api = createApi(createSql());
 
 rn_bridge.channel.on('message', ({requestId, method, args}: any) => {
   (api as any)[method](...args).then(

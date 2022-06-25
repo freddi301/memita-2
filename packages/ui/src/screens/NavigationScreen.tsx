@@ -4,9 +4,10 @@ import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { BackButton } from "../components/BackButton";
 
-export function NavigationScreen({ account }: Routes["Navigation"]) {
+export function NavigationScreen(props: Routes["Navigation"]) {
   const routing = useRouting();
   const theme = useTheme();
+  const account = props.account
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -33,6 +34,21 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             }}
           >
             Conversations
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            routing.push("Channels", { account });
+          }}
+        >
+          <Text
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              color: theme.textColor,
+            }}
+          >
+            Channels
           </Text>
         </Pressable>
         <Pressable

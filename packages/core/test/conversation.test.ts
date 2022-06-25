@@ -17,23 +17,18 @@ test("conversation aggregation", async () => {
   expect(await api.getConversation({ account: "fred" })).toEqual([
     compositionA,
   ]);
+  expect(await api.getConversation({ account: "fred" })).toEqual([
+    compositionA,
+  ]);
+  expect(await api.getConversation({ account: "alice" })).toEqual([
+    compositionA,
+  ]);
   expect(
-    await api.getConversation({ account: "fred", author: "fred" })
+    await api.getConversation({ account: "fred", other: "alice" })
   ).toEqual([compositionA]);
+  expect(await api.getConversation({ account: "nobody" })).toEqual([]);
   expect(
-    await api.getConversation({ account: "fred", author: "alice" })
-  ).toEqual([compositionA]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "alice" })
-  ).toEqual([compositionA]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "fred" })
-  ).toEqual([compositionA]);
-  expect(
-    await api.getConversation({ account: "fred", author: "nobody" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "nobody" })
+    await api.getConversation({ account: "fred", other: "nobody" })
   ).toEqual([]);
   const compositionB = {
     author: "alice",
@@ -53,22 +48,19 @@ test("conversation aggregation", async () => {
     compositionA,
     compositionB,
   ]);
+  expect(await api.getConversation({ account: "fred" })).toEqual([
+    compositionA,
+    compositionB,
+  ]);
+  expect(await api.getConversation({ account: "alice" })).toEqual([
+    compositionA,
+    compositionB,
+  ]);
   expect(
-    await api.getConversation({ account: "fred", author: "fred" })
+    await api.getConversation({ account: "fred", other: "alice" })
   ).toEqual([compositionA, compositionB]);
+  expect(await api.getConversation({ account: "nobody" })).toEqual([]);
   expect(
-    await api.getConversation({ account: "fred", author: "alice" })
-  ).toEqual([compositionA, compositionB]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "alice" })
-  ).toEqual([compositionA, compositionB]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "fred" })
-  ).toEqual([compositionA, compositionB]);
-  expect(
-    await api.getConversation({ account: "fred", author: "nobody" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "fred", recipient: "nobody" })
+    await api.getConversation({ account: "fred", other: "nobody" })
   ).toEqual([]);
 });

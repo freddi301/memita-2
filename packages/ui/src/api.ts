@@ -12,6 +12,14 @@ export type Contact = {
   version_timestamp: number;
 };
 
+export type Channel = {
+  account: string;
+  channel: string;
+  nickname: string;
+  label: string;
+  version_timestamp: number;
+};
+
 export type Composition = {
   author: string;
   channel: string;
@@ -37,6 +45,16 @@ export type Api = {
     nickname?: string;
     label?: string;
   }): Promise<Array<Contact>>;
+  addChannel(contact: Channel): Promise<void>;
+  getChannel(params: {
+    account: string;
+    channel: string;
+  }): Promise<Channel | undefined>;
+  getChannels(params: {
+    account: string;
+    nickname?: string;
+    label?: string;
+  }): Promise<Array<Channel>>;
   addComposition(composition: Composition): Promise<void>;
   getComposition(params: {
     account: string;
@@ -56,9 +74,8 @@ export type Api = {
   }): Promise<Array<Composition>>;
   getConversation(params: {
     account: string;
-    author?: string;
     channel?: string;
-    recipient?: string;
+    other?: string;
     quote?: string;
     content?: string;
   }): Promise<Array<Composition>>;

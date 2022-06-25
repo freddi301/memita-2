@@ -73,7 +73,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
             routing.push("Conversation", {
               account,
               channel: "",
-              recipient: author,
+              other: author,
             });
           }}
           style={{ padding: 16 }}

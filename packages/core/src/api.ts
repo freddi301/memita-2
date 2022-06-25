@@ -22,6 +22,15 @@ export function createApi(sql: Sql) {
       PRIMARY KEY (account, author, nickname, label, version_timestamp)
     )`.run(),
 
+    sql`CREATE TABLE channels (
+      account TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      nickname TEXT NOT NULL,
+      label TEXT NOT NULL,
+      version_timestamp INT NOT NUll,
+      PRIMARY KEY (account, channel, nickname, label, version_timestamp)
+    )`.run(),
+
     sql`CREATE TABLE compositions (
       author TEXT NOT NULL,
       channel TEXT NOT NULL,
@@ -108,8 +117,42 @@ export function createApi(sql: Sql) {
       const nicknameSearch = "%" + asSearch(nickname) + "%";
       return (await sql`
           SELECT account, author, nickname, label, MAX(version_timestamp) AS version_timestamp FROM contacts
-          WHERE account = account
+          WHERE account = ${account}
           GROUP BY author
+          HAVING
+            (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
+            (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
+          ORDER BY nickname ASC
+        `.all()) as any;
+    },
+    async addChannel({ account, channel, nickname, label, version_timestamp }) {
+      await setup;
+      await sql`
+        INSERT INTO channels (account, channel, nickname, label, version_timestamp)
+        VALUES (${account}, ${channel}, ${nickname}, ${label}, ${version_timestamp})
+      `.run();
+    },
+    async getChannel({ account, channel }) {
+      await setup;
+      return (
+        await sql`
+          SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
+          WHERE account=${account} AND channel=${channel}
+          GROUP BY account, channel
+        `.all()
+      )[0] as any;
+    },
+    async getChannels({
+      account,
+      nickname = "DONTFILTER",
+      label = "DONTFILTER",
+    }) {
+      await setup;
+      const nicknameSearch = "%" + asSearch(nickname) + "%";
+      return (await sql`
+          SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
+          WHERE account = ${account}
+          GROUP BY channel
           HAVING
             (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
             (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
@@ -171,9 +214,8 @@ export function createApi(sql: Sql) {
     },
     async getConversation({
       account,
-      author = "DONTFILTER",
       channel = "DONTFILTER",
-      recipient = "DONTFILTER",
+      other = "DONTFILTER",
       quote = "DONTFILTER",
       content = "DONTFILTER",
     }) {
@@ -183,14 +225,8 @@ export function createApi(sql: Sql) {
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp FROM compositions
         WHERE
           (
-            (
-              (author = CASE WHEN ${author} = 'DONTFILTER' THEN author ELSE ${author} END) AND
-              (recipient = CASE WHEN ${recipient} = 'DONTFILTER' THEN recipient ELSE ${recipient} END)
-            ) OR
-            (
-              (recipient = CASE WHEN ${author} = 'DONTFILTER' THEN recipient ELSE ${author} END) AND
-              (author = CASE WHEN ${recipient} = 'DONTFILTER' THEN author ELSE ${recipient} END)
-            )
+            (author = ${account} AND (recipient = CASE WHEN ${other} = 'DONTFILTER' THEN recipient ELSE ${other} END)) OR
+            (recipient = ${account} AND (author = CASE WHEN ${other} = 'DONTFILTER' THEN author ELSE ${other} END))
           ) AND
           (channel = CASE WHEN ${channel} = 'DONTFILTER' THEN channel ELSE ${channel} END) AND
           (quote = CASE WHEN ${quote} = 'DONTFILTER' THEN quote ELSE ${quote} END)

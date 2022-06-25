@@ -15,6 +15,8 @@
       "**/react-dom",
       "**/react-native",
       "**/react-native/**",
+      "**/react-native-svg",
+      "**/react-native-svg/**",
       "**/nodejs-mobile-react-native",
       "**/nodejs-mobile-react-native/**",
       "**/better-sqlite3",

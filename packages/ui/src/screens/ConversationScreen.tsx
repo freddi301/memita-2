@@ -15,7 +15,7 @@ import { DateTime } from "luxon";
 export function ConversationScreen({
   account,
   channel,
-  recipient,
+  other,
 }: Routes["Conversation"]) {
   const api = useApi();
   const theme = useTheme();
@@ -25,12 +25,12 @@ export function ConversationScreen({
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
   const conversationQuery = useQuery(
-    ["conversation", { account, channel, recipient, searchTextDebounced }],
+    ["conversation", { account, channel, other, searchTextDebounced }],
     async () => {
       return await api.getConversation({
         account,
         channel,
-        recipient,
+        other,
         content: searchTextDebounced || undefined,
       });
     }
@@ -53,7 +53,7 @@ export function ConversationScreen({
     addCompositionMutation.mutate({
       author: account,
       channel: channel ?? "",
-      recipient: recipient ?? "",
+      recipient: other ?? "",
       quote: "",
       salt,
       content,
@@ -120,7 +120,7 @@ export function ConversationScreen({
                     color: theme.textColor,
                   }}
                 >
-                  {channel ?? recipient}
+                  {channel ?? other}
                 </Text>
               </View>
             </View>{" "}

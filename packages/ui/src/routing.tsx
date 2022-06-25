@@ -11,6 +11,9 @@ import { AccountsScreen } from "./screens/AccountsScreen";
 import { AccountScreen } from "./screens/AccountScreen";
 import { SettingsScreen } from "./screens/Settings";
 import { Animated, View } from "react-native";
+import { ChannelsScreen } from "./screens/ChannelsScreen";
+import { ChannelScreen } from "./screens/ChannelScreen";
+import { useTheme } from "./theme";
 
 export type Routes = {
   Accounts: {};
@@ -20,6 +23,8 @@ export type Routes = {
   Navigation: { account: string };
   Contacts: { account: string };
   Contact: { account: string; author?: string };
+  Channels: { account: string };
+  Channel: { account: string; channel?: string };
   Profile: { account: string; author: string };
   Composition: {
     account: string;
@@ -36,7 +41,7 @@ export type Routes = {
   Conversation: {
     account: string;
     channel: string;
-    recipient: string;
+    other: string;
   };
 };
 
@@ -46,7 +51,7 @@ type Route = {
 
 const mapping: {
   [Screen in keyof Routes]: React.ComponentType<Routes[Screen]>;
-} = {
+} = applyReactMemo({
   Accounts: AccountsScreen,
   Account: AccountScreen,
   Navigation: NavigationScreen,
@@ -54,11 +59,17 @@ const mapping: {
   Database: DatabaseScreen,
   Contacts: ContactsScreen,
   Contact: ContactScreen,
+  Channels: ChannelsScreen,
+  Channel: ChannelScreen,
   Profile: ProfileScreen,
   Composition: CompositionScreen,
   Conversations: ConversationsScreen,
   Conversation: ConversationScreen,
-};
+});
+
+function applyReactMemo<M extends Record<string, React.ComponentType<any>>>(componentMap: M): M {
+  return Object.fromEntries(Object.entries(componentMap).map(([key, component]) => [key, React.memo(component)])) as any
+}
 
 type Routing = {
   push<Screen extends keyof Routes>(
@@ -96,13 +107,23 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
   }, []);
   const value = React.useMemo<Routing>(() => ({ push, back }), [push, back]);
   const indexAnimation = React.useRef(new Animated.Value(0)).current;
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const duration = 300;
   React.useLayoutEffect(() => {
-    Animated.timing(indexAnimation, {
+    const animation = Animated.timing(indexAnimation, {
       toValue: -index,
-      duration: 300,
+      duration,
       useNativeDriver: true,
-    }).start();
-  }, [index]);
+    });
+    animation.start();
+    setIsAnimating(true);
+    const timeout = setTimeout(() => setIsAnimating(false), duration)
+    return () => {
+      animation.stop();
+      clearTimeout(timeout)
+    };
+  }, [index, indexAnimation]);
+  const theme = useTheme()
   if (!isAnimated) {
     const route = stack[index] ?? initial;
     const Screen = mapping[route.screen];
@@ -116,6 +137,7 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
     <RoutingContext.Provider value={value}>
       <View style={{ position: "relative", flex: 1 }}>
         {stack.map((route, i) => {
+          if (!isAnimating && i !== index) return null;
           const Screen = mapping[route.screen];
           return (
             <Animated.View
@@ -124,14 +146,20 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
                 width: "100%",
                 height: "100%",
                 position: "absolute",
-                top: 0,
-                left: Animated.add(indexAnimation, i).interpolate({
-                  inputRange: [0, 1 * stack.length],
-                  outputRange: [`0%`, `${100 * stack.length}%`],
-                }),
+                transform: [
+                  {translateX: Animated.add(indexAnimation, i).interpolate({
+                    inputRange: [0, 1 * stack.length],
+                    outputRange: [`0%`, `${100 * stack.length}%`],
+                  })}
+                ],
+                // top: 0,
+                // left: Animated.add(indexAnimation, i).interpolate({
+                //   inputRange: [0, 1 * stack.length],
+                //   outputRange: [`0%`, `${100 * stack.length}%`],
+                // }),
               }}
             >
-              <Screen {...(route as any)} />
+              <Screen {...(route.parameters as any)} />
             </Animated.View>
           );
         })}

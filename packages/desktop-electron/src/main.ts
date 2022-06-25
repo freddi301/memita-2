@@ -17,8 +17,19 @@ function createWindow() {
     window.loadURL("http://localhost:9000");
   } else {
     window.loadFile(path.join(__dirname, "index.html"));
-  }
+  }  
   return window;
+}
+
+function installExtensions(){
+  const { default: installExtension, REACT_DEVELOPER_TOOLS,  } = require('electron-devtools-installer');
+
+  installExtension(REACT_DEVELOPER_TOOLS).then((name: string) => {
+      console.log(`Added Extension:  ${name}`);
+  })
+  .catch((err: unknown) => {
+      console.log('An error occurred: ', err);
+  });
 }
 
 app.whenReady().then(() => {
@@ -29,6 +40,7 @@ app.whenReady().then(() => {
   if (!app.isPackaged) {
     window.webContents.openDevTools();
   }
+  if (!app.isPackaged) installExtensions()
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

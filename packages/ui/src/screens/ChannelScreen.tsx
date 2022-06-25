@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
@@ -9,22 +9,27 @@ import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 
-export function AccountScreen({ ...original }: Routes["Account"]) {
+export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
-  const accountQuery = useQuery(
-    ["account", { author: original.author ?? "" }],
+  const channelQuery = useQuery(
+    ["channel", { account, channel: original.channel }],
     async () => {
-      return await api.getAccount({ author: "" });
+      return await api.getChannel({
+        account,
+        channel: original.channel ?? "",
+      });
     }
   );
-  const addAccountMutation = useMutation(
-    async ({ author, nickname }: { author: string; nickname: string }) => {
+  const addChannelMutation = useMutation(
+    async ({ channel, nickname }: { channel: string; nickname: string }) => {
       const version_timestamp = Date.now();
-      await api.addAccount({
-        author,
+      await api.addChannel({
+        account,
+        channel,
         nickname,
+        label: "",
         version_timestamp,
       });
     },
@@ -34,13 +39,31 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
       },
     }
   );
-  const [author, setAuthor] = React.useState(original.author ?? "");
+  const deleteChannelMutation = useMutation(
+    async (channel: string) => {
+      const version_timestamp = Date.now();
+      await api.addChannel({
+        account,
+        channel,
+        nickname,
+        label: "deleted",
+        version_timestamp,
+      });
+    },
+    {
+      onSuccess() {
+        routing.back();
+      },
+    }
+  );
+  const [channel, setChannel] = React.useState(original.channel ?? "");
   const [nickname, setNickname] = React.useState("");
   React.useEffect(() => {
-    if (accountQuery.data) {
-      setNickname(accountQuery.data.nickname);
+    if (channelQuery.data) {
+      setNickname(channelQuery.data.nickname);
     }
-  }, [accountQuery.data]);
+  }, [channelQuery.data]);
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -59,24 +82,34 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
             flex: 1,
           }}
         >
-          Account
+          Channel
         </Text>
+        {original.channel && (
+          <Pressable
+            onPress={() => {
+              deleteChannelMutation.mutate(channel);
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
+          </Pressable>
+        )}
         <Pressable
           onPress={() => {
-            addAccountMutation.mutate({ author, nickname });
+            addChannelMutation.mutate({ channel, nickname });
           }}
           style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"check"} color={theme.textColor} />
         </Pressable>
       </View>
-      <HorizontalLoader isLoading={accountQuery.isFetching} />
+      <HorizontalLoader isLoading={channelQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Author"
-          value={author}
-          onChangeText={setAuthor}
-          editable={original.author === undefined}
+          label="Channel"
+          value={channel}
+          onChangeText={setChannel}
+          editable={original.channel === undefined}
         />
         <SimpleInput
           label="Nickname"
