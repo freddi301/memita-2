@@ -1,3 +1,4 @@
 {
-    "jest.jestCommandLine": "yarn jest"
+    "jest.jestCommandLine": "yarn jest",
+    "editor.formatOnSave": true
 }

@@ -1,5 +1,5 @@
 import { createApi } from "../src";
-import { createSql } from "./sqlite/sql.js";
+import { createSql } from "./sqlite/sql";
 
 test("account aggregation", async () => {
   const api = createApi(createSql());

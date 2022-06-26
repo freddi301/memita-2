@@ -19,15 +19,9 @@ code --install-extension Orta.vscode-jest
 
 ## TODO
 
-- [ ] compositions basic replication
-- [ ] rename ui and core modules to frontend and backend
-- [ ] degrow bundle sizes
-- [ ] generate schema for https://github.com/frigus02/typescript-sql-tagged-template-plugin#configuration
-- [ ] light dark theme
-- [ ] i18n
-- [ ] fresh install on windows and linux and write setup documentation
-- [ ] tidy up package.json files
-- [x] basic data replication
-- [x] private conversation screen
-- [x] electron hello world
-- [x] android hello world
+- compositions basic replication
+- rename ui and core modules to frontend and backend
+- degrow bundle sizes
+- generate schema for https://github.com/frigus02/typescript-sql-tagged-template-plugin#configuration
+- i18n
+- fresh install on windows and linux and write setup documentation

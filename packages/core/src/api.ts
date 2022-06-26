@@ -6,6 +6,12 @@ export function createApi(sql: Sql) {
   const setup = Promise.all([
     optimizeDd(),
 
+    sql`CREATE TABLE settings (
+      pk TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      PRIMARY KEY (pk)
+    )`.run(),
+
     sql`CREATE TABLE accounts (
       author TEXT NOT NULL,
       nickname TEXT NOT NULL,
@@ -62,6 +68,21 @@ export function createApi(sql: Sql) {
         ...(await sql`SELECT * from contacts`.all()),
         ...(await sql`SELECT * from compositions`.all()),
       ];
+    },
+    async setSettings(settings) {
+      await setup;
+      await sql`
+        INSERT OR REPLACE INTO settings (pk, payload)
+        VALUES ('settings', ${JSON.stringify(settings)})
+      `.run();
+    },
+    async getSettings() {
+      await setup;
+      const rows = await sql`
+        SELECT pk, payload FROM settings
+      `.all();
+      if (rows.length === 0) return;
+      return JSON.parse((rows[0] as any).payload);
     },
     async addAccount({ author, nickname, version_timestamp }) {
       await setup;

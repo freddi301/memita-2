@@ -4,10 +4,9 @@ import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { BackButton } from "../components/BackButton";
 
-export function NavigationScreen(props: Routes["Navigation"]) {
+export function NavigationScreen({ account }: Routes["Navigation"]) {
   const routing = useRouting();
   const theme = useTheme();
-  const account = props.account
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -78,7 +77,7 @@ export function NavigationScreen(props: Routes["Navigation"]) {
               color: theme.textColor,
             }}
           >
-            Account
+            Your Account
           </Text>
         </Pressable>
         <Pressable

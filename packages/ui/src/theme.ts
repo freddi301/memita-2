@@ -1,6 +1,6 @@
 import React from "react";
 
-const darkTheme = {
+const dark = {
   backgroundColorPrimary: "#282c34",
   backgroundColorSecondary: "#21252b",
   textColor: "#abb2bf",
@@ -8,7 +8,20 @@ const darkTheme = {
   headerHeight: 48,
 };
 
-const ThemeContext = React.createContext(darkTheme);
+const light: typeof dark = {
+  backgroundColorPrimary: "#ffffff",
+  backgroundColorSecondary: "#efeff0",
+  textColor: "#000000",
+  activeColor: "#0a84ff",
+  headerHeight: 48,
+};
+
+export const themes = {
+  dark,
+  light,
+};
+
+export const ThemeContext = React.createContext(dark);
 
 export function useTheme() {
   return React.useContext(ThemeContext);

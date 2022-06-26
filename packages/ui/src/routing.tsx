@@ -9,7 +9,7 @@ import { ConversationsScreen } from "./screens/ConversationsScreen";
 import { NavigationScreen } from "./screens/NavigationScreen";
 import { AccountsScreen } from "./screens/AccountsScreen";
 import { AccountScreen } from "./screens/AccountScreen";
-import { SettingsScreen } from "./screens/Settings";
+import { SettingsScreen } from "./screens/SettingsScreen";
 import { Animated, View } from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
@@ -67,8 +67,15 @@ const mapping: {
   Conversation: ConversationScreen,
 });
 
-function applyReactMemo<M extends Record<string, React.ComponentType<any>>>(componentMap: M): M {
-  return Object.fromEntries(Object.entries(componentMap).map(([key, component]) => [key, React.memo(component)])) as any
+function applyReactMemo<M extends Record<string, React.ComponentType<any>>>(
+  componentMap: M
+): M {
+  return Object.fromEntries(
+    Object.entries(componentMap).map(([key, component]) => [
+      key,
+      React.memo(component),
+    ])
+  ) as any;
 }
 
 type Routing = {
@@ -117,13 +124,13 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
     });
     animation.start();
     setIsAnimating(true);
-    const timeout = setTimeout(() => setIsAnimating(false), duration)
+    const timeout = setTimeout(() => setIsAnimating(false), duration);
     return () => {
       animation.stop();
-      clearTimeout(timeout)
+      clearTimeout(timeout);
     };
   }, [index, indexAnimation]);
-  const theme = useTheme()
+  const theme = useTheme();
   if (!isAnimated) {
     const route = stack[index] ?? initial;
     const Screen = mapping[route.screen];
@@ -147,10 +154,12 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
                 height: "100%",
                 position: "absolute",
                 transform: [
-                  {translateX: Animated.add(indexAnimation, i).interpolate({
-                    inputRange: [0, 1 * stack.length],
-                    outputRange: [`0%`, `${100 * stack.length}%`],
-                  })}
+                  {
+                    translateX: Animated.add(indexAnimation, i).interpolate({
+                      inputRange: [0, 1 * stack.length],
+                      outputRange: [`0%`, `${100 * stack.length}%`],
+                    }),
+                  },
                 ],
                 // top: 0,
                 // left: Animated.add(indexAnimation, i).interpolate({

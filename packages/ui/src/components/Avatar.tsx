@@ -5,7 +5,7 @@ export function Avatar() {
   return (
     <Pressable
       style={{
-        backgroundColor: "white",
+        backgroundColor: "#32d74b",
         width: 32,
         height: 32,
         borderRadius: 16,

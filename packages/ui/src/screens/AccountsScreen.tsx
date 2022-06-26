@@ -69,7 +69,7 @@ export function AccountsScreen() {
                 marginLeft: 48,
               }}
             >
-              Accounts
+              Your Accounts
             </Text>
             <Pressable
               onPress={() => {
