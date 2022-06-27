@@ -1,5 +1,4 @@
 import type { Api } from "@memita-2/ui";
-import Hyperswarm from "hyperswarm";
 import { Sql } from "./sql";
 
 export function createApi(sql: Sql) {
@@ -282,23 +281,6 @@ export function createApi(sql: Sql) {
 
   function asSearch(string: string) {
     return string.replace(/[^a-zA-z0-9]/g, "");
-  }
-
-  function replicate() {
-    const topic = Buffer.alloc(32).fill("memita-2");
-    const swarm = new Hyperswarm();
-    swarm.join(topic, { server: true, client: true });
-    swarm.on("connection", (connection, info) => {
-      connection.on("data", (data) => {
-        // TODO
-      });
-      connection.on("close", () => {
-        // TODO
-      });
-      connection.on("error", () => {
-        //TODO
-      });
-    });
   }
 
   return api;

@@ -10,6 +10,7 @@ declare module "hyperswarm" {
   export type Connection = {
     write(data: Buffer | string): void;
     on(event: "data", callback: (data: Buffer) => void): void;
+    off(event: "data", callback: (data: Buffer) => void): void;
     on(event: "error", callback: (error: unknown) => void): void;
     on(event: "close", callback: () => void): void;
     end(): void;

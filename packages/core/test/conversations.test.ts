@@ -1,5 +1,5 @@
-import { createApi } from "../src";
-import { createSql } from "./sqlite/sql";
+import { createApi } from "../src/api";
+import { createSql } from "./sql";
 
 test("conversations aggregation", async () => {
   const api = createApi(createSql());

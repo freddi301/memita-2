@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { createApi } from "@memita-2/core";
+import { createApi, sync } from "@memita-2/core";
 import { createSql } from "./sql";
 
-const api = createApi(createSql());
+const sql = createSql()
+const api = createApi(sql);
+sync(sql, api)
 
 function createWindow() {
   const window = new BrowserWindow({
