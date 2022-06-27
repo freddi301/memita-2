@@ -10,10 +10,9 @@ import { NavigationScreen } from "./screens/NavigationScreen";
 import { AccountsScreen } from "./screens/AccountsScreen";
 import { AccountScreen } from "./screens/AccountScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
-import { Animated, View } from "react-native";
+import { Animated, BackHandler, View } from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
-import { useTheme } from "./theme";
 
 export type Routes = {
   Accounts: {};
@@ -111,7 +110,14 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
       stack,
       index: Math.max(0, index - 1),
     }));
+    return true;
   }, []);
+  React.useLayoutEffect(() => {
+    BackHandler.addEventListener("hardwareBackPress", back);
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", back);
+    };
+  }, [back]);
   const value = React.useMemo<Routing>(() => ({ push, back }), [push, back]);
   const indexAnimation = React.useRef(new Animated.Value(0)).current;
   const [isAnimating, setIsAnimating] = React.useState(false);
@@ -130,7 +136,6 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
       clearTimeout(timeout);
     };
   }, [index, indexAnimation]);
-  const theme = useTheme();
   if (!isAnimated) {
     const route = stack[index] ?? initial;
     const Screen = mapping[route.screen];

@@ -1,5 +1,5 @@
 import rn_bridge from 'rn-bridge';
-import {createApi} from '@memita-2/core';
+import {createApi, createHyperSwarm, createSync} from '@memita-2/core';
 import {createSql} from './components/sql';
 import path from 'path';
 import os from 'os';
@@ -33,7 +33,21 @@ process.on('uncaughtException', (err: Error | string) => {
   });
 });
 
-const api = createApi(createSql());
+const sql = createSql();
+const api = createApi(sql);
+const swarm = createHyperSwarm();
+
+(async () => {
+  while (true) {
+    const sync = await createSync({sql, api, swarm});
+    (async () => {
+      while (true) {
+        await sync();
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    })();
+  }
+})();
 
 rn_bridge.channel.on('message', ({requestId, method, args}: any) => {
   (api as any)[method](...args).then(

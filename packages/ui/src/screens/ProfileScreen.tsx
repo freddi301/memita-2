@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { BackButton } from "../components/BackButton";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
@@ -202,6 +202,12 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
               No posts
             </Text>
           )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={postsQuery.isFetching}
+            onRefresh={() => postsQuery.refetch()}
+          />
         }
       />
     </View>

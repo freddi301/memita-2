@@ -1,7 +1,13 @@
 import React from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useQuery } from "react-query";
-import { useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
@@ -11,12 +17,11 @@ import { HorizontalLoader } from "../components/HorizontalLoader";
 
 export function DatabaseScreen() {
   const api = useApi();
-  const routing = useRouting();
   const theme = useTheme();
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const compositionsQuery = useQuery(["database", {}], async () => {
+  const databaseQuery = useQuery(["database", {}], async () => {
     return await api.getDatabase();
   });
   return (
@@ -77,9 +82,9 @@ export function DatabaseScreen() {
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={compositionsQuery.isFetching} />
+      <HorizontalLoader isLoading={databaseQuery.isFetching} />
       <FlatList
-        data={compositionsQuery.data}
+        data={databaseQuery.data}
         renderItem={({ item }) => {
           return (
             <Text
@@ -94,7 +99,7 @@ export function DatabaseScreen() {
           );
         }}
         ListEmptyComponent={
-          compositionsQuery.isLoading ? null : (
+          databaseQuery.isLoading ? null : (
             <Text
               style={{
                 color: theme.textColor,
@@ -112,6 +117,12 @@ export function DatabaseScreen() {
               )}
             </Text>
           )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={databaseQuery.isFetching}
+            onRefresh={() => databaseQuery.refetch()}
+          />
         }
       />
     </View>

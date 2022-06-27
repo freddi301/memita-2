@@ -1,5 +1,12 @@
 import React from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useQuery } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -188,6 +195,12 @@ export function ConversationsScreen({
               )}
             </Text>
           )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={conversationsQuery.isFetching}
+            onRefresh={() => conversationsQuery.refetch()}
+          />
         }
       />
     </View>

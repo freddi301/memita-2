@@ -1,5 +1,12 @@
 import React from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -35,6 +42,15 @@ export function ConversationScreen({
       });
     }
   );
+  const contactQuery = useQuery(
+    ["contact", { account, author: other }],
+    async () => {
+      return await api.getContact({ account, author: other });
+    }
+  );
+  const channelQuery = useQuery(["channel", { account, channel }], async () => {
+    return await api.getChannel({ account, channel });
+  });
   const addCompositionMutation = useMutation(
     async (comunication: Composition) => {
       await api.addComposition(comunication);
@@ -113,14 +129,16 @@ export function ConversationScreen({
                     fontWeight: "bold",
                   }}
                 >
-                  {""}
+                  {contactQuery.data?.nickname ??
+                    channelQuery.data?.nickname ??
+                    ""}
                 </Text>
                 <Text
                   style={{
                     color: theme.textColor,
                   }}
                 >
-                  {channel ?? other}
+                  {channel || other}
                 </Text>
               </View>
             </View>{" "}
@@ -243,6 +261,12 @@ export function ConversationScreen({
               )}
             </Text>
           )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={conversationQuery.isFetching}
+            onRefresh={() => conversationQuery.refetch()}
+          />
         }
       />
       <View

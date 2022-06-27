@@ -5,6 +5,10 @@ declare module "hyperswarm" {
       event: "connection",
       callback: (connection: Connection, info: PeerInfo) => void
     ): void;
+    once(
+      event: "connection",
+      callback: (connection: Connection, info: PeerInfo) => void
+    ): void;
     join(topic: Buffer, options: { server: boolean; client: boolean }): void;
   }
   export type Connection = {

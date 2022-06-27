@@ -86,7 +86,7 @@ export function createApi(sql: Sql) {
     async addAccount({ author, nickname, version_timestamp }) {
       await setup;
       await sql`
-        INSERT INTO accounts (author, nickname, version_timestamp)
+        INSERT OR REPLACE INTO accounts (author, nickname, version_timestamp)
         VALUES (${author}, ${nickname}, ${version_timestamp})
       `.run();
     },
@@ -114,7 +114,7 @@ export function createApi(sql: Sql) {
     async addContact({ account, author, nickname, label, version_timestamp }) {
       await setup;
       await sql`
-        INSERT INTO contacts (account, author, nickname, label, version_timestamp)
+        INSERT OR REPLACE INTO contacts (account, author, nickname, label, version_timestamp)
         VALUES (${account}, ${author}, ${nickname}, ${label}, ${version_timestamp})
       `.run();
     },
@@ -148,7 +148,7 @@ export function createApi(sql: Sql) {
     async addChannel({ account, channel, nickname, label, version_timestamp }) {
       await setup;
       await sql`
-        INSERT INTO channels (account, channel, nickname, label, version_timestamp)
+        INSERT OR REPLACE INTO channels (account, channel, nickname, label, version_timestamp)
         VALUES (${account}, ${channel}, ${nickname}, ${label}, ${version_timestamp})
       `.run();
     },
@@ -190,7 +190,7 @@ export function createApi(sql: Sql) {
     }) {
       await setup;
       await sql`
-        INSERT INTO compositions (author, channel, recipient, quote, salt, content, version_timestamp)
+        INSERT OR REPLACE INTO compositions (author, channel, recipient, quote, salt, content, version_timestamp)
         VALUES (${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
       `.run();
     },

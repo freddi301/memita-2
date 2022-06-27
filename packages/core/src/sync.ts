@@ -1,9 +1,9 @@
 import libsodium from "libsodium-wrappers";
-import Hyperswarm from "hyperswarm";
 import { Api, Channel, Composition, Contact } from "@memita-2/ui";
 import { wireRpc } from "./components/wireRpc";
-import { createCryptoHashableDataSyncSession } from "./components/createCryptoHashableDataSyncSession";
+import { createCryptoHashableDataSyncSession } from "./components/cryptoHashableDataSyncSession";
 import { Sql } from "./sql";
+import { Swarm } from "./components/swarm/swarm";
 
 type Tables = {
   contacts: Contact;
@@ -21,7 +21,7 @@ type TableDTO = {
   [T in keyof Tables]: { table: T; row: Tables[T] };
 }[keyof Tables];
 
-function hashFunction(value: unknown) {
+function cryptoHashFunction(value: unknown) {
   const state = libsodium.crypto_generichash_init(
     "",
     libsodium.crypto_generichash_KEYBYTES
@@ -34,7 +34,15 @@ function hashFunction(value: unknown) {
   );
 }
 
-export function sync(sql: Sql, api: Api) {
+export async function createSync({
+  sql,
+  api,
+  swarm,
+}: {
+  sql: Sql;
+  api: Api;
+  swarm: Swarm<Buffer>;
+}) {
   const tablesAdd: TablesAdd = {
     contacts: api.addContact,
     channels: api.addChannel,
@@ -71,41 +79,21 @@ export function sync(sql: Sql, api: Api) {
     );
   }
 
-  const topic = Buffer.alloc(32).fill("memita-2");
-  const swarm = new Hyperswarm();
-  swarm.join(topic, { server: true, client: true });
-  swarm.on("connection", (connection, info) => {
-    async function runSyncSession() {
-      const { server, sync } = createCryptoHashableDataSyncSession(
-        await makeDataset(),
-        hashFunction
-      );
-      const { receive, client } = wireRpc({
-        server,
-        send(data) {
-          connection.write(data);
-        },
-      });
-      const onData = (data: Buffer) => {
-        console.log(String(data));
-        receive(data);
-      };
-      connection.on("data", onData);
-      await updateDataset(await sync(client));
-      connection.off("data", onData);
-    }
-    let everytinhgOk = true;
-    (async () => {
-      while (everytinhgOk) {
-        await runSyncSession();
-        await new Promise((resolve) => setTimeout(resolve, 100000000));
-      }
-    })();
-    connection.on("close", () => {
-      everytinhgOk = false;
-    });
-    connection.on("error", () => {
-      everytinhgOk = false;
-    });
+  let sync: () => Promise<Array<TableDTO>> = null as any;
+
+  await swarm.connect(({ send, close }) => {
+    const { server, actions } = createCryptoHashableDataSyncSession(
+      makeDataset,
+      cryptoHashFunction
+    );
+    const { receive, client } = wireRpc({ server, send });
+    ({ sync } = actions(client));
+    return { receive, close };
   });
+
+  return async () => {
+    const synced = await sync();
+    await updateDataset(synced);
+    return synced;
+  };
 }
