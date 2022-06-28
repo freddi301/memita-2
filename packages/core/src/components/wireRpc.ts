@@ -8,9 +8,27 @@ export function wireRpc<
   server: (client: RPC) => RPC;
   send(data: Buffer): void;
 }) {
-  type Message =
-    | { type: "request"; id: number; method: string; arguments: any[] }
-    | { type: "response"; id: number; isError: boolean; result: any };
+  type Message<Method extends keyof RPC> =
+    | {
+        type: "request";
+        id: number;
+        method: Method;
+        arguments: Parameters<RPC[Method]>;
+      }
+    | {
+        type: "response";
+        id: number;
+        method: Method;
+        isError: false;
+        result: Awaited<ReturnType<RPC[Method]>>;
+      }
+    | {
+        type: "response";
+        id: number;
+        method: Method;
+        isError: true;
+        result: unknown;
+      };
   let nextRequestId = 0;
   const pendingRequests = new Map<
     number,
@@ -20,12 +38,12 @@ export function wireRpc<
     {},
     {
       get(target, propery, receiver) {
-        return (...args: any[]) => {
-          const message: Message = {
+        return <Method extends keyof RPC>(...args: any[]) => {
+          const message: Message<Method> = {
             type: "request",
             id: nextRequestId++,
-            method: propery as string,
-            arguments: args,
+            method: propery as Method,
+            arguments: args as Parameters<RPC[Method]>,
           };
           send(Buffer.from(JSON.stringify(message)));
           return new Promise((resolve, reject) =>
@@ -36,8 +54,8 @@ export function wireRpc<
     }
   ) as RPC;
   const serverInstance = server(client);
-  const receive = (data: Buffer) => {
-    const message = JSON.parse(String(data)) as Message;
+  const receive = <Method extends keyof RPC>(data: Buffer) => {
+    const message = JSON.parse(String(data)) as Message<Method>;
     switch (message.type) {
       case "request": {
         serverInstance[message.method](...message.arguments).then(
