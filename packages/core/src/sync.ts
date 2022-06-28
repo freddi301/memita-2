@@ -1,9 +1,9 @@
-import libsodium from "libsodium-wrappers";
 import { Api, Channel, Composition, Contact } from "@memita-2/ui";
 import { wireRpc } from "./components/wireRpc";
 import { createCryptoHashableDataSyncSession } from "./components/cryptoHashableDataSyncSession";
 import { Sql } from "./sql";
 import { Swarm } from "./components/swarm/swarm";
+import { cryptoHashFunction } from "./components/cryptoHashFunction";
 
 type Tables = {
   contacts: Contact;
@@ -20,19 +20,6 @@ export type TablesAll = {
 type TableDTO = {
   [T in keyof Tables]: { table: T; row: Tables[T] };
 }[keyof Tables];
-
-function cryptoHashFunction(value: unknown) {
-  const state = libsodium.crypto_generichash_init(
-    "",
-    libsodium.crypto_generichash_KEYBYTES
-  );
-  libsodium.crypto_generichash_update(state, JSON.stringify(value));
-  return libsodium.crypto_generichash_final(
-    state,
-    libsodium.crypto_generichash_KEYBYTES,
-    "hex"
-  );
-}
 
 export async function createSync({
   sql,

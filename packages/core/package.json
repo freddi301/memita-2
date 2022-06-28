@@ -13,6 +13,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@deepkit/type-compiler": "^1.0.1-alpha.71",
     "@types/better-sqlite3": "^7.5.0",
     "@types/jest": "^28.1.2",
     "@types/sql.js": "^1.4.3",
@@ -25,6 +26,8 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@deepkit/core": "^1.0.1-alpha.65",
+    "@deepkit/type": "^1.0.1-alpha.71",
     "@types/libsodium-wrappers": "^0.7.9",
     "hyperswarm": "^3.0.4",
     "libsodium-wrappers": "^0.7.10"
