@@ -20,14 +20,7 @@
       "**/nodejs-mobile-react-native",
       "**/nodejs-mobile-react-native/**",
       "**/better-sqlite3",
-      "**/better-sqlite3/**",
-      "**/@deepkit/type-compiler",
-      "**/@deepkit/type-compiler/**",
-      "**/@deepkit/core",
-      "**/@deepkit/core/**",
-      "**/@deepkit/type",
-      "**/@deepkit/type/**"
-
+      "**/better-sqlite3/**"
     ]
   },
   "devDependencies": {
