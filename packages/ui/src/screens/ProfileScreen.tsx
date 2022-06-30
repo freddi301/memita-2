@@ -205,7 +205,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
         }
         refreshControl={
           <RefreshControl
-            refreshing={postsQuery.isFetching}
+            refreshing={false}
             onRefresh={() => postsQuery.refetch()}
           />
         }

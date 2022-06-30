@@ -264,7 +264,7 @@ export function ConversationScreen({
         }
         refreshControl={
           <RefreshControl
-            refreshing={conversationQuery.isFetching}
+            refreshing={false}
             onRefresh={() => conversationQuery.refetch()}
           />
         }

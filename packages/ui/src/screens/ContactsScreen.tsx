@@ -162,7 +162,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
         }
         refreshControl={
           <RefreshControl
-            refreshing={contactsQuery.isFetching}
+            refreshing={false}
             onRefresh={() => contactsQuery.refetch()}
           />
         }

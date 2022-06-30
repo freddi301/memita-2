@@ -162,7 +162,7 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
         }
         refreshControl={
           <RefreshControl
-            refreshing={channelsQuery.isFetching}
+            refreshing={false}
             onRefresh={() => channelsQuery.refetch()}
           />
         }

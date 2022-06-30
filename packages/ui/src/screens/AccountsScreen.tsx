@@ -159,7 +159,7 @@ export function AccountsScreen() {
         }
         refreshControl={
           <RefreshControl
-            refreshing={accountsQuery.isFetching}
+            refreshing={false}
             onRefresh={() => accountsQuery.refetch()}
           />
         }

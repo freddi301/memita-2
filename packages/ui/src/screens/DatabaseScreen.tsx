@@ -120,7 +120,7 @@ export function DatabaseScreen() {
         }
         refreshControl={
           <RefreshControl
-            refreshing={databaseQuery.isFetching}
+            refreshing={false}
             onRefresh={() => databaseQuery.refetch()}
           />
         }
