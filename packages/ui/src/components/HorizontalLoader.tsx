@@ -35,7 +35,7 @@ export function HorizontalLoader({ isLoading }: HorizontalLoaderProps) {
       timingAnimation.start();
       return () => timingAnimation.stop();
     }
-  }, [fadeAnimation, isLoading]);
+  }, [fadeAnimation, isLoading, useNativeDriver]);
   return (
     <Animated.View
       style={{

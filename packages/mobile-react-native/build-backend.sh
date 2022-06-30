@@ -3,7 +3,7 @@
 set -xe
 
 # compile typescript
-rm -rf dist && yarn tsc --noEmit false --outDir dist
+rm -rf dist && yarn tsc --noEmit false --outDir dist --target es5
 
 # bundle
 yarn noderify dist/backend.js -o nodejs-assets/nodejs-project/main.js

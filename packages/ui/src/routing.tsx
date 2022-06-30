@@ -10,7 +10,7 @@ import { NavigationScreen } from "./screens/NavigationScreen";
 import { AccountsScreen } from "./screens/AccountsScreen";
 import { AccountScreen } from "./screens/AccountScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
-import { Animated, BackHandler, View } from "react-native";
+import { Animated, BackHandler, useWindowDimensions, View } from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
 
@@ -136,6 +136,7 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
       clearTimeout(timeout);
     };
   }, [index, indexAnimation]);
+  const { height, width, scale } = useWindowDimensions();
   if (!isAnimated) {
     const route = stack[index] ?? initial;
     const Screen = mapping[route.screen];
@@ -162,15 +163,10 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
                   {
                     translateX: Animated.add(indexAnimation, i).interpolate({
                       inputRange: [0, 1 * stack.length],
-                      outputRange: [`0%`, `${100 * stack.length}%`],
+                      outputRange: [0, width * stack.length],
                     }),
                   },
                 ],
-                // top: 0,
-                // left: Animated.add(indexAnimation, i).interpolate({
-                //   inputRange: [0, 1 * stack.length],
-                //   outputRange: [`0%`, `${100 * stack.length}%`],
-                // }),
               }}
             >
               <Screen {...(route.parameters as any)} />
