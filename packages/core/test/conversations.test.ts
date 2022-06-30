@@ -1,8 +1,9 @@
 import { createApi } from "../src/api";
+import { createTestSwarm } from "../src/components/swarm/testSwarm";
 import { createSql } from "./sql";
 
 test("conversations aggregation", async () => {
-  const api = createApi(createSql());
+  const api = createApi(createSql(), createTestSwarm());
   expect(await api.getConversations({ account: "fred" })).toEqual([]);
   await api.addComposition({
     author: "fred",
@@ -68,7 +69,7 @@ test("conversations aggregation", async () => {
 });
 
 test("conversations aggregation group/private", async () => {
-  const api = createApi(createSql());
+  const api = createApi(createSql(), createTestSwarm());
   expect(await api.getAccounts({})).toEqual([]);
   const accountA = { author: "fred", nickname: "Fred", version_timestamp: 1 };
   await api.addAccount(accountA);

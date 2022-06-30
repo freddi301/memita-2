@@ -10,6 +10,7 @@ declare module "hyperswarm" {
       callback: (connection: Connection, info: PeerInfo) => void
     ): void;
     join(topic: Buffer, options: { server: boolean; client: boolean }): void;
+    connections: Set<unknown>;
   }
   export type Connection = {
     write(data: Buffer | string): void;

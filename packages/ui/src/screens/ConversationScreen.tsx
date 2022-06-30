@@ -141,7 +141,7 @@ export function ConversationScreen({
                   {channel || other}
                 </Text>
               </View>
-            </View>{" "}
+            </View>
             <Pressable
               onPress={() => {
                 setIsSearching(true);
@@ -186,7 +186,7 @@ export function ConversationScreen({
                   flexDirection: "row",
                   paddingVertical: 8,
                   paddingHorizontal: 16,
-                  alignItems: "center",
+                  alignItems: "flex-start",
                 }}
               >
                 <Avatar />
@@ -209,25 +209,15 @@ export function ConversationScreen({
                   </Text>
                 </View>
                 <View>
-                  <View style={{ flexDirection: "row" }}>
-                    {!!quote && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"reply"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
-                    <Text
-                      style={{
-                        color: "#7f848e",
-                        textAlign: "right",
-                        flex: 1,
-                      }}
-                    >
-                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
-                    </Text>
-                  </View>
+                  <Text
+                    style={{
+                      color: "#7f848e",
+                      textAlign: "right",
+                      flex: 1,
+                    }}
+                  >
+                    {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                  </Text>
                   {!datetime.hasSame(DateTime.now(), "day") && (
                     <Text
                       style={{ color: theme.textColor, textAlign: "right" }}

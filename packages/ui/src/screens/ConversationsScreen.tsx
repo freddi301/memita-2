@@ -93,17 +93,6 @@ export function ConversationsScreen({
             >
               <FontAwesomeIcon icon={"search"} color={theme.textColor} />
             </Pressable>
-            <Pressable
-              onPress={() => {
-                routing.push("Composition", {
-                  account,
-                  channel,
-                });
-              }}
-              style={{ padding: 16 }}
-            >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
-            </Pressable>
           </React.Fragment>
         )}
       </View>

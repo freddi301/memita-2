@@ -1,8 +1,9 @@
 import { createApi } from "../src/api";
+import { createTestSwarm } from "../src/components/swarm/testSwarm";
 import { createSql } from "./sql";
 
 test("contacts aggregation", async () => {
-  const api = createApi(createSql());
+  const api = createApi(createSql(), createTestSwarm());
   expect(await api.getContacts({ account: "fred" })).toEqual([]);
   const contactA = {
     account: "fred",
@@ -17,7 +18,7 @@ test("contacts aggregation", async () => {
     account: "fred",
     author: "Frederik",
     nickname: "Macco",
-    label: "delted",
+    label: "deleted",
     version_timestamp: 2,
   };
   await api.addContact(contactB);
@@ -26,14 +27,14 @@ test("contacts aggregation", async () => {
     await api.getContacts({
       account: "fred",
       nickname: "Macco",
-      label: "delted",
+      label: "deleted",
     })
   ).toEqual([contactB]);
   expect(
     await api.getContacts({
       account: "fred",
       nickname: "Fred",
-      label: "delted",
+      label: "deleted",
     })
   ).toEqual([]);
 });

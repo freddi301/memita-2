@@ -1,8 +1,9 @@
 import { createApi } from "../src/api";
 import { createSql } from "./sql";
+import { createTestSwarm } from "../src/components/swarm/testSwarm";
 
 test("settings", async () => {
-  const api = createApi(createSql());
+  const api = createApi(createSql(), createTestSwarm());
   expect(await api.getSettings()).toEqual(undefined);
   const settingsA = { theme: "light", animations: "disabled" } as const;
   await api.setSettings(settingsA);

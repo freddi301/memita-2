@@ -45,5 +45,8 @@ export function createTestSwarm<Data>(): Swarm<Data> {
         }
       });
     },
+    async getConnections() {
+      return nextConnectionId;
+    },
   };
 }

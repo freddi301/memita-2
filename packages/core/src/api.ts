@@ -1,7 +1,9 @@
 import type { Api } from "@memita-2/ui";
+import { Swarm } from "./components/swarm/swarm";
 import { Sql } from "./sql";
+import { createSync } from "./sync";
 
-export function createApi(sql: Sql) {
+export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
   const setup = Promise.all([
     optimizeDd(),
 
@@ -92,24 +94,24 @@ export function createApi(sql: Sql) {
     },
     async getAccount({ author }) {
       await setup;
-      return await (
-        sql`
-        SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
-        WHERE author=${author}
-        GROUP BY author
-      ` as any
-      )[0];
+      return (
+        await sql`
+          SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
+          WHERE author=${author}
+          GROUP BY author
+      `.all()
+      )[0] as any;
     },
     async getAccounts({ nickname = "DONTFILTER" }) {
       await setup;
       const nicknameSearch = "%" + asSearch(nickname) + "%";
       return (await sql`
-          SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
-          GROUP BY author
-          HAVING
-            (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END)
-          ORDER BY nickname ASC
-        `.all()) as any;
+        SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
+        GROUP BY author
+        HAVING
+          (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END)
+        ORDER BY nickname ASC
+      `.all()) as any;
     },
     async addContact({ account, author, nickname, label, version_timestamp }) {
       await setup;
@@ -277,10 +279,26 @@ export function createApi(sql: Sql) {
         ORDER BY MAX(version_timestamp) DESC
       `.all()) as any;
     },
+    async getConnections() {
+      return await swarm.getConnections();
+    },
   };
 
   function asSearch(string: string) {
     return string.replace(/[^a-zA-z0-9]/g, "");
+  }
+
+  connectToAll();
+  async function connectToAll() {
+    while (true) {
+      const sync = await createSync({ sql, api, swarm });
+      (async () => {
+        while (true) {
+          const synced = await sync();
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      })();
+    }
   }
 
   return api;

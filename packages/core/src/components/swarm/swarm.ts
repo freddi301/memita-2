@@ -1,5 +1,6 @@
 export type Swarm<Data> = {
   connect(handler: SwarmConnectionHandler<Data>): Promise<void>;
+  getConnections(): Promise<number>;
 };
 
 export type SwarmConnectionHandler<Data> = (

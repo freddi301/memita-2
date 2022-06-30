@@ -99,4 +99,5 @@ export type Api = {
       version_timestamp: number;
     }>
   >;
+  getConnections(): Promise<number>;
 };

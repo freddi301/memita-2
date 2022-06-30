@@ -5,9 +5,9 @@ import { createTestSwarm } from "../src/components/swarm/testSwarm";
 
 test("sync one contact", async () => {
   const aSql = createSql();
-  const aApi = createApi(aSql);
+  const aApi = createApi(aSql, createTestSwarm());
   const bSql = createSql();
-  const bApi = createApi(bSql);
+  const bApi = createApi(bSql, createTestSwarm());
   const account = "fred";
   const contactA = {
     account,

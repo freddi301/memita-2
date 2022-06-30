@@ -1,8 +1,9 @@
 import { createApi } from "../src/api";
+import { createTestSwarm } from "../src/components/swarm/testSwarm";
 import { createSql } from "./sql";
 
 test("account aggregation", async () => {
-  const api = createApi(createSql());
+  const api = createApi(createSql(), createTestSwarm());
   expect(await api.getAccounts({})).toEqual([]);
   const accountA = {
     author: "Frederik",

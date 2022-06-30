@@ -1,23 +1,11 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { createApi, createSync, createHyperSwarm } from "@memita-2/core";
+import { createApi, createHyperSwarm } from "@memita-2/core";
 import { createSql } from "./sql";
 
 const sql = createSql();
-const api = createApi(sql);
 const swarm = createHyperSwarm();
-
-(async () => {
-  while (true) {
-    const sync = await createSync({ sql, api, swarm });
-    (async () => {
-      while (true) {
-        const synced = await sync();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    })();
-  }
-})();
+const api = createApi(sql, swarm);
 
 function createWindow() {
   const window = new BrowserWindow({

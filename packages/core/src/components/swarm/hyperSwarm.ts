@@ -23,5 +23,8 @@ export function createHyperSwarm(): Swarm<Buffer> {
         });
       });
     },
+    async getConnections() {
+      return swarm.connections.size;
+    },
   };
 }
