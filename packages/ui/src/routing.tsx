@@ -8,17 +8,18 @@ import { DatabaseScreen } from "./screens/DatabaseScreen";
 import { ConversationsScreen } from "./screens/ConversationsScreen";
 import { NavigationScreen } from "./screens/NavigationScreen";
 import { AccountsScreen } from "./screens/AccountsScreen";
-import { AccountScreen } from "./screens/AccountScreen";
+import { AccountScreen, useAccount } from "./screens/AccountScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { Animated, BackHandler, useWindowDimensions, View } from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
+import { ThemeContext, themes } from "./theme";
 
 export type Routes = {
-  Accounts: {};
+  Accounts: { account: undefined };
   Database: { account: string };
   Settings: { account: string };
-  Account: { author?: string };
+  Account: { account?: string };
   Navigation: { account: string };
   Contacts: { account: string };
   Contact: { account: string; author?: string };
@@ -89,9 +90,8 @@ const RoutingContext = React.createContext<Routing>(null as any);
 
 type RoutesProps = {
   initial: Route;
-  isAnimated: boolean;
 };
-export function Routes({ initial, isAnimated }: RoutesProps) {
+export function Routes({ initial }: RoutesProps) {
   const [{ stack, index }, setState] = React.useState<{
     stack: Array<Route>;
     index: number;
@@ -136,44 +136,49 @@ export function Routes({ initial, isAnimated }: RoutesProps) {
       clearTimeout(timeout);
     };
   }, [index, indexAnimation]);
-  const { height, width, scale } = useWindowDimensions();
-  if (!isAnimated) {
-    const route = stack[index] ?? initial;
+  const { width } = useWindowDimensions();
+  const route = stack[index] ?? initial;
+  const [{ settings }] = useAccount(route.parameters.account);
+  if (!(settings.animations === "enabled")) {
     const Screen = mapping[route.screen];
     return (
       <RoutingContext.Provider value={value}>
-        <Screen {...(route.parameters as any)} />
+        <ThemeContext.Provider value={themes[settings.theme]}>
+          <Screen {...(route.parameters as any)} />
+        </ThemeContext.Provider>
       </RoutingContext.Provider>
     );
   }
   return (
     <RoutingContext.Provider value={value}>
-      <View style={{ position: "relative", flex: 1 }}>
-        {stack.map((route, i) => {
-          if (!isAnimating && i !== index) return null;
-          const Screen = mapping[route.screen];
-          return (
-            <Animated.View
-              key={i}
-              style={{
-                width: "100%",
-                height: "100%",
-                position: "absolute",
-                transform: [
-                  {
-                    translateX: Animated.add(indexAnimation, i).interpolate({
-                      inputRange: [0, 1 * stack.length],
-                      outputRange: [0, width * stack.length],
-                    }),
-                  },
-                ],
-              }}
-            >
-              <Screen {...(route.parameters as any)} />
-            </Animated.View>
-          );
-        })}
-      </View>
+      <ThemeContext.Provider value={themes[settings.theme]}>
+        <View style={{ position: "relative", flex: 1 }}>
+          {stack.map((route, i) => {
+            if (!isAnimating && i !== index) return null;
+            const Screen = mapping[route.screen];
+            return (
+              <Animated.View
+                key={i}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  transform: [
+                    {
+                      translateX: Animated.add(indexAnimation, i).interpolate({
+                        inputRange: [0, 1 * stack.length],
+                        outputRange: [0, width * stack.length],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                <Screen {...(route.parameters as any)} />
+              </Animated.View>
+            );
+          })}
+        </View>
+      </ThemeContext.Provider>
     </RoutingContext.Provider>
   );
 }

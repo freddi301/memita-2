@@ -1,22 +1,30 @@
+import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
-import { createTestSwarm } from "../src/components/swarm/testSwarm";
-import { createSql } from "./sql";
+import { createSql } from "./sqlite/sql";
 
-test("account aggregation", async () => {
-  const api = createApi(createSql(), createTestSwarm());
+test("account", async () => {
+  const api = await createApi(createSql(), {});
   expect(await api.getAccounts({})).toEqual([]);
-  const accountA = {
-    author: "Frederik",
+  const accountA: Account = {
+    author: "fred",
     nickname: "Fred",
-    version_timestamp: 1,
+    settings: {
+      theme: "dark",
+      animations: "enabled",
+    },
   };
   await api.addAccount(accountA);
+  expect(await api.getAccount({ author: "fred" })).toEqual(accountA);
   expect(await api.getAccounts({})).toEqual([accountA]);
-  const accountB = {
-    author: "Frederik",
+  const accountB: Account = {
+    author: "fred",
     nickname: "Macco",
-    version_timestamp: 2,
+    settings: {
+      theme: "light",
+      animations: "disabled",
+    },
   };
   await api.addAccount(accountB);
+  expect(await api.getAccount({ author: "fred" })).toEqual(accountB);
   expect(await api.getAccounts({})).toEqual([accountB]);
 });

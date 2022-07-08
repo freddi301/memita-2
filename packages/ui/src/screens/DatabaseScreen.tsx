@@ -22,7 +22,7 @@ export function DatabaseScreen() {
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
   const databaseQuery = useQuery(["database", {}], async () => {
-    return await api.getDatabase();
+    return Object.values(await api.getDatabase());
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

@@ -1,127 +1,67 @@
 import type { Api } from "@memita-2/ui";
-import { Swarm } from "./components/swarm/swarm";
-import { Sql } from "./sql";
+import { Swarm, SwarmFactory } from "./components/swarm/swarm";
+import { Sql } from "./components/sql";
 import { createSync } from "./sync";
+import { createTables, optimizeDb } from "./tables";
+import { cryptoHashFunction } from "./components/cryptoHashFunction";
 
-export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
-  const setup = Promise.all([
-    optimizeDd(),
-
-    sql`CREATE TABLE settings (
-      pk TEXT NOT NULL,
-      payload TEXT NOT NULL,
-      PRIMARY KEY (pk)
-    )`.run(),
-
-    sql`CREATE TABLE accounts (
-      author TEXT NOT NULL,
-      nickname TEXT NOT NULL,
-      version_timestamp INT NOT NUll,
-      PRIMARY KEY (author, nickname, version_timestamp)
-    )`.run(),
-
-    sql`CREATE TABLE contacts (
-      account TEXT NOT NULL,
-      author TEXT NOT NULL,
-      nickname TEXT NOT NULL,
-      label TEXT NOT NULL,
-      version_timestamp INT NOT NUll,
-      PRIMARY KEY (account, author, nickname, label, version_timestamp)
-    )`.run(),
-
-    sql`CREATE TABLE channels (
-      account TEXT NOT NULL,
-      channel TEXT NOT NULL,
-      nickname TEXT NOT NULL,
-      label TEXT NOT NULL,
-      version_timestamp INT NOT NUll,
-      PRIMARY KEY (account, channel, nickname, label, version_timestamp)
-    )`.run(),
-
-    sql`CREATE TABLE compositions (
-      author TEXT NOT NULL,
-      channel TEXT NOT NULL,
-      recipient TEXT NOT NULL,
-      quote TEXT NOT NULL,
-      salt TEXT NOT NULL,
-      content TEXT NOT NULL,
-      version_timestamp INTEGER NOT NULL,
-      PRIMARY KEY (author, channel, recipient, quote, salt, content, version_timestamp)
-    )`.run(),
-  ]);
-
-  async function optimizeDd() {
-    // https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
-    // https://blog.devart.com/increasing-sqlite-performance.html
-    await sql`PRAGMA journal_mode = WAL`.run();
-    await sql`PRAGMA synchronous = normal`.run();
-    await sql`PRAGMA temp_store = memory`.run();
-    await sql`PRAGMA mmap_size = 30000000000`.run();
-    await sql`PRAGMA optimize`.run();
-    await sql`PRAGMA locking_mode = exclusive`.run();
-  }
-
+export async function createApi(
+  sql: Sql,
+  swarms: Record<string, SwarmFactory>
+) {
+  await optimizeDb(sql);
+  await createTables(sql);
   const api: Api = {
     async getDatabase() {
-      await setup;
-      return [
-        ...(await sql`SELECT * from accounts`.all()),
-        ...(await sql`SELECT * from contacts`.all()),
-        ...(await sql`SELECT * from compositions`.all()),
-      ];
+      return {
+        accounts: await sql`SELECT * from accounts`.all(),
+        settings: await sql`SELECT * from settings`.all(),
+        contacts: await sql`SELECT * from contacts`.all(),
+        compositions: await sql`SELECT * from compositions`.all(),
+      };
     },
-    async setSettings(settings) {
-      await setup;
+    async addAccount({ author, nickname, settings }) {
       await sql`
-        INSERT OR REPLACE INTO settings (pk, payload)
-        VALUES ('settings', ${JSON.stringify(settings)})
-      `.run();
-    },
-    async getSettings() {
-      await setup;
-      const rows = await sql`
-        SELECT pk, payload FROM settings
-      `.all();
-      if (rows.length === 0) return;
-      return JSON.parse((rows[0] as any).payload);
-    },
-    async addAccount({ author, nickname, version_timestamp }) {
-      await setup;
-      await sql`
-        INSERT OR REPLACE INTO accounts (author, nickname, version_timestamp)
-        VALUES (${author}, ${nickname}, ${version_timestamp})
+        INSERT OR REPLACE INTO accounts (author, nickname, settings)
+        VALUES (${author}, ${nickname}, ${JSON.stringify(settings)})
       `.run();
     },
     async getAccount({ author }) {
-      await setup;
-      return (
+      const result = (
         await sql`
-          SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
-          WHERE author=${author}
-          GROUP BY author
+          SELECT author, nickname, settings FROM accounts
+          WHERE author = ${author}
       `.all()
       )[0] as any;
+      if (result) return { ...result, settings: JSON.parse(result.settings) };
     },
     async getAccounts({ nickname = "DONTFILTER" }) {
-      await setup;
       const nicknameSearch = "%" + asSearch(nickname) + "%";
-      return (await sql`
-        SELECT author, nickname, MAX(version_timestamp) AS version_timestamp FROM accounts
-        GROUP BY author
-        HAVING
-          (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END)
-        ORDER BY nickname ASC
-      `.all()) as any;
+      const result = (await sql`
+      SELECT author, nickname, settings FROM accounts
+      WHERE
+        (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END)
+      ORDER BY nickname ASC
+    `.all()) as any;
+      return result.map((account: any) => ({
+        ...account,
+        settings: JSON.parse(account.settings),
+      }));
     },
     async addContact({ account, author, nickname, label, version_timestamp }) {
-      await setup;
+      const crypto_hash = await cryptoHashFunction({
+        account,
+        author,
+        nickname,
+        label,
+        version_timestamp,
+      });
       await sql`
-        INSERT OR REPLACE INTO contacts (account, author, nickname, label, version_timestamp)
-        VALUES (${account}, ${author}, ${nickname}, ${label}, ${version_timestamp})
+        INSERT OR REPLACE INTO contacts (crypto_hash, account, author, nickname, label, version_timestamp)
+        VALUES (${crypto_hash}, ${account}, ${author}, ${nickname}, ${label}, ${version_timestamp})
       `.run();
     },
     async getContact({ account, author }) {
-      await setup;
       return (
         await sql`
           SELECT account, author, nickname, label, MAX(version_timestamp) AS version_timestamp FROM contacts
@@ -135,7 +75,6 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       nickname = "DONTFILTER",
       label = "DONTFILTER",
     }) {
-      await setup;
       const nicknameSearch = "%" + asSearch(nickname) + "%";
       return (await sql`
           SELECT account, author, nickname, label, MAX(version_timestamp) AS version_timestamp FROM contacts
@@ -148,14 +87,19 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
         `.all()) as any;
     },
     async addChannel({ account, channel, nickname, label, version_timestamp }) {
-      await setup;
+      const crypto_hash = await cryptoHashFunction({
+        account,
+        channel,
+        nickname,
+        label,
+        version_timestamp,
+      });
       await sql`
-        INSERT OR REPLACE INTO channels (account, channel, nickname, label, version_timestamp)
-        VALUES (${account}, ${channel}, ${nickname}, ${label}, ${version_timestamp})
+        INSERT OR REPLACE INTO channels (crypto_hash, account, channel, nickname, label, version_timestamp)
+        VALUES (${crypto_hash}, ${account}, ${channel}, ${nickname}, ${label}, ${version_timestamp})
       `.run();
     },
     async getChannel({ account, channel }) {
-      await setup;
       return (
         await sql`
           SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
@@ -169,7 +113,6 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       nickname = "DONTFILTER",
       label = "DONTFILTER",
     }) {
-      await setup;
       const nicknameSearch = "%" + asSearch(nickname) + "%";
       return (await sql`
           SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
@@ -190,14 +133,21 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       content,
       version_timestamp,
     }) {
-      await setup;
+      const crypto_hash = await cryptoHashFunction({
+        author,
+        channel,
+        recipient,
+        quote,
+        salt,
+        content,
+        version_timestamp,
+      });
       await sql`
-        INSERT OR REPLACE INTO compositions (author, channel, recipient, quote, salt, content, version_timestamp)
-        VALUES (${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
+        INSERT OR REPLACE INTO compositions (crypto_hash, author, channel, recipient, quote, salt, content, version_timestamp)
+        VALUES (${crypto_hash}, ${author}, ${channel}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
       `.run();
     },
     async getComposition({ account, author, channel, recipient, quote, salt }) {
-      await setup;
       return (
         await sql`
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp FROM compositions
@@ -219,7 +169,6 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       quote = "DONTFILTER",
       content = "DONTFILTER",
     }) {
-      await setup;
       const contentSearch = "%" + asSearch(content) + "%";
       return (await sql`
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp FROM compositions
@@ -241,7 +190,6 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       quote = "DONTFILTER",
       content = "DONTFILTER",
     }) {
-      await setup;
       const contentSearch = "%" + asSearch(content) + "%";
       return (await sql`
         SELECT author, channel, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp FROM compositions
@@ -263,7 +211,6 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       channel = "DONTFILTER",
       content = "DONTFILTER",
     }) {
-      await setup;
       const contentSearch = "%" + asSearch(content) + "%";
       return (await sql`
         SELECT author, channel, recipient, content, MAX(version_timestamp) AS version_timestamp FROM compositions
@@ -280,7 +227,14 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
       `.all()) as any;
     },
     async getConnections() {
-      return await swarm.getConnections();
+      return Object.fromEntries(
+        await Promise.all(
+          Object.entries(swarmInstances).map(async ([id, swarm]) => [
+            id,
+            await swarm.getConnections(),
+          ])
+        )
+      );
     },
   };
 
@@ -288,17 +242,17 @@ export function createApi(sql: Sql, swarm: Swarm<Buffer>) {
     return string.replace(/[^a-zA-z0-9]/g, "");
   }
 
-  connectToAll();
-  async function connectToAll() {
-    while (true) {
-      const sync = await createSync({ sql, api, swarm });
-      (async () => {
-        while (true) {
-          const synced = await sync();
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-      })();
-    }
+  const swarmInstances: Record<string, Swarm> = {};
+  for (const [swarmName, swarmFactory] of Object.entries(swarms)) {
+    const { onConnection, sync } = createSync({ sql, api });
+    const swarmInstance = swarmFactory(onConnection);
+    swarmInstances[swarmName] = swarmInstance;
+    (async () => {
+      while (true) {
+        await sync();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    })();
   }
 
   return api;

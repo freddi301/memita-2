@@ -1,18 +1,7 @@
-export type Swarm<Data> = {
-  connect(handler: SwarmConnectionHandler<Data>): Promise<void>;
+import { Duplex } from "stream";
+
+export type SwarmFactory = (onConnection: (stream: Duplex) => void) => Swarm;
+
+export type Swarm = {
   getConnections(): Promise<number>;
-};
-
-export type SwarmConnectionHandler<Data> = (
-  commands: SwarmConnectionCommands<Data>
-) => SwarmConnectionEvents<Data>;
-
-type SwarmConnectionCommands<Data> = {
-  send(data: Data): void;
-  close(): void;
-};
-
-type SwarmConnectionEvents<Data> = {
-  receive(data: Data): void;
-  close(): void;
 };

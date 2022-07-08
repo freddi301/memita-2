@@ -1,15 +1,17 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Settings } from "../api";
 import { BackButton } from "../components/BackButton";
 import { Routes } from "../routing";
 import { useTheme } from "../theme";
-import { useApi } from "../ui";
+import { useAccount } from "./AccountScreen";
 
 export function SettingsScreen({ account }: Routes["Settings"]) {
   const theme = useTheme();
-  const [settings, setSettings] = useSettings();
+  const [{ settings, ...rest }, setAccount] = useAccount(account);
+  const setSettings = (settings: Settings) => {
+    setAccount({ ...rest, settings });
+  };
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -107,30 +109,4 @@ function ActivableButton({ label, isActive, onPress }: ActivableButtonProps) {
       </Text>
     </Pressable>
   );
-}
-
-const defaultSettings: Settings = {
-  theme: "dark",
-  animations: "enabled",
-};
-
-export function useSettings() {
-  const api = useApi();
-  const queryClient = useQueryClient();
-  const settingsQuery = useQuery(["settings"], async () => {
-    return await api.getSettings();
-  });
-  const settingsMutation = useMutation(
-    async (settings: Settings) => {
-      await api.setSettings(settings);
-    },
-    {
-      onSuccess() {
-        queryClient.invalidateQueries(["settings"]);
-      },
-    }
-  );
-  const settings = settingsQuery.data ?? defaultSettings;
-  const setSettings = settingsMutation.mutate;
-  return [settings, setSettings] as const;
 }

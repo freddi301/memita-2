@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { Sql } from "../../src";
+import { Sql } from "../../src/components/sql";
 
 export function createSql(): Sql {
   const db = new Database(":memory:");

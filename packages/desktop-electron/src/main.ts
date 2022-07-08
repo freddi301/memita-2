@@ -1,11 +1,32 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { createApi, createHyperSwarm } from "@memita-2/core";
-import { createSql } from "./sql";
+import { createApi, createHyperSwarm, createBridgeSwarm } from "@memita-2/core";
+import { Sql } from "@memita-2/core";
+import Database from "better-sqlite3";
+
+function createSql(): Sql {
+  const db = new Database(":memory:");
+  return (strings, ...values) => ({
+    async run() {
+      db.prepare(strings.join("?")).run(values);
+    },
+    async all() {
+      return db.prepare(strings.join("?")).all(values);
+    },
+  });
+}
 
 const sql = createSql();
-const swarm = createHyperSwarm();
-const api = createApi(sql, swarm);
+const api = createApi(sql, {
+  hyper: createHyperSwarm,
+  bridge: createBridgeSwarm(8001, "127.0.0.1"),
+});
+
+api.then((api) => {
+  for (const [methodName, method] of Object.entries(api)) {
+    ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
+  }
+});
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -39,9 +60,6 @@ function installExtensions() {
 }
 
 app.whenReady().then(() => {
-  for (const [methodName, method] of Object.entries(api)) {
-    ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
-  }
   const window = createWindow();
   if (!app.isPackaged) {
     window.webContents.openDevTools();
@@ -55,3 +73,31 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+false &&
+  api.then((api) => {
+    api.addAccount({
+      author: "fred",
+      nickname: "Fred",
+      settings: { theme: "dark", animations: "enabled" },
+    });
+    api.addAccount({
+      author: "ali",
+      nickname: "Alice",
+      settings: { theme: "light", animations: "disabled" },
+    });
+    api.addContact({
+      account: "fred",
+      author: "ali",
+      nickname: "Alice",
+      label: "",
+      version_timestamp: Date.now(),
+    });
+    api.addContact({
+      account: "ali",
+      author: "fred",
+      nickname: "Fred",
+      label: "",
+      version_timestamp: Date.now(),
+    });
+  });

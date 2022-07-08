@@ -90,7 +90,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
-            routing.push("Account", { author: account });
+            routing.push("Account", { account });
           }}
         >
           <Text
@@ -140,7 +140,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             color: theme.textSecondaryColor,
           }}
         >
-          Connections: {connectionsQuery.data}
+          Connections: {JSON.stringify(connectionsQuery.data, null, 2)}
         </Text>
       </ScrollView>
     </View>

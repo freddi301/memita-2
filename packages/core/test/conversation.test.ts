@@ -1,9 +1,8 @@
 import { createApi } from "../src/api";
-import { createSql } from "./sql";
-import { createTestSwarm } from "../src/components/swarm/testSwarm";
+import { createSql } from "./sqlite/sql";
 
 test("conversation aggregation", async () => {
-  const api = createApi(createSql(), createTestSwarm());
+  const api = await createApi(createSql(), {});
   expect(await api.getConversation({ account: "fred" })).toEqual([]);
   const compositionA = {
     author: "fred",

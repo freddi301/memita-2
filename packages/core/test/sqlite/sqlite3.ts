@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { Sql } from "../../src";
+import { Sql } from "../../src/components/sql";
 
 export function createSql(): Sql {
   const db = sqlite3.cached.Database(":memory:");

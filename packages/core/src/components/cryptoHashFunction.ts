@@ -1,6 +1,7 @@
 import libsodium from "libsodium-wrappers";
 
-export function cryptoHashFunction(value: unknown) {
+export async function cryptoHashFunction(value: unknown) {
+  await libsodium.ready;
   const state = libsodium.crypto_generichash_init(
     "",
     libsodium.crypto_generichash_KEYBYTES

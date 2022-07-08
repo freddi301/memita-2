@@ -1,38 +1,60 @@
 import { createApi } from "../src/api";
-import { createSql } from "./sql";
+import { createSql } from "./sqlite/sql";
 import { createSync } from "../src/sync";
-import { createTestSwarm } from "../src/components/swarm/testSwarm";
+import { createBridgeServer } from "../src/components/bridge/bridgeServer";
+import { Composition } from "@memita-2/ui";
+import { createBridgeSwarm } from "../src/components/swarm/bridgeSwarm";
 
-test("sync one contact", async () => {
+test("sync one composition", async () => {
+  const bridgeServer = await createBridgeServer();
   const aSql = createSql();
-  const aApi = createApi(aSql, createTestSwarm());
+  const aApi = await createApi(aSql, {});
   const bSql = createSql();
-  const bApi = createApi(bSql, createTestSwarm());
-  const account = "fred";
-  const contactA = {
-    account,
-    author: "ali",
-    label: "",
-    nickname: "Alice",
+  const bApi = await createApi(bSql, {});
+  const { onConnection: aOnConnection, sync: aSync } = createSync({
+    sql: aSql,
+    api: aApi,
+  });
+  const { onConnection: bOnConnection, sync: bSync } = createSync({
+    sql: bSql,
+    api: bApi,
+  });
+  const connected = deferable<void>();
+  createBridgeSwarm(bridgeServer.port, "127.0.01")(aOnConnection);
+  createBridgeSwarm(
+    bridgeServer.port,
+    "127.0.01"
+  )((connection) => {
+    connected.resolve();
+    bOnConnection(connection);
+  });
+  const compositionA: Composition = {
+    author: "fred",
+    channel: "",
+    recipient: "",
+    quote: "",
+    salt: "1",
+    content: "hello",
     version_timestamp: 1,
   };
-  const contactB = {
-    account,
-    author: "cri",
-    label: "",
-    nickname: "Cris",
-    version_timestamp: 1,
-  };
-  await aApi.addContact(contactA);
-  await bApi.addContact(contactB);
-  expect(await aApi.getContacts({ account })).toEqual([contactA]);
-  expect(await bApi.getContacts({ account })).toEqual([contactB]);
-  const swarm = createTestSwarm();
-  const [aSync, bSync] = await Promise.all([
-    createSync({ sql: aSql, api: aApi, swarm }),
-    createSync({ sql: bSql, api: bApi, swarm }),
+  await aApi.addComposition(compositionA);
+  expect(await aApi.getCompositions({ account: "fred" })).toEqual([
+    compositionA,
   ]);
-  await Promise.all([aSync(), bSync()]);
-  expect(await aApi.getContacts({ account })).toEqual([contactA, contactB]);
-  expect(await bApi.getContacts({ account })).toEqual([contactA, contactB]);
+  await connected.promise;
+  await bSync();
+  expect(await bApi.getCompositions({ account: "fred" })).toEqual([
+    compositionA,
+  ]);
+  await bridgeServer.close();
 });
+
+function deferable<V>() {
+  let resolve: (value: V) => void = undefined as any;
+  let reject: (error: any) => void = undefined as any;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}

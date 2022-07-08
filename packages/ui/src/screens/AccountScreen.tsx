@@ -1,46 +1,24 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
-import { Routes, useRouting } from "../routing";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Routes } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
-import { HorizontalLoader } from "../components/HorizontalLoader";
+import { Settings } from "../api";
 
 export function AccountScreen({ ...original }: Routes["Account"]) {
-  const routing = useRouting();
   const theme = useTheme();
-  const api = useApi();
-  const accountQuery = useQuery(
-    ["account", { author: original.author ?? "" }],
-    async () => {
-      return await api.getAccount({ author: "" });
-    }
-  );
-  const addAccountMutation = useMutation(
-    async ({ author, nickname }: { author: string; nickname: string }) => {
-      const version_timestamp = Date.now();
-      await api.addAccount({
-        author,
-        nickname,
-        version_timestamp,
-      });
-    },
-    {
-      onSuccess() {
-        routing.back();
-      },
-    }
-  );
-  const [author, setAuthor] = React.useState(original.author ?? "");
+  const [author, setAuthor] = React.useState(original.account ?? "");
   const [nickname, setNickname] = React.useState("");
+  const [account, setAccount] = useAccount(original.account);
   React.useEffect(() => {
-    if (accountQuery.data) {
-      setNickname(accountQuery.data.nickname);
+    if (account) {
+      setNickname(account.nickname);
     }
-  }, [accountQuery.data]);
+  }, [account]);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -63,20 +41,23 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
         </Text>
         <Pressable
           onPress={() => {
-            addAccountMutation.mutate({ author, nickname });
+            setAccount({
+              author,
+              nickname,
+              settings: account?.settings ?? defaultSettings,
+            });
           }}
           style={{ padding: 16 }}
         >
           <FontAwesomeIcon icon={"check"} color={theme.textColor} />
         </Pressable>
       </View>
-      <HorizontalLoader isLoading={accountQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
           label="Author"
           value={author}
           onChangeText={setAuthor}
-          editable={original.author === undefined}
+          editable={original.account === undefined}
         />
         <SimpleInput
           label="Nickname"
@@ -87,3 +68,46 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
     </View>
   );
 }
+
+export function useAccount(account: string | undefined) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  const accountQuery = useQuery(["account", { author: account }], async () => {
+    return await api.getAccount({ author: account ?? "" });
+  });
+  const addAccountMutation = useMutation(
+    async ({
+      author,
+      nickname,
+      settings,
+    }: {
+      author: string;
+      nickname: string;
+      settings: Settings;
+    }) => {
+      await api.addAccount({
+        author,
+        nickname,
+        settings,
+      });
+    },
+    {
+      onSuccess() {
+        queryClient.invalidateQueries(["account"]);
+      },
+    }
+  );
+  return [
+    accountQuery.data ?? {
+      author: account ?? "",
+      nickname: "",
+      settings: defaultSettings,
+    },
+    addAccountMutation.mutate,
+  ] as const;
+}
+
+const defaultSettings: Settings = {
+  theme: "dark",
+  animations: "enabled",
+};

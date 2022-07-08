@@ -1,2 +1,9 @@
-export type { Api, Contact, Channel, Composition } from "./api";
+export type {
+  Api,
+  Account,
+  Contact,
+  Channel,
+  Composition,
+  Settings,
+} from "./api";
 export { Ui } from "./ui";

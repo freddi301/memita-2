@@ -1,7 +1,12 @@
 export type Account = {
   author: string;
   nickname: string;
-  version_timestamp: number;
+  settings: Settings;
+};
+
+export type Settings = {
+  theme: "dark" | "light";
+  animations: "enabled" | "disabled";
 };
 
 export type Contact = {
@@ -30,15 +35,8 @@ export type Composition = {
   version_timestamp: number;
 };
 
-export type Settings = {
-  theme: "dark" | "light";
-  animations: "enabled" | "disabled";
-};
-
 export type Api = {
-  getDatabase(): Promise<Array<unknown>>;
-  getSettings(): Promise<Settings | undefined>;
-  setSettings(params: Settings): Promise<void>;
+  getDatabase(): Promise<Record<string, Array<unknown>>>;
   addAccount(account: Account): Promise<void>;
   getAccount(params: { author: string }): Promise<Account | undefined>;
   getAccounts(params: { nickname?: string }): Promise<Array<Account>>;
@@ -99,5 +97,5 @@ export type Api = {
       version_timestamp: number;
     }>
   >;
-  getConnections(): Promise<number>;
+  getConnections(): Promise<Record<string, number>>;
 };
