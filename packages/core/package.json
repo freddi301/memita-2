@@ -11,7 +11,8 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "test": "jest",
-    "start-local-bridge-server": "yarn build && node dist/utils/localBridgeServer.js"
+    "start-local-bridge-server": "yarn build && node dist/utils/localBridgeServer.js",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.5.0",
@@ -21,6 +22,7 @@
     "@types/sqlite3": "^3.1.8",
     "better-sqlite3": "^7.5.3",
     "jest": "^28.1.1",
+    "patch-package": "^6.4.7",
     "sql.js": "^1.7.0",
     "sqlite3": "^5.0.8",
     "ts-jest": "^28.0.5",

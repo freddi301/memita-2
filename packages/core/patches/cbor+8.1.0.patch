@@ -1,0 +1,13 @@
+diff --git a/node_modules/cbor/lib/utils.js b/node_modules/cbor/lib/utils.js
+index 5afdc4c..5338668 100644
+--- a/node_modules/cbor/lib/utils.js
++++ b/node_modules/cbor/lib/utils.js
+@@ -13,7 +13,7 @@ const MAX_SAFE_HIGH = 0x1fffff
+  *
+  * @private
+  */
+-const td = new TextDecoder('utf8', {fatal: true, ignoreBOM: true})
++const td = new TextDecoder('utf8', {fatal: false, ignoreBOM: true})
+ exports.utf8 = buf => td.decode(buf)
+ exports.utf8.checksUTF8 = true
+ 
