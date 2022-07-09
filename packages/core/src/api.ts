@@ -15,8 +15,8 @@ export async function createApi(
     async getDatabase() {
       return {
         accounts: await sql`SELECT * from accounts`.all(),
-        settings: await sql`SELECT * from settings`.all(),
         contacts: await sql`SELECT * from contacts`.all(),
+        channels: await sql`SELECT * from channels`.all(),
         compositions: await sql`SELECT * from compositions`.all(),
       };
     },
