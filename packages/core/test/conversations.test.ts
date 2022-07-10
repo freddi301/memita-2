@@ -69,7 +69,11 @@ test("conversations aggregation", async () => {
 });
 
 test("conversations aggregation group/private", async () => {
-  const settings: Settings = { theme: "dark", animations: "disabled" };
+  const settings: Settings = {
+    language: "en",
+    theme: "dark",
+    animations: "disabled",
+  };
   const api = await createApi(createSql(), {});
   expect(await api.getAccounts({})).toEqual([]);
   const accountA = { author: "fred", nickname: "Fred", settings };

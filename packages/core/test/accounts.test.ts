@@ -9,6 +9,7 @@ test("account", async () => {
     author: "fred",
     nickname: "Fred",
     settings: {
+      language: "it",
       theme: "dark",
       animations: "enabled",
     },
@@ -20,6 +21,7 @@ test("account", async () => {
     author: "fred",
     nickname: "Macco",
     settings: {
+      language: "en",
       theme: "light",
       animations: "disabled",
     },

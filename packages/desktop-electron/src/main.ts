@@ -16,6 +16,7 @@ import Database from "better-sqlite3";
     app.quit();
     return;
   }
+  const title = `Memita 2 ${filePaths[0]}`;
   const sql = createSql(path.join(filePaths[0], "db.db"));
   const api = await createApi(sql, {
     hyper: createHyperSwarm,
@@ -24,13 +25,13 @@ import Database from "better-sqlite3";
   for (const [methodName, method] of Object.entries(api)) {
     ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
   }
-  const window = createWindow();
+  const window = createWindow(title);
   if (!app.isPackaged) {
     window.webContents.openDevTools();
   }
   if (!app.isPackaged) installExtensions();
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(title);
   });
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
@@ -49,11 +50,12 @@ function createSql(path: string): Sql {
   });
 }
 
-function createWindow() {
+function createWindow(title: string) {
   const window = new BrowserWindow({
-    width: process.env.NODE_ENV === "development" ? 800 : 300,
+    width: app.isPackaged ? 300 : 800,
     height: 600,
     autoHideMenuBar: true,
+    title,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },

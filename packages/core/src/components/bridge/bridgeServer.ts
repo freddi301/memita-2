@@ -59,6 +59,12 @@ export async function createBridgeServer(port?: number) {
     for (const [, a] of connections) {
       for (const [, b] of connections) {
         if (a === b) continue;
+        if (
+          Array.from(a.streamMapping.values()).some(
+            ({ connection }) => connection === b
+          )
+        )
+          continue;
         openSubStream(a, b);
       }
     }
