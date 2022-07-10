@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function ContactScreen({ account, ...original }: Routes["Contact"]) {
   const routing = useRouting();
@@ -72,6 +73,8 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -82,7 +85,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             flex: 1,
           }}
         >
-          Contact
+          <I18n en="Contact" it="Contatto" />
         </Text>
         {original.author && (
           <Pressable
@@ -91,7 +94,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             }}
             style={{ padding: 16 }}
           >
-            <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
+            <FontAwesomeIcon icon={"trash"} color={theme.actionTextColor} />
           </Pressable>
         )}
         <Pressable
@@ -100,21 +103,33 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"check"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
         </Pressable>
       </View>
       <HorizontalLoader isLoading={contactQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Author"
+          label={<I18n en="Author" it="Autore" />}
           value={author}
           onChangeText={setAuthor}
           editable={original.author === undefined}
+          description={
+            <I18n
+              en="A unique combinations of letters that identifies your contact's account"
+              it="Una combinazione unica di lettere che identificano l'account del tuo contatto"
+            />
+          }
         />
         <SimpleInput
-          label="Nickname"
+          label={<I18n en="Nickname" it="Soprannome" />}
           value={nickname}
           onChangeText={setNickname}
+          description={
+            <I18n
+              en="An optional friendly name to help you remeber the person who owns this account. Nobody else sees it"
+              it="Un nome legibile non obligatorio per ricordarti a quale persona appertiene questo account. Nessun altro lo vede"
+            />
+          }
         />
       </ScrollView>
     </View>

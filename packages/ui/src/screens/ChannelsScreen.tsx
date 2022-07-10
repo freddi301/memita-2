@@ -16,6 +16,7 @@ import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function ChannelsScreen({ account }: Routes["Channels"]) {
   const api = useApi();
@@ -34,6 +35,9 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
       });
     }
   );
+  const accountQuery = useQuery(["account", { author: account }], async () => {
+    return await api.getAccount({ author: account });
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -42,6 +46,8 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -66,7 +72,7 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
@@ -79,7 +85,19 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
                 fontWeight: "bold",
               }}
             >
-              Channels
+              <Avatar />
+              <View
+                style={{
+                  flexDirection: "column",
+                  paddingHorizontal: 16,
+                  flex: 1,
+                }}
+              >
+                <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
+                  {accountQuery.data?.nickname ?? ""}
+                </Text>
+                <Text style={{ color: theme.textColor }}>{account}</Text>
+              </View>
             </Text>
             <Pressable
               onPress={() => {
@@ -87,7 +105,7 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
             <Pressable
               onPress={() => {
@@ -95,12 +113,11 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"plus"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={channelsQuery.isFetching} />
       <FlatList
         data={channelsQuery.data}
         renderItem={({ item: { channel, nickname } }) => (
@@ -149,12 +166,18 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Channels for term{" "}
+                  <I18n
+                    en="There are no channels for term"
+                    it="Non ci sono canali per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no Channels. Add some!
+                  <I18n
+                    en="There are no channels. Add some!"
+                    it="Non ci sono canali. Aggiungine qualcuno!"
+                  />
                 </React.Fragment>
               )}
             </Text>
@@ -166,6 +189,9 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
             onRefresh={() => channelsQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={channelsQuery.isFetching} />
+        )}
       />
     </View>
   );

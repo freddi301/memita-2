@@ -1,3 +1,5 @@
+import { Language } from "./components/I18n";
+
 export type Account = {
   author: string;
   nickname: string;
@@ -5,6 +7,7 @@ export type Account = {
 };
 
 export type Settings = {
+  language: Language;
   theme: "dark" | "light";
   animations: "enabled" | "disabled";
 };

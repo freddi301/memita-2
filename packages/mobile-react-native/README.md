@@ -30,3 +30,10 @@
 - follow setup instructions [here](https://reactnative.dev/docs/environment-setup)
 - follow setup instructions [here](https://code.janeasystems.com/nodejs-mobile/getting-started-react-native)
 - `yarn android`
+
+### Ui auto reload and rebuild backend only
+
+- `yarn watch` in `ui` directory
+- `yarn watch` in `core` directory
+- `yarn start`
+- `yarn android`

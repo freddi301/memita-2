@@ -16,6 +16,7 @@ import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function ContactsScreen({ account }: Routes["Contacts"]) {
   const api = useApi();
@@ -42,6 +43,8 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -66,7 +69,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
@@ -79,7 +82,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
                 fontWeight: "bold",
               }}
             >
-              Contacts
+              <I18n en="Contacts" it="Contatti" />
             </Text>
             <Pressable
               onPress={() => {
@@ -87,7 +90,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
             <Pressable
               onPress={() => {
@@ -95,12 +98,11 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"plus"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={contactsQuery.isFetching} />
       <FlatList
         data={contactsQuery.data}
         renderItem={({ item: { author, nickname } }) => (
@@ -149,12 +151,18 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Contacts for term{" "}
+                  <I18n
+                    en="There are no contacts for term"
+                    it="Non ci sono contatti per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no Contacts. Add some!
+                  <I18n
+                    en="There are no contacts. Add some!"
+                    it="Non ci sono contatti. Aggiungine qualcuno!"
+                  />
                 </React.Fragment>
               )}
             </Text>
@@ -166,6 +174,9 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
             onRefresh={() => contactsQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={contactsQuery.isFetching} />
+        )}
       />
     </View>
   );

@@ -17,6 +17,7 @@ import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
+import { I18n } from "../components/I18n";
 
 export function ConversationsScreen({
   account,
@@ -38,6 +39,9 @@ export function ConversationsScreen({
       });
     }
   );
+  const accountQuery = useQuery(["account", { author: account }], async () => {
+    return await api.getAccount({ author: account });
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -46,6 +50,8 @@ export function ConversationsScreen({
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -70,33 +76,36 @@ export function ConversationsScreen({
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
           <React.Fragment>
             <BackButton />
-            <Text
+            <Avatar />
+            <View
               style={{
+                flexDirection: "column",
+                paddingHorizontal: 16,
                 flex: 1,
-                color: theme.textColor,
-                fontWeight: "bold",
               }}
             >
-              Conversations
-            </Text>
+              <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
+                {accountQuery.data?.nickname ?? ""}
+              </Text>
+              <Text style={{ color: theme.textColor }}>{account}</Text>
+            </View>
             <Pressable
               onPress={() => {
                 setIsSearching(true);
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={conversationsQuery.isFetching} />
       <FlatList
         data={conversationsQuery.data}
         renderItem={({ item }) => {
@@ -111,54 +120,44 @@ export function ConversationsScreen({
                   other: item.recipient ? other : "",
                 });
               }}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                flexDirection: "row",
+              }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                  paddingHorizontal: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Avatar />
-                <View style={{ marginHorizontal: 8, flex: 1 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        fontWeight: "bold",
-                        flex: 1,
-                      }}
-                    >
-                      {item.channel || other}
-                    </Text>
-                  </View>
+              <Avatar />
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <View style={{ flexDirection: "row" }}>
                   <Text
                     style={{
                       color: theme.textColor,
-                    }}
-                  >
-                    {item.content}
-                  </Text>
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      color: theme.textColor,
-                      textAlign: "right",
+                      fontWeight: "bold",
                       flex: 1,
                     }}
                   >
+                    {item.channel || other}
+                  </Text>
+                  <Text
+                    style={{
+                      color: theme.textSecondaryColor,
+                    }}
+                  >
+                    {!datetime.hasSame(DateTime.now(), "day") &&
+                      datetime.toLocaleString(DateTime.DATE_MED)}
+                    {"  "}
                     {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
                   </Text>
-                  {!datetime.hasSame(DateTime.now(), "day") && (
-                    <Text
-                      style={{ color: theme.textColor, textAlign: "right" }}
-                    >
-                      {datetime.toLocaleString(DateTime.DATE_MED)}
-                    </Text>
-                  )}
                 </View>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                    height: 16,
+                    overflow: "hidden",
+                  }}
+                >
+                  {item.content}
+                </Text>
               </View>
             </Pressable>
           );
@@ -174,12 +173,18 @@ export function ConversationsScreen({
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no messages for term{" "}
+                  <I18n
+                    en="There are no messages for term"
+                    it="Non ci sono messaggi per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no messages. Write some!
+                  <I18n
+                    en="There are no messages. Write some!"
+                    it="Non ci sono messagi. Scrivine uno!"
+                  />
                 </React.Fragment>
               )}
             </Text>
@@ -191,6 +196,9 @@ export function ConversationsScreen({
             onRefresh={() => conversationsQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={conversationsQuery.isFetching} />
+        )}
       />
     </View>
   );

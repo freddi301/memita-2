@@ -18,6 +18,7 @@ import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Composition } from "../api";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
+import { I18n } from "../components/I18n";
 
 export function ConversationScreen({
   account,
@@ -40,6 +41,14 @@ export function ConversationScreen({
         other,
         content: searchTextDebounced || undefined,
       });
+    },
+    {
+      refetchInterval: 1000,
+      onSuccess() {
+        setTimeout(() => {
+          if (isAtEnd.current) ref.current?.scrollToEnd();
+        }, 0);
+      },
     }
   );
   const contactQuery = useQuery(
@@ -76,6 +85,8 @@ export function ConversationScreen({
       version_timestamp,
     });
   };
+  const ref = React.useRef<FlatList<Composition>>(null);
+  const isAtEnd = React.useRef(true);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -84,6 +95,8 @@ export function ConversationScreen({
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -108,7 +121,7 @@ export function ConversationScreen({
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
@@ -148,14 +161,20 @@ export function ConversationScreen({
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={conversationQuery.isFetching} />
       <FlatList
         data={conversationQuery.data}
+        ref={ref}
+        onScroll={(event) => {
+          isAtEnd.current =
+            event.nativeEvent.contentOffset.y +
+              event.nativeEvent.layoutMeasurement.height >=
+            event.nativeEvent.contentSize.height - 10;
+        }}
         renderItem={({
           item: {
             author,
@@ -180,17 +199,15 @@ export function ConversationScreen({
                   salt,
                 });
               }}
+              style={{
+                flexDirection: "row",
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+              }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                  paddingHorizontal: 16,
-                  alignItems: "flex-start",
-                }}
-              >
-                <Avatar />
-                <View style={{ marginHorizontal: 8, flex: 1 }}>
+              <Avatar />
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <View style={{ flexDirection: "row" }}>
                   <Text
                     style={{
                       color: theme.textColor,
@@ -202,30 +219,22 @@ export function ConversationScreen({
                   </Text>
                   <Text
                     style={{
-                      color: theme.textColor,
+                      color: theme.textSecondaryColor,
                     }}
                   >
-                    {content}
-                  </Text>
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      color: "#7f848e",
-                      textAlign: "right",
-                      flex: 1,
-                    }}
-                  >
+                    {!datetime.hasSame(DateTime.now(), "day") &&
+                      datetime.toLocaleString(DateTime.DATE_MED)}
+                    {"  "}
                     {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
                   </Text>
-                  {!datetime.hasSame(DateTime.now(), "day") && (
-                    <Text
-                      style={{ color: theme.textColor, textAlign: "right" }}
-                    >
-                      {datetime.toLocaleString(DateTime.DATE_MED)}
-                    </Text>
-                  )}
                 </View>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                  }}
+                >
+                  {content}
+                </Text>
               </View>
             </Pressable>
           );
@@ -241,12 +250,18 @@ export function ConversationScreen({
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no compositions for term{" "}
+                  <I18n
+                    en="There are no messages for term"
+                    it="Non ci sono messaggi per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no compositions. Write some!
+                  <I18n
+                    en="There are no messages. Write some!"
+                    it="Non ci sono messaggi. Scrivine qualcuno!"
+                  />
                 </React.Fragment>
               )}
             </Text>
@@ -258,12 +273,17 @@ export function ConversationScreen({
             onRefresh={() => conversationQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={conversationQuery.isFetching} />
+        )}
       />
       <View
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
           alignItems: "center",
+          borderTopWidth: 1,
+          borderTopColor: theme.borderColor,
         }}
       >
         <TextInput
@@ -282,7 +302,10 @@ export function ConversationScreen({
         <View>
           <View style={{ flex: 1 }}></View>
           <Pressable onPress={send} style={{ padding: 16 }}>
-            <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />
+            <FontAwesomeIcon
+              icon={"paper-plane"}
+              color={theme.actionTextColor}
+            />
           </Pressable>
         </View>
       </View>

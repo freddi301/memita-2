@@ -16,7 +16,7 @@ export function BackButton() {
         padding: 16,
       }}
     >
-      <FontAwesomeIcon icon={"chevron-left"} color={theme.textColor} />
+      <FontAwesomeIcon icon={"chevron-left"} color={theme.actionTextColor} />
     </Pressable>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Settings } from "../api";
 import { BackButton } from "../components/BackButton";
+import { I18n } from "../components/I18n";
 import { Routes } from "../routing";
 import { useTheme } from "../theme";
 import { useAccount } from "./AccountScreen";
@@ -20,6 +21,8 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -30,7 +33,7 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
             fontWeight: "bold",
           }}
         >
-          Settings
+          <I18n en="Settings" it="Impostazioni" />
         </Text>
       </View>
       <ScrollView style={{ paddingVertical: 8 }}>
@@ -43,15 +46,37 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
               paddingVertical: 8,
             }}
           >
-            Theme
+            <I18n en="Language" it="Lingua" />
           </Text>
           <ActivableButton
-            label="Dark"
+            label="Eng"
+            isActive={settings.language === "en"}
+            onPress={() => setSettings({ ...settings, language: "en" })}
+          />
+          <ActivableButton
+            label="Ita"
+            isActive={settings.language === "it"}
+            onPress={() => setSettings({ ...settings, language: "it" })}
+          />
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <Text
+            style={{
+              color: theme.textColor,
+              flex: 1,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+            }}
+          >
+            <I18n en="Theme" it="Tema" />
+          </Text>
+          <ActivableButton
+            label={<I18n en="Dark" it="Scuro" />}
             isActive={settings.theme === "dark"}
             onPress={() => setSettings({ ...settings, theme: "dark" })}
           />
           <ActivableButton
-            label="Light"
+            label={<I18n en="Light" it="Chiaro" />}
             isActive={settings.theme === "light"}
             onPress={() => setSettings({ ...settings, theme: "light" })}
           />
@@ -65,15 +90,15 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
               paddingVertical: 8,
             }}
           >
-            Animations
+            <I18n en="Animations" it="Animazioni" />
           </Text>
           <ActivableButton
-            label="Enabled"
+            label={<I18n en="Enabled" it="Abilitate" />}
             isActive={settings.animations === "enabled"}
             onPress={() => setSettings({ ...settings, animations: "enabled" })}
           />
           <ActivableButton
-            label="Disabled"
+            label={<I18n en="Disabled" it="Disabilitate" />}
             isActive={settings.animations === "disabled"}
             onPress={() => setSettings({ ...settings, animations: "disabled" })}
           />
@@ -84,7 +109,7 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
 }
 
 type ActivableButtonProps = {
-  label: string;
+  label: React.ReactNode;
   isActive: boolean;
   onPress(): void;
 };

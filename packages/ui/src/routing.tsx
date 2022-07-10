@@ -14,6 +14,8 @@ import { Animated, BackHandler, useWindowDimensions, View } from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
 import { ThemeContext, themes } from "./theme";
+import { LanguageContext } from "./components/I18n";
+import { useQueryClient } from "react-query";
 
 export type Routes = {
   Accounts: { account: undefined };
@@ -47,7 +49,7 @@ export type Routes = {
 
 type Route = {
   [Screen in keyof Routes]: { screen: Screen; parameters: Routes[Screen] };
-}[keyof Routes];
+}[keyof Routes] & { salt: number };
 
 const mapping: {
   [Screen in keyof Routes]: React.ComponentType<Routes[Screen]>;
@@ -100,7 +102,7 @@ export function Routes({ initial }: RoutesProps) {
     setState(({ stack, index }) => ({
       stack: [
         ...stack.slice(0, index + 1),
-        { screen, parameters: parameters as any },
+        { screen, parameters: parameters as any, salt: Math.random() },
       ],
       index: index + 1,
     }));
@@ -139,6 +141,12 @@ export function Routes({ initial }: RoutesProps) {
   const { width } = useWindowDimensions();
   const route = stack[index] ?? initial;
   const [{ settings }] = useAccount(route.parameters.account);
+  const queryClient = useQueryClient();
+  React.useEffect(() => {
+    if (!isAnimating) {
+      queryClient.invalidateQueries();
+    }
+  }, [isAnimating, queryClient]);
   if (!(settings.animations === "enabled")) {
     const Screen = mapping[route.screen];
     return (
@@ -152,32 +160,36 @@ export function Routes({ initial }: RoutesProps) {
   return (
     <RoutingContext.Provider value={value}>
       <ThemeContext.Provider value={themes[settings.theme]}>
-        <View style={{ position: "relative", flex: 1 }}>
-          {stack.map((route, i) => {
-            if (!isAnimating && i !== index) return null;
-            const Screen = mapping[route.screen];
-            return (
-              <Animated.View
-                key={i}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                  transform: [
-                    {
-                      translateX: Animated.add(indexAnimation, i).interpolate({
-                        inputRange: [0, 1 * stack.length],
-                        outputRange: [0, width * stack.length],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <Screen {...(route.parameters as any)} />
-              </Animated.View>
-            );
-          })}
-        </View>
+        <LanguageContext.Provider value={settings.language}>
+          <View style={{ position: "relative", flex: 1 }}>
+            {stack.map((route, i) => {
+              const Screen = mapping[route.screen];
+              return (
+                <Animated.View
+                  key={route.salt}
+                  style={{
+                    display: !isAnimating && i !== index ? "none" : "flex",
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    transform: [
+                      {
+                        translateX: Animated.add(indexAnimation, i).interpolate(
+                          {
+                            inputRange: [0, 1 * stack.length],
+                            outputRange: [0, width * stack.length],
+                          }
+                        ),
+                      },
+                    ],
+                  }}
+                >
+                  <Screen {...(route.parameters as any)} />
+                </Animated.View>
+              );
+            })}
+          </View>
+        </LanguageContext.Provider>
       </ThemeContext.Provider>
     </RoutingContext.Provider>
   );

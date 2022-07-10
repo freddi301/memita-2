@@ -15,6 +15,7 @@ import { Avatar } from "../components/Avatar";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function AccountsScreen() {
   const api = useApi();
@@ -39,6 +40,8 @@ export function AccountsScreen() {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -63,7 +66,7 @@ export function AccountsScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
@@ -76,7 +79,7 @@ export function AccountsScreen() {
                 marginLeft: 48,
               }}
             >
-              Your Accounts
+              <I18n en="Your Accounts" it="I tuoi account" />
             </Text>
             <Pressable
               onPress={() => {
@@ -84,7 +87,7 @@ export function AccountsScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
             <Pressable
               onPress={() => {
@@ -92,12 +95,11 @@ export function AccountsScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"plus"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"plus"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={accountsQuery.isFetching} />
       <FlatList
         data={accountsQuery.data}
         renderItem={({ item: { author, nickname } }) => (
@@ -115,7 +117,7 @@ export function AccountsScreen() {
               }}
             >
               <Avatar />
-              <View style={{ marginLeft: 8 }}>
+              <View style={{ marginLeft: 16 }}>
                 <Text
                   style={{
                     color: theme.textColor,
@@ -146,12 +148,18 @@ export function AccountsScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no Accounts for term{" "}
+                  <I18n
+                    en="There are no Accounts for term"
+                    it="Non ci sono account per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  There are no Accounts. Add some!
+                  <I18n
+                    en="There are no Accounts. Add some!"
+                    it="Non ci sono account. Aggiungine qualcuno!"
+                  />
                 </React.Fragment>
               )}
             </Text>
@@ -163,6 +171,9 @@ export function AccountsScreen() {
             onRefresh={() => accountsQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={accountsQuery.isFetching} />
+        )}
       />
     </View>
   );

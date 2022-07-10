@@ -1,15 +1,25 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Appearance,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  NativeModules,
+  Platform,
+} from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Routes } from "../routing";
+import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { Settings } from "../api";
+import { I18n } from "../components/I18n";
 
 export function AccountScreen({ ...original }: Routes["Account"]) {
+  const routing = useRouting();
   const theme = useTheme();
   const [author, setAuthor] = React.useState(original.account ?? "");
   const [nickname, setNickname] = React.useState("");
@@ -27,6 +37,8 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -37,32 +49,51 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
             flex: 1,
           }}
         >
-          Account
+          <I18n en="Account" it="Account" />
         </Text>
         <Pressable
           onPress={() => {
-            setAccount({
-              author,
-              nickname,
-              settings: account?.settings ?? defaultSettings,
-            });
+            setAccount(
+              {
+                author,
+                nickname,
+                settings: account?.settings ?? defaultSettings,
+              },
+              {
+                onSuccess() {
+                  routing.back();
+                },
+              }
+            );
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"check"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
         </Pressable>
       </View>
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Author"
+          label={<I18n en="Author" it="Autore" />}
           value={author}
           onChangeText={setAuthor}
           editable={original.account === undefined}
+          description={
+            <I18n
+              en="A unique combinations of letters that identifies your account"
+              it="Una combinazione unica di lettere che identificano il tuo account"
+            />
+          }
         />
         <SimpleInput
-          label="Nickname"
+          label={<I18n en="Nickname" it="Soprannome" />}
           value={nickname}
           onChangeText={setNickname}
+          description={
+            <I18n
+              en="An optional friendly name to help you remeber which account this is. Nobody else sees it"
+              it="Un nome legibile non obligatorio per ricordarti di quale account si tratta. Nessun altro lo vede"
+            />
+          }
         />
       </ScrollView>
     </View>
@@ -108,6 +139,21 @@ export function useAccount(account: string | undefined) {
 }
 
 const defaultSettings: Settings = {
-  theme: "dark",
+  language: getSystemLocale(),
+  theme: Appearance.getColorScheme() ?? "dark",
   animations: "enabled",
 };
+
+function getSystemLocale() {
+  switch (Platform.OS) {
+    case "android":
+      return NativeModules.I18nManager.localeIdentifier.slice(0, 2);
+    case "ios":
+      return (
+        NativeModules.SettingsManager.settings.AppleLocale ||
+        NativeModules.SettingsManager.settings.AppleLanguages[0]
+      );
+    case "web":
+      return (navigator.languages[0] || navigator.language).slice(0, 2);
+  }
+}

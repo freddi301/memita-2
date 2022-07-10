@@ -79,12 +79,12 @@ false &&
     api.addAccount({
       author: "fred",
       nickname: "Fred",
-      settings: { theme: "dark", animations: "enabled" },
+      settings: { language: "en", theme: "dark", animations: "enabled" },
     });
     api.addAccount({
       author: "ali",
       nickname: "Alice",
-      settings: { theme: "light", animations: "disabled" },
+      settings: { language: "it", theme: "light", animations: "disabled" },
     });
     api.addContact({
       account: "fred",

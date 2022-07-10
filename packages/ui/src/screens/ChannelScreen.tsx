@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
   const routing = useRouting();
@@ -72,6 +73,8 @@ export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -82,7 +85,7 @@ export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
             flex: 1,
           }}
         >
-          Channel
+          <I18n en="Channel" it="Canale" />
         </Text>
         {original.channel && (
           <Pressable
@@ -91,7 +94,7 @@ export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
             }}
             style={{ padding: 16 }}
           >
-            <FontAwesomeIcon icon={"trash"} color={theme.textColor} />
+            <FontAwesomeIcon icon={"trash"} color={theme.actionTextColor} />
           </Pressable>
         )}
         <Pressable
@@ -100,19 +103,19 @@ export function ChannelScreen({ account, ...original }: Routes["Channel"]) {
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"check"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
         </Pressable>
       </View>
       <HorizontalLoader isLoading={channelQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Channel"
+          label={<I18n en="Channel" it="Canale" />}
           value={channel}
           onChangeText={setChannel}
           editable={original.channel === undefined}
         />
         <SimpleInput
-          label="Nickname"
+          label={<I18n en="Nickname" it="Soprannome" />}
           value={nickname}
           onChangeText={setNickname}
         />

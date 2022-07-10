@@ -6,15 +6,21 @@ const dark = {
   textColor: "#abb2bf",
   textSecondaryColor: "#7f848e",
   activeColor: "#61afef",
+  actionTextColor: "#abb2bf",
+  borderColor: "transparent",
+  mockColor: "#74B3F0",
   headerHeight: 48,
 };
 
 const light: typeof dark = {
   backgroundColorPrimary: "#ffffff",
-  backgroundColorSecondary: "#efeff0",
+  backgroundColorSecondary: "#f7f7f7",
   textColor: "#000000",
-  textSecondaryColor: "#c4c4c4c4",
+  textSecondaryColor: "#8A8A8E",
   activeColor: "#0a84ff",
+  actionTextColor: "#5899DA",
+  borderColor: "lightgray",
+  mockColor: "#5899DA",
   headerHeight: 48,
 };
 

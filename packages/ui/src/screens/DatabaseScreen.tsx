@@ -14,6 +14,7 @@ import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function DatabaseScreen() {
   const api = useApi();
@@ -32,6 +33,8 @@ export function DatabaseScreen() {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         {isSearching ? (
@@ -56,7 +59,7 @@ export function DatabaseScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"times"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"times"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         ) : (
@@ -69,7 +72,7 @@ export function DatabaseScreen() {
                 fontWeight: "bold",
               }}
             >
-              Database
+              <I18n en="Database" it="Database" />
             </Text>
             <Pressable
               onPress={() => {
@@ -77,12 +80,11 @@ export function DatabaseScreen() {
               }}
               style={{ padding: 16 }}
             >
-              <FontAwesomeIcon icon={"search"} color={theme.textColor} />
+              <FontAwesomeIcon icon={"search"} color={theme.actionTextColor} />
             </Pressable>
           </React.Fragment>
         )}
       </View>
-      <HorizontalLoader isLoading={databaseQuery.isFetching} />
       <FlatList
         data={databaseQuery.data}
         renderItem={({ item }) => {
@@ -109,11 +111,16 @@ export function DatabaseScreen() {
             >
               {isSearching ? (
                 <React.Fragment>
-                  There are no database entries for term{" "}
+                  <I18n
+                    en="There are no database entries for term"
+                    it="Non ci sono voci nel databse per il termine"
+                  />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>
               ) : (
-                <React.Fragment>The database is empty</React.Fragment>
+                <React.Fragment>
+                  <I18n en="The database is empty" it="Il database è vuoto" />
+                </React.Fragment>
               )}
             </Text>
           )
@@ -124,6 +131,9 @@ export function DatabaseScreen() {
             onRefresh={() => databaseQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={databaseQuery.isFetching} />
+        )}
       />
     </View>
   );

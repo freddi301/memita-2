@@ -9,6 +9,7 @@ import { SimpleInput } from "../components/SimpleInput";
 import { Composition } from "../api";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function CompositionScreen({
   account,
@@ -67,6 +68,8 @@ export function CompositionScreen({
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -77,7 +80,7 @@ export function CompositionScreen({
             flex: 1,
           }}
         >
-          Composition
+          <I18n en="Composition" it="Composizione" />
         </Text>
         {(account === original.author || original.author === undefined) && (
           <Pressable
@@ -96,21 +99,24 @@ export function CompositionScreen({
             }}
             style={{ padding: 16 }}
           >
-            <FontAwesomeIcon icon={"paper-plane"} color={theme.textColor} />
+            <FontAwesomeIcon
+              icon={"paper-plane"}
+              color={theme.actionTextColor}
+            />
           </Pressable>
         )}
       </View>
       <HorizontalLoader isLoading={compositionQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
         <SimpleInput
-          label="Author"
+          label={<I18n en="Author" it="Autore" />}
           value={original.author ?? account}
           onChangeText={() => undefined}
           editable={false}
         />
         {!(original.channel === "") && (
           <SimpleInput
-            label="Channel"
+            label={<I18n en="Channel" it="Canale" />}
             value={channel}
             onChangeText={setChannel}
             editable={original.channel === undefined}
@@ -118,7 +124,7 @@ export function CompositionScreen({
         )}
         {!(original.recipient === "") && (
           <SimpleInput
-            label="Recipient"
+            label={<I18n en="Recipient" it="Destinatario" />}
             value={recipient}
             onChangeText={setRecipient}
             editable={original.recipient === undefined}
@@ -126,14 +132,14 @@ export function CompositionScreen({
         )}
         {!(original.quote === "") && (
           <SimpleInput
-            label="Quote"
+            label={<I18n en="Quote" it="Citazione" />}
             value={quote}
             onChangeText={setQuote}
             editable={original.quote === undefined}
           />
         )}
         <SimpleInput
-          label="Content"
+          label={<I18n en="Content" it="Contenuto" />}
           value={content}
           onChangeText={setContent}
         />

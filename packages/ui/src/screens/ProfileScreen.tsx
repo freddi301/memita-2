@@ -9,6 +9,7 @@ import { useQuery } from "react-query";
 import { useApi } from "../ui";
 import { DateTime } from "luxon";
 import { HorizontalLoader } from "../components/HorizontalLoader";
+import { I18n } from "../components/I18n";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
@@ -37,6 +38,8 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
           backgroundColor: theme.backgroundColorSecondary,
           height: theme.headerHeight,
           alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: theme.borderColor,
         }}
       >
         <BackButton />
@@ -64,7 +67,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"pen"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"pen"} color={theme.actionTextColor} />
         </Pressable>
       </View>
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
@@ -78,7 +81,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
           }}
           style={{ padding: 16 }}
         >
-          <FontAwesomeIcon icon={"envelope"} color={theme.textColor} />
+          <FontAwesomeIcon icon={"envelope"} color={theme.actionTextColor} />
         </Pressable>
       </View>
       <View
@@ -98,11 +101,10 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
               borderColor: theme.activeColor,
             }}
           >
-            Posts
+            <I18n en="Posts" it="I Post" />
           </Text>
         </Pressable>
       </View>
-      <HorizontalLoader isLoading={postsQuery.isFetching} />
       <FlatList
         data={postsQuery.data}
         renderItem={({
@@ -199,7 +201,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
                 padding: 16,
               }}
             >
-              No posts
+              <I18n en="No posts" it="Nessun post" />
             </Text>
           )
         }
@@ -209,6 +211,9 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
             onRefresh={() => postsQuery.refetch()}
           />
         }
+        ListHeaderComponent={() => (
+          <HorizontalLoader isLoading={postsQuery.isFetching} />
+        )}
       />
     </View>
   );
