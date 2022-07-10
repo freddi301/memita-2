@@ -16,15 +16,6 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
   const accountQuery = useQuery(["account", { author: account }], async () => {
     return await api.getAccount({ author: account });
   });
-  const connectionsQuery = useQuery(
-    ["connections"],
-    async () => {
-      return await api.getConnections();
-    },
-    {
-      refetchInterval: 1000,
-    }
-  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -154,6 +145,26 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
+            routing.push("Connectivity", { account });
+          }}
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <FontAwesomeIcon icon={"wifi"} color={theme.actionTextColor} />
+          <Text
+            style={{
+              color: theme.textColor,
+              marginLeft: 16,
+            }}
+          >
+            <I18n en="Connectivity" it="Connettività" />
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
             routing.push("Database", { account });
           }}
           style={{
@@ -172,15 +183,6 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             <I18n en="Database" it="Database" />
           </Text>
         </Pressable>
-        <Text
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            color: theme.textSecondaryColor,
-          }}
-        >
-          Connections: {JSON.stringify(connectionsQuery.data, null, 2)}
-        </Text>
       </ScrollView>
     </View>
   );

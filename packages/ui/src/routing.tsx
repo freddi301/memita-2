@@ -16,10 +16,12 @@ import { ChannelScreen } from "./screens/ChannelScreen";
 import { ThemeContext, themes } from "./theme";
 import { LanguageContext } from "./components/I18n";
 import { useQueryClient } from "react-query";
+import { ConnectivityScreen } from "./screens/ConnectivityScreen";
 
 export type Routes = {
   Accounts: { account: undefined };
   Database: { account: string };
+  Connectivity: { account: string };
   Settings: { account: string };
   Account: { account?: string };
   Navigation: { account: string };
@@ -58,6 +60,7 @@ const mapping: {
   Account: AccountScreen,
   Navigation: NavigationScreen,
   Settings: SettingsScreen,
+  Connectivity: ConnectivityScreen,
   Database: DatabaseScreen,
   Contacts: ContactsScreen,
   Contact: ContactScreen,
@@ -93,7 +96,7 @@ const RoutingContext = React.createContext<Routing>(null as any);
 type RoutesProps = {
   initial: Route;
 };
-export function Routes({ initial }: RoutesProps) {
+export function Router({ initial }: RoutesProps) {
   const [{ stack, index }, setState] = React.useState<{
     stack: Array<Route>;
     index: number;

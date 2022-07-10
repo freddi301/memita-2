@@ -1,7 +1,7 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Api } from "./api";
-import { Routes } from "./routing";
+import { Router } from "./routing";
 
 const { library } = require("@fortawesome/fontawesome-svg-core");
 const { fas } = require("@fortawesome/free-solid-svg-icons");
@@ -22,7 +22,7 @@ export function Ui({ api }: UiProps) {
   return (
     <ApiContext.Provider value={api}>
       <QueryClientProvider client={queryClient}>
-        <Routes
+        <Router
           initial={{
             screen: "Accounts",
             parameters: { account: undefined },
