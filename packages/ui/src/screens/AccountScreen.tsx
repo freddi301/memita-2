@@ -128,12 +128,15 @@ export function useAccount(account: string | undefined) {
       },
     }
   );
-  return [
-    accountQuery.data ?? {
+  const defaultAccount = React.useMemo(() => {
+    return {
       author: account ?? "",
       nickname: "",
       settings: defaultSettings,
-    },
+    };
+  }, [account]);
+  return [
+    accountQuery.data ?? defaultAccount,
     addAccountMutation.mutate,
   ] as const;
 }

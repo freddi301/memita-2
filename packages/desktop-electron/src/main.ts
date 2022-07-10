@@ -1,11 +1,43 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { createApi, createHyperSwarm, createBridgeSwarm } from "@memita-2/core";
 import { Sql } from "@memita-2/core";
 import Database from "better-sqlite3";
 
-function createSql(): Sql {
-  const db = new Database(":memory:");
+(async () => {
+  await app.whenReady();
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: "provide database location",
+    buttonLabel: "open database here",
+    properties: ["openDirectory", "createDirectory", "promptToCreate"],
+  });
+  if (canceled || !filePaths[0]) {
+    app.quit();
+    return;
+  }
+  const sql = createSql(path.join(filePaths[0], "db.db"));
+  const api = await createApi(sql, {
+    hyper: createHyperSwarm,
+    bridge: createBridgeSwarm(8001, "127.0.0.1"),
+  });
+  for (const [methodName, method] of Object.entries(api)) {
+    ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
+  }
+  const window = createWindow();
+  if (!app.isPackaged) {
+    window.webContents.openDevTools();
+  }
+  if (!app.isPackaged) installExtensions();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit();
+  });
+})();
+
+function createSql(path: string): Sql {
+  const db = new Database(path);
   return (strings, ...values) => ({
     async run() {
       db.prepare(strings.join("?")).run(values);
@@ -16,22 +48,11 @@ function createSql(): Sql {
   });
 }
 
-const sql = createSql();
-const api = createApi(sql, {
-  hyper: createHyperSwarm,
-  bridge: createBridgeSwarm(8001, "127.0.0.1"),
-});
-
-api.then((api) => {
-  for (const [methodName, method] of Object.entries(api)) {
-    ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
-  }
-});
-
 function createWindow() {
   const window = new BrowserWindow({
-    width: 800,
+    width: process.env.NODE_ENV === "development" ? 800 : 300,
     height: 600,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -58,46 +79,3 @@ function installExtensions() {
       console.log("An error occurred: ", err);
     });
 }
-
-app.whenReady().then(() => {
-  const window = createWindow();
-  if (!app.isPackaged) {
-    window.webContents.openDevTools();
-  }
-  if (!app.isPackaged) installExtensions();
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
-
-false &&
-  api.then((api) => {
-    api.addAccount({
-      author: "fred",
-      nickname: "Fred",
-      settings: { language: "en", theme: "dark", animations: "enabled" },
-    });
-    api.addAccount({
-      author: "ali",
-      nickname: "Alice",
-      settings: { language: "it", theme: "light", animations: "disabled" },
-    });
-    api.addContact({
-      account: "fred",
-      author: "ali",
-      nickname: "Alice",
-      label: "",
-      version_timestamp: Date.now(),
-    });
-    api.addContact({
-      account: "ali",
-      author: "fred",
-      nickname: "Fred",
-      label: "",
-      version_timestamp: Date.now(),
-    });
-  });

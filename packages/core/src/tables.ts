@@ -1,13 +1,13 @@
 import { Sql } from "./components/sql";
 
 export async function createTables(sql: Sql) {
-  await sql`CREATE TABLE accounts (
+  await sql`CREATE TABLE IF NOT EXISTS accounts (
     author TEXT PRIMARY KEY,
     nickname TEXT NOT NULL,
     settings TEXT NOT NULL
   )`.run();
 
-  await sql`CREATE TABLE contacts (
+  await sql`CREATE TABLE IF NOT EXISTS contacts (
     crypto_hash TEXT PRIMARY KEY,
     account TEXT NOT NULL,
     author TEXT NOT NULL,
@@ -17,7 +17,7 @@ export async function createTables(sql: Sql) {
     UNIQUE (account, author, nickname, label, version_timestamp)
   )`.run();
 
-  await sql`CREATE TABLE channels (
+  await sql`CREATE TABLE IF NOT EXISTS channels (
     crypto_hash TEXT PRIMARY KEY,
     account TEXT NOT NULL,
     channel TEXT NOT NULL,
@@ -27,7 +27,7 @@ export async function createTables(sql: Sql) {
     UNIQUE (account, channel, nickname, label, version_timestamp)
   )`.run();
 
-  await sql`CREATE TABLE compositions (
+  await sql`CREATE TABLE IF NOT EXISTS compositions (
     crypto_hash TEXT PRIMARY KEY,
     author TEXT NOT NULL,
     channel TEXT NOT NULL,

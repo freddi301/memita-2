@@ -23,7 +23,11 @@ export function Ui({ api }: UiProps) {
     <ApiContext.Provider value={api}>
       <QueryClientProvider client={queryClient}>
         <Routes
-          initial={{ screen: "Accounts", parameters: { account: undefined } }}
+          initial={{
+            screen: "Accounts",
+            parameters: { account: undefined },
+            salt: 0,
+          }}
         />
       </QueryClientProvider>
     </ApiContext.Provider>
