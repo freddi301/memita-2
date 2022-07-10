@@ -126,7 +126,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           onChangeText={setNickname}
           description={
             <I18n
-              en="An optional friendly name to help you remeber the person who owns this account. Nobody else sees it"
+              en="An optional friendly name to help you remeber the person who owns this account. Nobody else see it"
               it="Un nome legibile non obligatorio per ricordarti a quale persona appertiene questo account. Nessun altro lo vede"
             />
           }

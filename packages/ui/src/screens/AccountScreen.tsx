@@ -90,7 +90,7 @@ export function AccountScreen({ ...original }: Routes["Account"]) {
           onChangeText={setNickname}
           description={
             <I18n
-              en="An optional friendly name to help you remeber which account this is. Nobody else sees it"
+              en="An optional friendly name to help you remeber which account this is. Nobody else see it"
               it="Un nome legibile non obligatorio per ricordarti di quale account si tratta. Nessun altro lo vede"
             />
           }

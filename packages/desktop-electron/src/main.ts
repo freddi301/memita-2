@@ -9,6 +9,7 @@ import Database from "better-sqlite3";
   const { canceled, filePaths } = await dialog.showOpenDialog({
     title: "provide database location",
     buttonLabel: "open database here",
+    defaultPath: process.cwd(),
     properties: ["openDirectory", "createDirectory", "promptToCreate"],
   });
   if (canceled || !filePaths[0]) {

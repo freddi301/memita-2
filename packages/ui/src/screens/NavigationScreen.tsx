@@ -86,7 +86,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
               marginLeft: 16,
             }}
           >
-            <I18n en="Cahnnels" it="Canali" />
+            <I18n en="Channels" it="Canali" />
           </Text>
         </Pressable>
         <Pressable

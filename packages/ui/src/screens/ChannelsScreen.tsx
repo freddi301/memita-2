@@ -78,27 +78,19 @@ export function ChannelsScreen({ account }: Routes["Channels"]) {
         ) : (
           <React.Fragment>
             <BackButton />
-            <Text
+            <Avatar />
+            <View
               style={{
+                flexDirection: "column",
+                paddingHorizontal: 16,
                 flex: 1,
-                color: theme.textColor,
-                fontWeight: "bold",
               }}
             >
-              <Avatar />
-              <View
-                style={{
-                  flexDirection: "column",
-                  paddingHorizontal: 16,
-                  flex: 1,
-                }}
-              >
-                <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
-                  {accountQuery.data?.nickname ?? ""}
-                </Text>
-                <Text style={{ color: theme.textColor }}>{account}</Text>
-              </View>
-            </Text>
+              <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
+                {accountQuery.data?.nickname ?? ""}
+              </Text>
+              <Text style={{ color: theme.textColor }}>{account}</Text>
+            </View>
             <Pressable
               onPress={() => {
                 setIsSearching(true);
