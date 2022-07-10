@@ -2,7 +2,7 @@ import { createApi } from "../src/api";
 import { createSql } from "./sqlite/sql";
 
 test("conversation aggregation", async () => {
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getConversation({ account: "fred" })).toEqual([]);
   const compositionA = {
     author: "fred",

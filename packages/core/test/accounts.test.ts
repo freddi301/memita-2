@@ -3,7 +3,7 @@ import { createApi } from "../src/api";
 import { createSql } from "./sqlite/sql";
 
 test("account", async () => {
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getAccounts({})).toEqual([]);
   const accountA: Account = {
     author: "fred",
@@ -12,6 +12,10 @@ test("account", async () => {
       language: "it",
       theme: "dark",
       animations: "enabled",
+      connectivity: {
+        hyperswarm: { enabled: false },
+        bridge: { clients: [] },
+      },
     },
   };
   await api.addAccount(accountA);
@@ -24,6 +28,10 @@ test("account", async () => {
       language: "en",
       theme: "light",
       animations: "disabled",
+      connectivity: {
+        hyperswarm: { enabled: false },
+        bridge: { clients: [] },
+      },
     },
   };
   await api.addAccount(accountB);

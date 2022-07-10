@@ -1,14 +1,12 @@
 import type { Api } from "@memita-2/ui";
-import { Swarm, SwarmFactory } from "./components/swarm/swarm";
 import { Sql } from "./components/sql";
 import { createSync } from "./sync";
 import { createTables, optimizeDb } from "./tables";
 import { cryptoHashFunction } from "./components/cryptoHashFunction";
+import { createHyperSwarm } from "./components/swarm/hyperSwarm";
+import { createBridgeClient } from "./components/bridge/bridgeClient";
 
-export async function createApi(
-  sql: Sql,
-  swarms: Record<string, SwarmFactory>
-) {
+export async function createApi(sql: Sql) {
   await optimizeDb(sql);
   await createTables(sql);
   const api: Api = {
@@ -226,15 +224,20 @@ export async function createApi(
         ORDER BY MAX(version_timestamp) DESC
       `.all()) as any;
     },
-    async getConnections() {
-      return Object.fromEntries(
-        await Promise.all(
-          Object.entries(swarmInstances).map(async ([id, swarm]) => [
-            id,
-            await swarm.getConnections(),
-          ])
-        )
-      );
+    async getConnections(account) {
+      const instances = connectivityModuleInstances.get(account);
+      if (!instances) {
+        return {
+          hyperswarm: 0,
+          bridge: [],
+        };
+      }
+      return {
+        hyperswarm: await instances.hyperswarm.getConnections(),
+        bridge: await Promise.all(
+          instances.bridge.map((bridge) => bridge.getConnections())
+        ),
+      };
     },
   };
 
@@ -242,17 +245,59 @@ export async function createApi(
     return string.replace(/[^a-zA-z0-9]/g, "");
   }
 
-  const swarmInstances: Record<string, Swarm> = {};
-  for (const [swarmName, swarmFactory] of Object.entries(swarms)) {
-    const { onConnection, sync } = createSync({ sql, api });
-    const swarmInstance = swarmFactory(onConnection);
-    swarmInstances[swarmName] = swarmInstance;
-    (async () => {
-      while (true) {
-        await sync();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+  const { onConnection, sync } = createSync({ sql, api });
+  (async () => {
+    while (true) {
+      await sync();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  })();
+
+  type ConnectivityModuleInstances = {
+    hyperswarm: ReturnType<typeof createHyperSwarm>;
+    bridge: Array<ReturnType<typeof createBridgeClient>>;
+  };
+  const connectivityModuleInstances = new Map<
+    string,
+    ConnectivityModuleInstances
+  >();
+
+  connectAccounts();
+  async function connectAccounts() {
+    const accounts = await api.getAccounts({});
+    for (const account of accounts) {
+      let instances = connectivityModuleInstances.get(
+        account.author
+      ) as ConnectivityModuleInstances;
+      if (!instances) {
+        instances = {
+          hyperswarm: createHyperSwarm(onConnection),
+          bridge: account.settings.connectivity.bridge.clients.map((bridge) =>
+            createBridgeClient(bridge.port, bridge.host, onConnection)
+          ),
+        };
+        connectivityModuleInstances.set(account.author, instances);
       }
-    })();
+      if (account.settings.connectivity.hyperswarm.enabled) {
+        await instances.hyperswarm.start();
+      } else {
+        await instances.hyperswarm.stop();
+      }
+      for (
+        let index = 0;
+        index < account.settings.connectivity.bridge.clients.length;
+        index++
+      ) {
+        const bridge = account.settings.connectivity.bridge.clients[index];
+        const instance = instances.bridge[index];
+        if (bridge.enabled) {
+          await instance.start();
+        } else {
+          await instance.stop();
+        }
+      }
+    }
+    setTimeout(connectAccounts, 1000);
   }
 
   return api;

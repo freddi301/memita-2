@@ -10,6 +10,18 @@ export type Settings = {
   language: Language;
   theme: "dark" | "light";
   animations: "enabled" | "disabled";
+  connectivity: {
+    hyperswarm: {
+      enabled: boolean;
+    };
+    bridge: {
+      clients: Array<{
+        port: number;
+        host: string;
+        enabled: boolean;
+      }>;
+    };
+  };
 };
 
 export type Contact = {
@@ -100,5 +112,8 @@ export type Api = {
       version_timestamp: number;
     }>
   >;
-  getConnections(): Promise<Record<string, number>>;
+  getConnections(account: string): Promise<{
+    hyperswarm: number;
+    bridge: Array<number>;
+  }>;
 };

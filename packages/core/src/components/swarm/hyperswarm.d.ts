@@ -9,7 +9,11 @@ declare module "hyperswarm" {
       event: "connection",
       callback: (connection: Duplex, info: PeerInfo) => void
     ): void;
-    join(topic: Buffer, options: { server: boolean; client: boolean }): void;
+    join(
+      topic: Buffer,
+      options: { server: boolean; client: boolean }
+    ): Promise<void>;
+    leave(topic: Buffer): Promise<void>;
     connections: Set<unknown>;
   }
   type PeerInfo = {

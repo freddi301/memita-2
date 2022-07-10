@@ -2,7 +2,7 @@ import { createApi } from "../src/api";
 import { createSql } from "./sqlite/sql";
 
 test("channel aggregation", async () => {
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getChannels({ account: "fred" })).toEqual([]);
   const channelA = {
     account: "fred",

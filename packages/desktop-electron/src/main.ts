@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
-import { createApi, createHyperSwarm, createBridgeSwarm } from "@memita-2/core";
+import { createApi } from "@memita-2/core";
 import { Sql } from "@memita-2/core";
 import Database from "better-sqlite3";
 
@@ -18,10 +18,7 @@ import Database from "better-sqlite3";
   }
   const title = `Memita 2 ${filePaths[0]}`;
   const sql = createSql(path.join(filePaths[0], "db.db"));
-  const api = await createApi(sql, {
-    hyper: createHyperSwarm,
-    bridge: createBridgeSwarm(8001, "127.0.0.1"),
-  });
+  const api = await createApi(sql);
   for (const [methodName, method] of Object.entries(api)) {
     ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
   }

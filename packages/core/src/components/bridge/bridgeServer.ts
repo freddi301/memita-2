@@ -11,7 +11,10 @@ export async function createBridgeServer(port?: number) {
   type ConnectionEntry = {
     encoder: Writable;
     nextStream: number;
-    streamMapping: Map<number, { connection: ConnectionEntry; stream: number }>;
+    streamMapping: Map<
+      number,
+      { connection: ConnectionEntry; stream: number; ended: boolean }
+    >;
   };
   const connections = new Map<Socket, ConnectionEntry>();
   const server = createServer((socket: Socket) => {
@@ -29,9 +32,16 @@ export async function createBridgeServer(port?: number) {
     connections.set(socket, connectionEntry);
     socket.on("close", () => {
       connections.delete(socket);
+    });
+    socket.on("end", () => {
       for (const [stream, other] of connectionEntry.streamMapping) {
-        const message: ServerToClientMessage = { type: "error", stream };
-        other.connection.encoder.write(message);
+        if (!other.ended) {
+          const message: ServerToClientMessage = {
+            type: "error",
+            stream: other.stream,
+          };
+          other.connection.encoder.write(message);
+        }
       }
     });
     openSubStreams();
@@ -46,6 +56,7 @@ export async function createBridgeServer(port?: number) {
           break;
         }
         case "end": {
+          other.ended = true;
           write({ type: "end", stream: other.stream });
           break;
         }
@@ -81,10 +92,12 @@ export async function createBridgeServer(port?: number) {
     a.streamMapping.set(aSubstream, {
       connection: b,
       stream: bSubstream,
+      ended: false,
     });
     b.streamMapping.set(bSubstream, {
       connection: a,
       stream: aSubstream,
+      ended: false,
     });
     const messageToA: ServerToClientMessage = {
       type: "open",

@@ -3,7 +3,7 @@ import { createApi } from "../src/api";
 import { createSql } from "./sqlite/sql";
 
 test("conversations aggregation", async () => {
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getConversations({ account: "fred" })).toEqual([]);
   await api.addComposition({
     author: "fred",
@@ -73,8 +73,12 @@ test("conversations aggregation group/private", async () => {
     language: "en",
     theme: "dark",
     animations: "disabled",
+    connectivity: {
+      hyperswarm: { enabled: false },
+      bridge: { clients: [] },
+    },
   };
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getAccounts({})).toEqual([]);
   const accountA = { author: "fred", nickname: "Fred", settings };
   await api.addAccount(accountA);

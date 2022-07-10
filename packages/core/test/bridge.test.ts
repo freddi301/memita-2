@@ -3,8 +3,9 @@ import { createBridgeClient } from "../src/components/bridge/bridgeClient";
 
 test("bridge server and bridge client connects", async () => {
   const server = await createBridgeServer();
-  const client = await createBridgeClient(server.port, "127.0.0.1", () => {});
-  await client.close();
+  const client = createBridgeClient(server.port, "127.0.0.1", () => {});
+  await client.start();
+  await client.stop();
   await server.close();
 });
 
@@ -13,34 +14,30 @@ test("bridge server connects two clients", async () => {
   const payload = Math.random();
   let aConnections = 0;
   let bConnections = 0;
-  const clientA = await createBridgeClient(
-    server.port,
-    "127.0.0.1",
-    (connection) => {
-      aConnections++;
-      connection.write(`${payload}`);
-      connection.end();
-    }
-  );
+  const clientA = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+    aConnections++;
+    connection.write(`${payload}`);
+    connection.end();
+  });
+  await clientA.start();
   let resolution: any;
-  const clientB = await createBridgeClient(
-    server.port,
-    "127.0.0.1",
-    (connection) => {
-      bConnections++;
-      connection.once("data", (data) => {
-        resolution(data.toString());
-        connection.end();
-      });
-    }
-  );
+  const clientB = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+    bConnections++;
+    connection.once("data", (data) => {
+      resolution(data.toString());
+      connection.end();
+    });
+  });
+  await clientB.start();
   expect(
     await new Promise((resolve) => {
       resolution = resolve;
     })
   ).toEqual(`${payload}`);
-  await clientA.close();
-  await clientB.close();
+  expect(await clientA.getConnections()).toEqual(1);
+  expect(await clientB.getConnections()).toEqual(1);
+  await clientA.stop();
+  await clientB.stop();
   await server.close();
   expect(aConnections).toEqual(1);
   expect(bConnections).toEqual(1);

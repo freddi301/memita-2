@@ -2,7 +2,7 @@ import { createApi } from "../src/api";
 import { createSql } from "./sqlite/sql";
 
 test("contacts aggregation", async () => {
-  const api = await createApi(createSql(), {});
+  const api = await createApi(createSql());
   expect(await api.getContacts({ account: "fred" })).toEqual([]);
   const contactA = {
     account: "fred",
