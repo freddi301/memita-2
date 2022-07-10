@@ -27,7 +27,13 @@ export async function createBridgeServer(port?: number) {
       streamMapping: new Map(),
     };
     connections.set(socket, connectionEntry);
-    socket.on("close", () => connections.delete(socket));
+    socket.on("close", () => {
+      connections.delete(socket);
+      for (const [stream, other] of connectionEntry.streamMapping) {
+        const message: ServerToClientMessage = { type: "error", stream };
+        other.connection.encoder.write(message);
+      }
+    });
     openSubStreams();
     decoder.on("data", (message: ClientToServerMessage) => {
       const other = connectionEntry.streamMapping.get(message.stream);

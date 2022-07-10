@@ -53,10 +53,18 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
           objectStream
         );
       const sync = async () => {
-        await syncCryptoHashableData(repository, client);
+        try {
+          await syncCryptoHashableData(repository, client);
+        } catch (error) {
+          console.error(error);
+          syncs.delete(sync);
+        }
       };
       syncs.add(sync);
-      objectStream.once("end", () => syncs.delete(sync));
+      objectStream.once("end", () => {
+        objectStream.end();
+        syncs.delete(sync);
+      });
     },
     async sync() {
       await Promise.all(Array.from(syncs.values()).map((sync) => sync()));
