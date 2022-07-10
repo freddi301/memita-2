@@ -1,7 +1,8 @@
-import { Duplex } from "stream";
+import { Duplex, pipeline } from "stream";
+import cbor from "cbor";
+import duplexify from "duplexify";
 
 // TODO validate deserialized message
-// TODO ensure streams are in object mode and emits Buffers
 
 type RpcShape = Record<string, (...args: any[]) => Promise<any>>;
 
@@ -28,22 +29,18 @@ type RpcResponse<RPC extends RpcShape, Method extends keyof RPC> =
       result: unknown;
     };
 
-function serialize(value: unknown): Buffer {
-  return Buffer.from(JSON.stringify(value));
-}
-
-function deserialize(data: Buffer): unknown {
-  return JSON.parse(data.toString());
-}
-
 export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
+  // if (!stream.readableObjectMode)
+  //   throw new Error("stream must be readable object mode");
+  // if (!stream.writableObjectMode)
+  //   throw new Error("stream must be writable object mode");
   let nextRequestId = 0;
   const pendingRequests = new Map<
     number,
     { resolve(data: any): void; reject(error: any): void }
   >();
   stream.on("data", (data) => {
-    const message = deserialize(data) as RpcResponse<RPC, keyof RPC>;
+    const message = data as RpcResponse<RPC, keyof RPC>;
     const pendingRequest = pendingRequests.get(message.id);
     if (message.type === "response" && pendingRequest) {
       if (message.isError) pendingRequest.reject(new Error("rpc error "));
@@ -73,7 +70,7 @@ export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
           };
           await new Promise((resolve, reject) => {
             if (stream.writable && !stream.destroyed) {
-              stream.write(serialize(message), (error) => {
+              stream.write(message, (error) => {
                 if (error) reject(error);
                 else resolve(undefined);
               });
@@ -94,6 +91,10 @@ export function createRpcServer<RPC extends RpcShape>(
   server: RPC,
   stream: Duplex
 ) {
+  // if (!stream.readableObjectMode)
+  //   throw new Error("stream must be readable object mode");
+  // if (!stream.writableObjectMode)
+  //   throw new Error("stream must be writable object mode");
   stream.on("data", (data) => {
     (async <Method extends keyof RPC>(message: RpcRequest<RPC, Method>) => {
       if (message.type !== "request") return;
@@ -107,7 +108,7 @@ export function createRpcServer<RPC extends RpcShape>(
           result,
         };
         await new Promise((resolve, reject) =>
-          stream.write(serialize(response), (error) => {
+          stream.write(response, (error) => {
             if (error) reject(error);
             else resolve(undefined);
           })
@@ -122,7 +123,7 @@ export function createRpcServer<RPC extends RpcShape>(
         };
         await new Promise((resolve, reject) => {
           if (stream.writable && !stream.destroyed) {
-            stream.write(serialize(response), (error) => {
+            stream.write(response, (error) => {
               if (error) reject(error);
               else resolve(undefined);
             });
@@ -131,6 +132,23 @@ export function createRpcServer<RPC extends RpcShape>(
           }
         });
       }
-    })(deserialize(data) as any);
+    })(data as any);
   });
+}
+
+export function createDuplexCbor(stream: Duplex) {
+  if (stream.readableObjectMode)
+    throw new Error("stream must be readable buffer mode");
+  if (stream.writableObjectMode)
+    throw new Error("stream must be writable buffer mode");
+  const encoder = new cbor.Encoder();
+  const decoder = new cbor.Decoder();
+  pipeline(encoder, stream, () => {});
+  pipeline(stream, decoder, () => {});
+  const cborStream = duplexify(encoder, decoder, {
+    objectMode: true,
+    writableObjectMode: true,
+    readableObjectMode: true,
+  });
+  return cborStream;
 }

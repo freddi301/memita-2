@@ -6,13 +6,17 @@ import {
   CryptoHashableDataSyncRPC,
   syncCryptoHashableData,
 } from "../src/components/cryptoHashableDataSync";
-import { createRpcClient, createRpcServer } from "../src/components/rpc";
+import {
+  createDuplexCbor,
+  createRpcClient,
+  createRpcServer,
+} from "../src/components/rpc";
 
 test("cryptoHashableDataSync syncs data", async () => {
   const a = new PassThrough();
   const b = new PassThrough();
-  const x = duplexify(a, b);
-  const y = duplexify(b, a);
+  const x = createDuplexCbor(duplexify(a, b));
+  const y = createDuplexCbor(duplexify(b, a));
   createRpcServer(
     createCryptoHashableDataSyncRpcServer<string, string>(
       createRepoFromArray(["a", "b", "c"])

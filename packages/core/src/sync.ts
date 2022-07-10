@@ -1,6 +1,10 @@
 import { Duplex } from "stream";
 import { Api, Composition } from "@memita-2/ui";
-import { createRpcClient, createRpcServer } from "./components/rpc";
+import {
+  createDuplexCbor,
+  createRpcClient,
+  createRpcServer,
+} from "./components/rpc";
 import {
   CryptoHashableDataRepository,
   createCryptoHashableDataSyncRpcServer,
@@ -39,17 +43,20 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
 
   return {
     onConnection(stream: Duplex) {
+      const objectStream = createDuplexCbor(stream);
       createRpcServer(
         createCryptoHashableDataSyncRpcServer(repository),
-        stream
+        objectStream
       );
       const client =
-        createRpcClient<CryptoHashableDataSyncRPC<string, Composition>>(stream);
+        createRpcClient<CryptoHashableDataSyncRPC<string, Composition>>(
+          objectStream
+        );
       const sync = async () => {
         await syncCryptoHashableData(repository, client);
       };
       syncs.add(sync);
-      stream.once("end", () => syncs.delete(sync));
+      objectStream.once("end", () => syncs.delete(sync));
     },
     async sync() {
       await Promise.all(Array.from(syncs.values()).map((sync) => sync()));
