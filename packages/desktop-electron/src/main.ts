@@ -37,7 +37,7 @@ import Database from "better-sqlite3";
 
 function createSql(path: string): Sql {
   const db = new Database(path);
-  return (strings, ...values) => ({
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
     async run() {
       db.prepare(strings.join("?")).run(values);
     },
@@ -45,6 +45,10 @@ function createSql(path: string): Sql {
       return db.prepare(strings.join("?")).all(values);
     },
   });
+  sql.close = async () => {
+    db.close();
+  };
+  return sql;
 }
 
 function createWindow(title: string) {

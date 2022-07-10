@@ -37,4 +37,5 @@ test("account", async () => {
   await api.addAccount(accountB);
   expect(await api.getAccount({ author: "fred" })).toEqual(accountB);
   expect(await api.getAccounts({})).toEqual([accountB]);
+  await api.stop();
 });

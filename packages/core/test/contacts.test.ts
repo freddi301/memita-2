@@ -36,4 +36,5 @@ test("contacts aggregation", async () => {
       label: "deleted",
     })
   ).toEqual([]);
+  await api.stop();
 });

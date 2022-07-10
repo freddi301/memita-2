@@ -1,7 +1,7 @@
-import { createBridgeServer } from "../src/components/bridge/bridgeServer";
-import { createBridgeClient } from "../src/components/bridge/bridgeClient";
 import { PassThrough } from "stream";
 import duplexify from "duplexify";
+import { createBridgeServer } from "../src/components/bridge/bridgeServer";
+import { createBridgeClient } from "../src/components/bridge/bridgeClient";
 import { deferable } from "./deferable";
 
 test("passtrough correctly ends streams", async () => {
@@ -40,7 +40,9 @@ test("bridge server and bridge client connects", async () => {
     connection.on("data", () => {});
   });
   await client.start();
+  expect(await client.isOnline()).toEqual(true);
   await client.stop();
+  expect(await client.isOnline()).toEqual(false);
   await server.close();
   expect(trace).toEqual([]);
 });

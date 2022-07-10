@@ -66,6 +66,7 @@ test("conversations aggregation", async () => {
       version_timestamp: 2,
     },
   ]);
+  await api.stop();
 });
 
 test("conversations aggregation group/private", async () => {
@@ -129,4 +130,5 @@ test("conversations aggregation group/private", async () => {
       version_timestamp: 1,
     },
   ]);
+  await api.stop();
 });

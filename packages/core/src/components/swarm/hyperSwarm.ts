@@ -3,17 +3,24 @@ import { Duplex } from "stream";
 
 export function createHyperSwarm(onConnection: (stream: Duplex) => void) {
   const topic = Buffer.alloc(32).fill("memita-2");
-  const swarm = new Hyperswarm();
-  swarm.on("connection", (stream, info) => onConnection(stream));
+  let swarm: Hyperswarm | null;
   return {
     async getConnections() {
-      return swarm.connections.size;
+      return swarm?.connections.size ?? 0;
     },
     async start() {
-      await swarm.join(topic, { server: true, client: true });
+      if (!swarm) {
+        swarm = new Hyperswarm();
+        swarm.on("connection", (stream, info) => onConnection(stream));
+        await swarm.join(topic, { server: true, client: true });
+      }
     },
     async stop() {
-      await swarm.leave(topic);
+      if (swarm) {
+        const leaving = swarm.leave(topic);
+        swarm = null;
+        await leaving;
+      }
     },
   };
 }

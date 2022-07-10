@@ -9,7 +9,7 @@ export function createSql(): Sql {
     const db = new SQL.Database();
     return db;
   })();
-  return (strings, ...values) => ({
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
     async run() {
       const result = (await db).exec(strings.join("?"), values);
       if (!result[0]) return [];
@@ -29,4 +29,8 @@ export function createSql(): Sql {
       ) as any;
     },
   });
+  sql.close = async () => {
+    (await db).close();
+  };
+  return sql;
 }

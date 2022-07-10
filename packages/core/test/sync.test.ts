@@ -49,4 +49,6 @@ test("sync one composition", async () => {
     compositionA,
   ]);
   await bridgeServer.close();
+  await aApi.stop();
+  await bApi.stop();
 });

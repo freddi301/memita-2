@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useQuery } from "react-query";
 import { Settings } from "../api";
 import { BackButton } from "../components/BackButton";
@@ -59,7 +59,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
             <I18n en="Hyperswarm" it="Hyperswarm" /> (
-            {connectionsQuery.data?.hyperswarm})
+            {connectionsQuery.data?.hyperswarm.connections})
           </Text>
           <Pressable
             onPress={() =>
@@ -87,7 +87,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         </View>
         <Text
           style={{
-            paddingHorizontal: 18,
+            paddingHorizontal: 16,
             paddingBottom: 8,
             color: theme.textSecondaryColor,
           }}
@@ -110,7 +110,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         </View>
         <Text
           style={{
-            paddingHorizontal: 18,
+            paddingHorizontal: 16,
             paddingBottom: 8,
             color: theme.textSecondaryColor,
           }}
@@ -122,47 +122,145 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         </Text>
         {settings.connectivity.bridge.clients.map((bridge, index) => {
           return (
-            <View
+            <BridgeClientEntry
               key={index}
-              style={{
-                flexDirection: "row",
-                paddingHorizontal: 18,
-                paddingVertical: 8,
-              }}
-            >
-              <Text style={{ color: theme.textColor, flex: 1 }}>
-                {bridge.host}:{bridge.port} (
-                {connectionsQuery.data?.bridge[index]})
-              </Text>
-              <Pressable
-                onPress={() => {
-                  const clients = [...settings.connectivity.bridge.clients];
-                  clients[index].enabled = !clients[index].enabled;
-                  setSettings({
-                    ...settings,
-                    connectivity: {
-                      ...settings.connectivity,
-                      bridge: {
-                        ...settings.connectivity.bridge,
-                        clients,
-                      },
+              value={bridge}
+              onChange={(bridge) => {
+                const clients = [...settings.connectivity.bridge.clients];
+                clients[index] = bridge;
+                setSettings({
+                  ...settings,
+                  connectivity: {
+                    ...settings.connectivity,
+                    bridge: {
+                      ...settings.connectivity.bridge,
+                      clients,
                     },
-                  });
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={"power-off"}
-                  color={
-                    bridge.enabled
-                      ? theme.activeColor
-                      : theme.textSecondaryColor
-                  }
-                />
-              </Pressable>
-            </View>
+                  },
+                });
+              }}
+              isOnline={connectionsQuery.data?.bridge[index].online}
+              connections={connectionsQuery.data?.bridge[index].connections}
+            />
           );
         })}
       </ScrollView>
+    </View>
+  );
+}
+
+type BridgeClientEntryProps = {
+  value: Settings["connectivity"]["bridge"]["clients"][number];
+  onChange(value: Settings["connectivity"]["bridge"]["clients"][number]): void;
+  connections: number | undefined;
+  isOnline: boolean | undefined;
+};
+function BridgeClientEntry({
+  value,
+  onChange,
+  connections,
+  isOnline,
+}: BridgeClientEntryProps) {
+  const theme = useTheme();
+  const [isModifying, setIsModifying] = React.useState(false);
+  const [hostText, setHostText] = React.useState("");
+  const [portText, setPortText] = React.useState("");
+  if (isModifying) {
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 7,
+        }}
+      >
+        <TextInput
+          placeholder="example.com"
+          value={hostText}
+          onChangeText={setHostText}
+          style={{
+            color: hostText ? theme.textColor : theme.textSecondaryColor,
+            borderBottomWidth: 1,
+            borderStyle: "dashed",
+            borderColor: theme.textColor,
+            minWidth: 0,
+            flex: 1,
+          }}
+        />
+        <Text style={{ color: theme.textColor }}>: </Text>
+        <TextInput
+          placeholder="80"
+          value={portText}
+          onChangeText={setPortText}
+          style={{
+            color: portText ? theme.textColor : theme.textSecondaryColor,
+            borderBottomWidth: 1,
+            borderStyle: "dashed",
+            borderColor: theme.textColor,
+            width: 40,
+          }}
+        />
+        <Pressable
+          onPress={() => {
+            setIsModifying(false);
+            onChange({ ...value, host: hostText, port: Number(portText) });
+          }}
+          style={{ marginLeft: 16 }}
+        >
+          <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            setIsModifying(false);
+          }}
+          style={{ marginLeft: 16 }}
+        >
+          <FontAwesomeIcon icon={"rotate-left"} color={theme.actionTextColor} />
+        </Pressable>
+      </View>
+    );
+  }
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+      }}
+    >
+      <FontAwesomeIcon icon={"signal"} color={isOnline ? "green" : "red"} />
+      <Text
+        style={{
+          color: theme.textColor,
+          flex: 1,
+          marginLeft: 8,
+        }}
+      >
+        {value.host}:{value.port} ({connections})
+      </Text>
+      {!value.enabled && !isModifying && (
+        <Pressable
+          onPress={() => {
+            setIsModifying(true);
+            setHostText(value.host);
+            setPortText(value.port.toString());
+          }}
+          style={{ marginRight: 16 }}
+        >
+          <FontAwesomeIcon icon={"pen"} color={theme.actionTextColor} />
+        </Pressable>
+      )}
+      <Pressable
+        onPress={() => {
+          onChange({ ...value, enabled: !value.enabled });
+        }}
+      >
+        <FontAwesomeIcon
+          icon={"power-off"}
+          color={value.enabled ? theme.activeColor : theme.textSecondaryColor}
+        />
+      </Pressable>
     </View>
   );
 }

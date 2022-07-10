@@ -63,4 +63,5 @@ test("conversation aggregation", async () => {
   expect(
     await api.getConversation({ account: "fred", other: "nobody" })
   ).toEqual([]);
+  await api.stop();
 });

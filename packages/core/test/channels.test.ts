@@ -22,4 +22,5 @@ test("channel aggregation", async () => {
   };
   await api.addChannel(channelB);
   expect(await api.getChannels({ account: "fred" })).toEqual([channelB]);
+  await api.stop();
 });

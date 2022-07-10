@@ -58,6 +58,7 @@ test("compositions aggregation", async () => {
     compositionC,
     compositionB,
   ]);
+  await api.stop();
 });
 
 test("compositions aggregation filters", async () => {
@@ -102,4 +103,5 @@ test("compositions aggregation filters", async () => {
   expect(
     await api.getCompositions({ account: "fred", channel: "articles" })
   ).toEqual([compositionB]);
+  await api.stop();
 });

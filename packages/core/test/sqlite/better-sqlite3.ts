@@ -3,7 +3,7 @@ import { Sql } from "../../src/components/sql";
 
 export function createSql(): Sql {
   const db = new Database(":memory:");
-  return (strings, ...values) => ({
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
     async run() {
       db.prepare(strings.join("?")).run(values);
     },
@@ -11,4 +11,8 @@ export function createSql(): Sql {
       return db.prepare(strings.join("?")).all(values);
     },
   });
+  sql.close = async () => {
+    db.close();
+  };
+  return sql;
 }

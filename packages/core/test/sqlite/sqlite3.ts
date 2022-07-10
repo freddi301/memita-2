@@ -4,9 +4,9 @@ import { Sql } from "../../src/components/sql";
 export function createSql(): Sql {
   const db = sqlite3.cached.Database(":memory:");
   sqlite3.verbose();
-  return (strings, ...values) => ({
-    async run() {
-      return new Promise((resolve, reject) => {
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
+    run() {
+      return new Promise<void>((resolve, reject) => {
         db.all(strings.join("?"), values, (error, rows) => {
           if (error) {
             reject(error);
@@ -16,8 +16,8 @@ export function createSql(): Sql {
         });
       });
     },
-    async all() {
-      return new Promise((resolve, reject) => {
+    all() {
+      return new Promise<Array<any>>((resolve, reject) => {
         db.all(strings.join("?"), values, (error, rows) => {
           if (error) {
             reject(error);
@@ -28,4 +28,10 @@ export function createSql(): Sql {
       });
     },
   });
+  sql.close = () => {
+    return new Promise<void>((resolve, reject) =>
+      db.close((error) => (error ? reject(error) : resolve(undefined)))
+    );
+  };
+  return sql;
 }

@@ -112,8 +112,17 @@ export type Api = {
       version_timestamp: number;
     }>
   >;
-  getConnections(account: string): Promise<{
-    hyperswarm: number;
-    bridge: Array<number>;
-  }>;
+  getConnections(account: string): Promise<
+    | {
+        hyperswarm: {
+          connections: number;
+        };
+        bridge: Array<{
+          online: boolean;
+          connections: number;
+        }>;
+      }
+    | undefined
+  >;
+  stop(): Promise<void>;
 };

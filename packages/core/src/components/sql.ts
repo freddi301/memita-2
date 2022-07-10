@@ -3,4 +3,5 @@ export type Sql = {
     run(): Promise<void>;
     all(): Promise<Array<Row>>;
   };
+  close(): Promise<void>;
 };

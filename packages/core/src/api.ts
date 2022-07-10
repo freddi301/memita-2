@@ -7,6 +7,7 @@ import { createHyperSwarm } from "./components/swarm/hyperSwarm";
 import { createBridgeClient } from "./components/bridge/bridgeClient";
 
 export async function createApi(sql: Sql) {
+  let stopped = false;
   await optimizeDb(sql);
   await createTables(sql);
   const api: Api = {
@@ -23,6 +24,7 @@ export async function createApi(sql: Sql) {
         INSERT OR REPLACE INTO accounts (author, nickname, settings)
         VALUES (${author}, ${nickname}, ${JSON.stringify(settings)})
       `.run();
+      await connectAccounts();
     },
     async getAccount({ author }) {
       const result = (
@@ -113,14 +115,14 @@ export async function createApi(sql: Sql) {
     }) {
       const nicknameSearch = "%" + asSearch(nickname) + "%";
       return (await sql`
-          SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
-          WHERE account = ${account}
-          GROUP BY channel
-          HAVING
-            (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
-            (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
-          ORDER BY nickname ASC
-        `.all()) as any;
+        SELECT account, channel, nickname, label, MAX(version_timestamp) AS version_timestamp FROM channels
+        WHERE account = ${account}
+        GROUP BY channel
+        HAVING
+          (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
+          (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
+        ORDER BY nickname ASC
+      `.all()) as any;
     },
     async addComposition({
       author,
@@ -226,18 +228,25 @@ export async function createApi(sql: Sql) {
     },
     async getConnections(account) {
       const instances = connectivityModuleInstances.get(account);
-      if (!instances) {
-        return {
-          hyperswarm: 0,
-          bridge: [],
-        };
-      }
+      if (!instances) return;
       return {
-        hyperswarm: await instances.hyperswarm.getConnections(),
+        hyperswarm: {
+          connections: await instances.hyperswarm.getConnections(),
+        },
         bridge: await Promise.all(
-          instances.bridge.map((bridge) => bridge.getConnections())
+          instances.bridge.map(async (bridge) => ({
+            online: await bridge.isOnline(),
+            connections: await bridge.getConnections(),
+          }))
         ),
       };
+    },
+    async stop() {
+      if (!stopped) {
+        stopped = true;
+        await sql.close();
+      }
+      await syncLoop;
     },
   };
 
@@ -246,8 +255,8 @@ export async function createApi(sql: Sql) {
   }
 
   const { onConnection, sync } = createSync({ sql, api });
-  (async () => {
-    while (true) {
+  const syncLoop = (async () => {
+    while (!stopped) {
       await sync();
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
@@ -262,7 +271,7 @@ export async function createApi(sql: Sql) {
     ConnectivityModuleInstances
   >();
 
-  connectAccounts();
+  await connectAccounts();
   async function connectAccounts() {
     const accounts = await api.getAccounts({});
     for (const account of accounts) {
@@ -297,7 +306,6 @@ export async function createApi(sql: Sql) {
         }
       }
     }
-    setTimeout(connectAccounts, 1000);
   }
 
   return api;

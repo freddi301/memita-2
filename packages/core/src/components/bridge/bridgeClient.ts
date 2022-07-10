@@ -23,7 +23,6 @@ export function createBridgeClient(
     pipeline(secretStream, decoder, () => {});
     pipeline(encoder, secretStream, () => {});
     decoder.on("end", () => encoder.end());
-    await new Promise((resolve) => socket.once("connect", resolve));
     const streams = new Map<number, { receiver: Duplex }>();
     decoder.on("data", (message: ServerToClientMessage) => {
       switch (message.type) {
@@ -74,6 +73,13 @@ export function createBridgeClient(
         }
       }
     });
+    await new Promise((resolve, reject) => {
+      socket.on("error", reject);
+      socket.on("connect", () => {
+        resolve(undefined);
+        socket.off("error", reject);
+      });
+    });
     return { socket, encoder };
   }
   let instance:
@@ -86,6 +92,16 @@ export function createBridgeClient(
   return {
     async getConnections() {
       return connections;
+    },
+    async isOnline(): Promise<boolean> {
+      if (instance.type === "connected") {
+        return instance.socket.readable && instance.socket.writable;
+      }
+      if (instance.type === "connecting") {
+        await instance.promise;
+        return await this.isOnline();
+      }
+      return false;
     },
     async start() {
       if (instance.type === "resting") {
@@ -106,7 +122,9 @@ export function createBridgeClient(
         case "connected": {
           const { encoder, socket } = instance;
           encoder.end();
-          return new Promise((resolve) => socket.once("close", resolve));
+          await new Promise((resolve) => socket.once("close", resolve));
+          instance = { type: "resting" };
+          break;
         }
         case "connecting": {
           await instance.promise;
