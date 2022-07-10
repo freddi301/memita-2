@@ -4,6 +4,7 @@ import { createSync } from "../src/sync";
 import { createBridgeServer } from "../src/components/bridge/bridgeServer";
 import { Composition } from "@memita-2/ui";
 import { createBridgeClient } from "../src/components/bridge/bridgeClient";
+import { deferable } from "./deferable";
 
 test("sync one composition", async () => {
   const bridgeServer = await createBridgeServer();
@@ -49,13 +50,3 @@ test("sync one composition", async () => {
   ]);
   await bridgeServer.close();
 });
-
-function deferable<V>() {
-  let resolve: (value: V) => void = undefined as any;
-  let reject: (error: any) => void = undefined as any;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
-}

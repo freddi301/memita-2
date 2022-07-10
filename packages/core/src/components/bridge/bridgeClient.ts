@@ -41,14 +41,11 @@ export function createBridgeClient(
               callback(null, envelope);
             },
           });
-          sender.pipe(encoder);
           sender.on("end", () => {
-            const message: ClientToServerMessage = {
-              type: "end",
-              stream,
-            };
+            const message: ClientToServerMessage = { type: "end", stream };
             encoder.write(message);
           });
+          sender.pipe(encoder, { end: false });
           const receiver = new PassThrough();
           streams.set(stream, { receiver });
           const duplex = duplexify(sender, receiver);

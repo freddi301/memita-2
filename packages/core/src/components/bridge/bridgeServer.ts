@@ -44,12 +44,22 @@ export async function createBridgeServer(port?: number) {
         }
       }
     });
+    socket.on("error", () => {
+      for (const [stream, other] of connectionEntry.streamMapping) {
+        const message: ServerToClientMessage = {
+          type: "error",
+          stream: other.stream,
+        };
+        other.connection.encoder.write(message);
+      }
+    });
     openSubStreams();
     decoder.on("data", (message: ClientToServerMessage) => {
       const other = connectionEntry.streamMapping.get(message.stream);
       if (!other) throw new Error();
-      const write = (message: ServerToClientMessage) =>
+      const write = (message: ServerToClientMessage) => {
         other.connection.encoder.write(message);
+      };
       switch (message.type) {
         case "data": {
           write({ type: "data", stream: other.stream, data: message.data });
