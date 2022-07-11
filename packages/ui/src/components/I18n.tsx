@@ -10,7 +10,7 @@ const l10n = {
 export type Language = keyof typeof l10n;
 
 type I18nProps = { [L in Language]: string };
-export function I18n(props: I18nProps): any {
+export function I18n(props: I18nProps): JSX.Element {
   const language = React.useContext(LanguageContext);
-  return props[language] ?? `<missing label for language ${language}>`;
+  return (props[language] ?? `<missing label for language ${language}>`) as any;
 }

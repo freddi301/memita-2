@@ -1,5 +1,5 @@
 diff --git a/node_modules/nofilter/lib/index.js b/node_modules/nofilter/lib/index.js
-index 89bceb5..a2be440 100644
+index 89bceb5..55929d6 100644
 --- a/node_modules/nofilter/lib/index.js
 +++ b/node_modules/nofilter/lib/index.js
 @@ -2,7 +2,7 @@
@@ -7,7 +7,7 @@ index 89bceb5..a2be440 100644
  const stream = require('stream')
  const {Buffer} = require('buffer')
 -const td = new TextDecoder('utf8', {fatal: true, ignoreBOM: true})
-+const td = new TextDecoder('utf8', {fatal: false, ignoreBOM: true})
++const td = new TextDecoder('utf8', {fatal: false /* so it works inside nodejs without ICU  */, ignoreBOM: true})
  
  /**
   * @typedef {object} NoFilterOptions

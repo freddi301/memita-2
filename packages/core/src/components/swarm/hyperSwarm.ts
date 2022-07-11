@@ -18,6 +18,7 @@ export function createHyperSwarm(onConnection: (stream: Duplex) => void) {
     async stop() {
       if (swarm) {
         const leaving = swarm.leave(topic);
+        swarm.connections.forEach((connection) => connection.end());
         swarm = null;
         await leaving;
       }

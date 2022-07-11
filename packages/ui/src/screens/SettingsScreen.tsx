@@ -130,7 +130,7 @@ function ActivableButton({ label, isActive, onPress }: ActivableButtonProps) {
           paddingVertical: 8,
         }}
       >
-        {label}
+        {label as any}
       </Text>
     </Pressable>
   );

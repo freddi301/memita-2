@@ -10,7 +10,13 @@ import { NavigationScreen } from "./screens/NavigationScreen";
 import { AccountsScreen } from "./screens/AccountsScreen";
 import { AccountScreen, useAccount } from "./screens/AccountScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
-import { Animated, BackHandler, useWindowDimensions, View } from "react-native";
+import {
+  Animated,
+  BackHandler,
+  StatusBar,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
 import { ThemeContext, themes } from "./theme";
@@ -151,12 +157,12 @@ export function Router({ initial }: RoutesProps) {
     }
   }, [isAnimating, queryClient]);
   if (!(settings.animations === "enabled")) {
-    const Screen = mapping[route.screen];
+    const Screen = mapping[route.screen] as any;
     return (
       <RoutingContext.Provider value={value}>
         <ThemeContext.Provider value={themes[settings.theme]}>
           <LanguageContext.Provider value={settings.language}>
-            <Screen {...(route.parameters as any)} />
+            <Screen {...route.parameters} />
           </LanguageContext.Provider>
         </ThemeContext.Provider>
       </RoutingContext.Provider>
@@ -167,8 +173,16 @@ export function Router({ initial }: RoutesProps) {
       <ThemeContext.Provider value={themes[settings.theme]}>
         <LanguageContext.Provider value={settings.language}>
           <View style={{ position: "relative", flex: 1 }}>
+            <StatusBar
+              backgroundColor={themes[settings.theme].backgroundColorSecondary}
+              barStyle={
+                ({ dark: "light-content", light: "dark-content" } as const)[
+                  settings.theme
+                ]
+              }
+            />
             {stack.map((route, i) => {
-              const Screen = mapping[route.screen];
+              const Screen = mapping[route.screen] as any;
               return (
                 <Animated.View
                   key={route.salt}
@@ -189,7 +203,7 @@ export function Router({ initial }: RoutesProps) {
                     ],
                   }}
                 >
-                  <Screen {...(route.parameters as any)} />
+                  <Screen {...route.parameters} />
                 </Animated.View>
               );
             })}

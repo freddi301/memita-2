@@ -1,0 +1,22 @@
+diff --git a/node_modules/@hyperswarm/dht/lib/socket-wrap.js b/node_modules/@hyperswarm/dht/lib/socket-wrap.js
+index 1181039..a5395f0 100644
+--- a/node_modules/@hyperswarm/dht/lib/socket-wrap.js
++++ b/node_modules/@hyperswarm/dht/lib/socket-wrap.js
+@@ -21,7 +21,7 @@ module.exports = class SocketWrap extends EventEmitter {
+     this.socket.removeListener('message', this._onmessagebound)
+     this._unwrapped = true
+     this.ttl = this._defaultTTL
+-    this.socket.setTTL(this._defaultTTL)
++    if (this.socket.sendTTL) /* fix for nodejs-mobile-react-native */ this.socket.setTTL(this._defaultTTL)
+     return this.socket
+   }
+ 
+@@ -50,7 +50,7 @@ module.exports = class SocketWrap extends EventEmitter {
+       }
+ 
+       this.ttl = ttl
+-      this.socket.setTTL(ttl)
++      if (this.socket.sendTTL) /* fix for nodejs-mobile-react-native */  this.socket.setTTL(ttl)
+     }
+ 
+     this._pending++

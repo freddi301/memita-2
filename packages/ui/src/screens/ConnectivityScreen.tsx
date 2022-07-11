@@ -55,6 +55,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
@@ -111,7 +112,6 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         <Text
           style={{
             paddingHorizontal: 16,
-            paddingBottom: 8,
             color: theme.textSecondaryColor,
           }}
         >
@@ -151,13 +151,13 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
             <I18n en="Bridge Server" it="Bridge Server" /> (
             {connectionsQuery.data?.bridge.server?.connections})
           </Text>
-
           <Pressable
             onPress={() =>
               setSettings({
@@ -240,7 +240,8 @@ function BridgeClientEntry({
           flexDirection: "row",
           paddingHorizontal: 16,
           paddingTop: 8,
-          paddingBottom: 7,
+          paddingBottom: 8,
+          alignItems: "center",
         }}
       >
         <TextInput
@@ -254,6 +255,8 @@ function BridgeClientEntry({
             borderColor: theme.textColor,
             minWidth: 0,
             flex: 1,
+            padding: 0,
+            height: 16,
           }}
         />
         <Text style={{ color: theme.textColor }}>: </Text>
@@ -267,6 +270,8 @@ function BridgeClientEntry({
             borderStyle: "dashed",
             borderColor: theme.textColor,
             width: 40,
+            padding: 0,
+            height: 16,
           }}
         />
         <Pressable
@@ -295,6 +300,7 @@ function BridgeClientEntry({
         flexDirection: "row",
         paddingHorizontal: 16,
         paddingVertical: 8,
+        alignItems: "center",
       }}
     >
       <FontAwesomeIcon

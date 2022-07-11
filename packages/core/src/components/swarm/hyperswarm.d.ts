@@ -14,7 +14,7 @@ declare module "hyperswarm" {
       options: { server: boolean; client: boolean }
     ): Promise<void>;
     leave(topic: Buffer): Promise<void>;
-    connections: Set<unknown>;
+    connections: Set<Duplex>;
   }
   type PeerInfo = {
     pulicKey: Buffer;

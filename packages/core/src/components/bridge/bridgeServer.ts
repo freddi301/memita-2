@@ -139,7 +139,9 @@ export function createBridgeServer(port?: number) {
         )
         .flatMap(
           ([, addresses]) =>
-            addresses?.filter(({ internal }) => !internal) ?? []
+            addresses?.filter(
+              ({ internal, family }) => !internal && family === "IPv4"
+            ) ?? []
         )
         .map(({ address }) => address);
     },

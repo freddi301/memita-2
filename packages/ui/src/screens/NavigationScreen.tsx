@@ -48,6 +48,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"comments"} color={theme.actionTextColor} />
@@ -68,6 +69,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"bullhorn"} color={theme.actionTextColor} />
@@ -88,6 +90,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon
@@ -111,6 +114,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"user"} color={theme.actionTextColor} />
@@ -131,6 +135,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"wrench"} color={theme.actionTextColor} />
@@ -151,6 +156,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"wifi"} color={theme.actionTextColor} />
@@ -171,6 +177,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             flexDirection: "row",
             paddingHorizontal: 16,
             paddingVertical: 8,
+            alignItems: "center",
           }}
         >
           <FontAwesomeIcon icon={"database"} color={theme.actionTextColor} />

@@ -152,7 +152,7 @@ export function ConversationsScreen({
                 <Text
                   style={{
                     color: theme.textColor,
-                    height: 16,
+                    height: 20,
                     overflow: "hidden",
                   }}
                 >

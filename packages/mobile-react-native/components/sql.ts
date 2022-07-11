@@ -10,7 +10,7 @@ export function createSql(): Sql {
     rn_bridge.channel.send({log: 'db ready'});
   });
   const db = initSQL.then(SQL => new SQL.Database());
-  return (strings, ...values) => ({
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
     async run() {
       const result = (await db).exec(strings.join('?'), values);
       if (!result[0]) {
@@ -34,4 +34,8 @@ export function createSql(): Sql {
       ) as any;
     },
   });
+  sql.close = async () => {
+    (await db).close();
+  };
+  return sql;
 }

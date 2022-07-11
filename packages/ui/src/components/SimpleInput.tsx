@@ -26,7 +26,7 @@ export function SimpleInput({
         }}
       >
         <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
-          {label} :{" "}
+          {label as any} :{" "}
         </Text>
         <TextInput
           value={value}
@@ -44,7 +44,7 @@ export function SimpleInput({
       </View>
       {description && (
         <Text style={{ color: theme.textSecondaryColor, marginBottom: 8 }}>
-          {description}
+          {description as any}
         </Text>
       )}
     </View>
