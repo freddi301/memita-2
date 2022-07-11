@@ -9,13 +9,9 @@ import { ClientToServerMessage, ServerToClientMessage } from "./bridgeProtocol";
 // TODO validate messages
 // TODO validate states (ex: cannot open a stream twice)
 
-export function createBridgeClient(
-  port: number,
-  host: string,
-  onConnection: (stream: Duplex) => void
-) {
+export function createBridgeClient(onConnection: (stream: Duplex) => void) {
   let connections = 0;
-  async function connect() {
+  async function connect(port: number, host: string) {
     const socket = createConnection(port, host);
     const secretStream = new SecretStream(true, socket);
     const encoder = new cbor.Encoder();
@@ -103,9 +99,9 @@ export function createBridgeClient(
       }
       return false;
     },
-    async start() {
+    async start(port: number, host: string) {
       if (instance.type === "resting") {
-        const promise = connect().then(
+        const promise = connect(port, host).then(
           ({ socket, encoder }) => {
             instance = { type: "connected", socket, encoder };
           },

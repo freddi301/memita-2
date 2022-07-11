@@ -34,25 +34,27 @@ test("duplexify correclty ends streams", async () => {
 
 test("bridge server and bridge client connects", async () => {
   const trace: Array<string> = [];
-  const server = await createBridgeServer();
-  const client = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+  const server = createBridgeServer();
+  await server.start();
+  const client = createBridgeClient((connection) => {
     trace.push("got connection");
     connection.on("data", () => {});
   });
-  await client.start();
+  await client.start((await server.getPort()) ?? 0, "127.0.0.1");
   expect(await client.isOnline()).toEqual(true);
   await client.stop();
   expect(await client.isOnline()).toEqual(false);
-  await server.close();
+  await server.stop();
   expect(trace).toEqual([]);
 });
 
 test("bridge clients gracefully end connections", async () => {
   const trace: Array<string> = [];
-  const server = await createBridgeServer();
+  const server = createBridgeServer();
+  await server.start();
   const clientAGotConnection = deferable<void>();
   const clientAConnectionEnded = deferable<void>();
-  const clientA = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+  const clientA = createBridgeClient((connection) => {
     clientAGotConnection.resolve();
     trace.push("clientA got connection");
     connection.on("data", () => {});
@@ -64,7 +66,7 @@ test("bridge clients gracefully end connections", async () => {
   });
   const clientBGotConnection = deferable<void>();
   const clientBConnectionEnded = deferable<void>();
-  const clientB = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+  const clientB = createBridgeClient((connection) => {
     clientBGotConnection.resolve();
     trace.push("clientB got connection");
     connection.on("data", () => {});
@@ -74,13 +76,13 @@ test("bridge clients gracefully end connections", async () => {
     });
     connection.end();
   });
-  await clientA.start();
-  await clientB.start();
+  await clientA.start((await server.getPort()) ?? 0, "127.0.0.1");
+  await clientB.start((await server.getPort()) ?? 0, "127.0.0.1");
   await clientAGotConnection.promise;
   await clientBGotConnection.promise;
   await clientAConnectionEnded.promise;
   await clientBConnectionEnded.promise;
-  await server.close();
+  await server.stop();
   expect(trace).toEqual([
     "clientA got connection",
     "clientB got connection",
@@ -90,25 +92,26 @@ test("bridge clients gracefully end connections", async () => {
 });
 
 test("bridge server connects two clients", async () => {
-  const server = await createBridgeServer();
+  const server = createBridgeServer();
+  await server.start();
   const payload = Math.random();
   let aConnections = 0;
   let bConnections = 0;
-  const clientA = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+  const clientA = createBridgeClient((connection) => {
     aConnections++;
     connection.write(`${payload}`);
     connection.end();
   });
-  await clientA.start();
+  await clientA.start((await server.getPort()) ?? 0, "127.0.0.1");
   let resolution: any;
-  const clientB = createBridgeClient(server.port, "127.0.0.1", (connection) => {
+  const clientB = createBridgeClient((connection) => {
     bConnections++;
     connection.once("data", (data) => {
       resolution(data.toString());
       connection.end();
     });
   });
-  await clientB.start();
+  await clientB.start((await server.getPort()) ?? 0, "127.0.0.1");
   expect(
     await new Promise((resolve) => {
       resolution = resolve;
@@ -118,7 +121,7 @@ test("bridge server connects two clients", async () => {
   expect(await clientB.getConnections()).toEqual(1);
   await clientA.stop();
   await clientB.stop();
-  await server.close();
+  await server.stop();
   expect(aConnections).toEqual(1);
   expect(bConnections).toEqual(1);
 });

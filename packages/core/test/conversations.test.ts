@@ -76,7 +76,7 @@ test("conversations aggregation group/private", async () => {
     animations: "disabled",
     connectivity: {
       hyperswarm: { enabled: false },
-      bridge: { clients: [] },
+      bridge: { server: { enabled: false }, clients: [] },
     },
   };
   const api = await createApi(createSql());

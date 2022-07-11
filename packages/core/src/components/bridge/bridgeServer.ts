@@ -1,4 +1,5 @@
 import { createServer, Socket } from "net";
+import { networkInterfaces } from "os";
 import { pipeline, Writable } from "stream";
 const SecretStream = require("@hyperswarm/secret-stream");
 import cbor from "cbor";
@@ -7,7 +8,7 @@ import { ClientToServerMessage, ServerToClientMessage } from "./bridgeProtocol";
 // TODO validate messages
 // TODO validate states (ex cannot end stream twice)
 
-export async function createBridgeServer(port?: number) {
+export function createBridgeServer(port?: number) {
   type ConnectionEntry = {
     encoder: Writable;
     nextStream: number;
@@ -79,9 +80,9 @@ export async function createBridgeServer(port?: number) {
       }
     });
   });
-  await new Promise<void>((resolve) =>
-    server.listen(port ?? 0, "0.0.0.0", resolve)
-  );
+  let isRunning = false;
+  server.on("listening", () => (isRunning = true));
+  server.on("close", () => (isRunning = false));
   function openSubStreams() {
     for (const [, a] of connections) {
       for (const [, b] of connections) {
@@ -121,12 +122,39 @@ export async function createBridgeServer(port?: number) {
     b.encoder.write(messageToB);
   }
   return {
-    port: (server.address() as any).port,
-    close() {
+    async getConnections() {
+      return connections.size;
+    },
+    async getPort() {
+      if (!isRunning) return null;
+      const address = server.address();
+      if (!address) return null;
+      if (typeof address === "string") throw new Error();
+      return address.port;
+    },
+    async getAddresses() {
+      return Object.entries(networkInterfaces())
+        .filter(([name]) =>
+          ["VirtualBox", "VMware"].every((n) => !name.includes(n))
+        )
+        .flatMap(
+          ([, addresses]) =>
+            addresses?.filter(({ internal }) => !internal) ?? []
+        )
+        .map(({ address }) => address);
+    },
+    start() {
+      if (isRunning) return Promise.resolve(undefined);
+      return new Promise<void>((resolve) =>
+        server.listen(port ?? 0, "0.0.0.0", resolve)
+      );
+    },
+    stop() {
+      if (!isRunning) return Promise.resolve(undefined);
       for (const [, { encoder }] of connections) {
         encoder.end();
       }
-      return new Promise((resolve, reject) =>
+      return new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve(undefined)))
       );
     },

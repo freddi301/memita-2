@@ -58,7 +58,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
-            <I18n en="Hyperswarm" it="Hyperswarm" /> (
+            <I18n en="Hyper Swarm" it="Hyper Swarm" /> (
             {connectionsQuery.data?.hyperswarm.connections})
           </Text>
           <Pressable
@@ -105,7 +105,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
-            <I18n en="Bridge" it="Ponte" />
+            <I18n en="Bridge Client" it="Bridge Client" />
           </Text>
         </View>
         <Text
@@ -139,11 +139,79 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
                   },
                 });
               }}
-              isOnline={connectionsQuery.data?.bridge[index].online}
-              connections={connectionsQuery.data?.bridge[index].connections}
+              isOnline={connectionsQuery.data?.bridge.clients[index].online}
+              connections={
+                connectionsQuery.data?.bridge.clients[index].connections
+              }
             />
           );
         })}
+        <View
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <Text style={{ flex: 1, color: theme.textColor }}>
+            <I18n en="Bridge Server" it="Bridge Server" /> (
+            {connectionsQuery.data?.bridge.server?.connections})
+          </Text>
+
+          <Pressable
+            onPress={() =>
+              setSettings({
+                ...settings,
+                connectivity: {
+                  ...settings.connectivity,
+                  bridge: {
+                    ...settings.connectivity.bridge,
+                    server: {
+                      ...settings.connectivity.bridge.server,
+                      enabled: !settings.connectivity.bridge.server.enabled,
+                    },
+                  },
+                },
+              })
+            }
+          >
+            <FontAwesomeIcon
+              icon={"power-off"}
+              color={
+                settings.connectivity.bridge.server.enabled
+                  ? theme.activeColor
+                  : theme.textSecondaryColor
+              }
+            />
+          </Pressable>
+        </View>
+        <Text
+          style={{
+            paddingHorizontal: 16,
+            paddingBottom: 8,
+            color: theme.textSecondaryColor,
+          }}
+        >
+          <I18n
+            en="Let connect other devices trough your device"
+            it="Permetti agli altri dispositivi di connetersi attraverso il tuo"
+          />
+        </Text>
+        {connectionsQuery.data?.bridge.server &&
+          connectionsQuery.data?.bridge.server.adresses.map((address) => {
+            return (
+              <Text
+                key={address}
+                style={{
+                  color: theme.textColor,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                }}
+              >
+                {address}:{connectionsQuery.data?.bridge.server?.port}
+              </Text>
+            );
+          })}
       </ScrollView>
     </View>
   );
@@ -229,7 +297,10 @@ function BridgeClientEntry({
         paddingVertical: 8,
       }}
     >
-      <FontAwesomeIcon icon={"signal"} color={isOnline ? "green" : "red"} />
+      <FontAwesomeIcon
+        icon={"signal"}
+        color={isOnline ? theme.activeColor : theme.errorColor}
+      />
       <Text
         style={{
           color: theme.textColor,

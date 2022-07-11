@@ -155,7 +155,9 @@ export function Router({ initial }: RoutesProps) {
     return (
       <RoutingContext.Provider value={value}>
         <ThemeContext.Provider value={themes[settings.theme]}>
-          <Screen {...(route.parameters as any)} />
+          <LanguageContext.Provider value={settings.language}>
+            <Screen {...(route.parameters as any)} />
+          </LanguageContext.Provider>
         </ThemeContext.Provider>
       </RoutingContext.Provider>
     );

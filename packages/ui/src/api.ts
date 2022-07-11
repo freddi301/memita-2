@@ -11,10 +11,9 @@ export type Settings = {
   theme: "dark" | "light";
   animations: "enabled" | "disabled";
   connectivity: {
-    hyperswarm: {
-      enabled: boolean;
-    };
+    hyperswarm: { enabled: boolean };
     bridge: {
+      server: { enabled: boolean };
       clients: Array<{
         port: number;
         host: string;
@@ -117,10 +116,17 @@ export type Api = {
         hyperswarm: {
           connections: number;
         };
-        bridge: Array<{
-          online: boolean;
-          connections: number;
-        }>;
+        bridge: {
+          server?: {
+            port: number;
+            adresses: Array<string>;
+            connections: number;
+          };
+          clients: Array<{
+            online: boolean;
+            connections: number;
+          }>;
+        };
       }
     | undefined
   >;

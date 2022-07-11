@@ -5,6 +5,7 @@ import { createTables, optimizeDb } from "./tables";
 import { cryptoHashFunction } from "./components/cryptoHashFunction";
 import { createHyperSwarm } from "./components/swarm/hyperSwarm";
 import { createBridgeClient } from "./components/bridge/bridgeClient";
+import { createBridgeServer } from "./components/bridge/bridgeServer";
 
 export async function createApi(sql: Sql) {
   let stopped = false;
@@ -229,21 +230,38 @@ export async function createApi(sql: Sql) {
     async getConnections(account) {
       const instances = connectivityModuleInstances.get(account);
       if (!instances) return;
+      const serverPort = await instances.bridgeServer.getPort();
       return {
         hyperswarm: {
           connections: await instances.hyperswarm.getConnections(),
         },
-        bridge: await Promise.all(
-          instances.bridge.map(async (bridge) => ({
-            online: await bridge.isOnline(),
-            connections: await bridge.getConnections(),
-          }))
-        ),
+        bridge: {
+          server: serverPort
+            ? {
+                port: serverPort,
+                adresses: await instances.bridgeServer.getAddresses(),
+                connections: await instances.bridgeServer.getConnections(),
+              }
+            : undefined,
+          clients: await Promise.all(
+            instances.bridgeClients.map(async (bridge) => ({
+              online: await bridge.isOnline(),
+              connections: await bridge.getConnections(),
+            }))
+          ),
+        },
       };
     },
     async stop() {
       if (!stopped) {
         stopped = true;
+        for (const [, instances] of connectivityModuleInstances) {
+          await instances.hyperswarm.stop();
+          for (const bridgeClient of instances.bridgeClients) {
+            await bridgeClient.stop();
+          }
+          await instances.bridgeServer.stop();
+        }
         await sql.close();
       }
       await syncLoop;
@@ -264,7 +282,8 @@ export async function createApi(sql: Sql) {
 
   type ConnectivityModuleInstances = {
     hyperswarm: ReturnType<typeof createHyperSwarm>;
-    bridge: Array<ReturnType<typeof createBridgeClient>>;
+    bridgeServer: ReturnType<typeof createBridgeServer>;
+    bridgeClients: Array<ReturnType<typeof createBridgeClient>>;
   };
   const connectivityModuleInstances = new Map<
     string,
@@ -281,8 +300,9 @@ export async function createApi(sql: Sql) {
       if (!instances) {
         instances = {
           hyperswarm: createHyperSwarm(onConnection),
-          bridge: account.settings.connectivity.bridge.clients.map((bridge) =>
-            createBridgeClient(bridge.port, bridge.host, onConnection)
+          bridgeServer: createBridgeServer(),
+          bridgeClients: account.settings.connectivity.bridge.clients.map(() =>
+            createBridgeClient(onConnection)
           ),
         };
         connectivityModuleInstances.set(account.author, instances);
@@ -292,15 +312,20 @@ export async function createApi(sql: Sql) {
       } else {
         await instances.hyperswarm.stop();
       }
+      if (account.settings.connectivity.bridge.server.enabled) {
+        await instances.bridgeServer.start();
+      } else {
+        await instances.bridgeServer.stop();
+      }
       for (
         let index = 0;
         index < account.settings.connectivity.bridge.clients.length;
         index++
       ) {
         const bridge = account.settings.connectivity.bridge.clients[index];
-        const instance = instances.bridge[index];
+        const instance = instances.bridgeClients[index];
         if (bridge.enabled) {
-          await instance.start();
+          await instance.start(bridge.port, bridge.host);
         } else {
           await instance.stop();
         }

@@ -7,7 +7,8 @@ import { createBridgeClient } from "../src/components/bridge/bridgeClient";
 import { deferable } from "./deferable";
 
 test("sync one composition", async () => {
-  const bridgeServer = await createBridgeServer();
+  const bridgeServer = createBridgeServer();
+  await bridgeServer.start();
   const aSql = createSql();
   const aApi = await createApi(aSql);
   const bSql = createSql();
@@ -21,15 +22,14 @@ test("sync one composition", async () => {
     api: bApi,
   });
   const connected = deferable<void>();
-  await createBridgeClient(
-    bridgeServer.port,
-    "127.0.01",
-    aOnConnection
-  ).start();
-  await createBridgeClient(bridgeServer.port, "127.0.01", (connection) => {
+  await createBridgeClient(aOnConnection).start(
+    (await bridgeServer.getPort()) ?? 0,
+    "127.0.01"
+  );
+  await createBridgeClient((connection) => {
     connected.resolve();
     bOnConnection(connection);
-  }).start();
+  }).start((await bridgeServer.getPort()) ?? 0, "127.0.01");
   const compositionA: Composition = {
     author: "fred",
     channel: "",
@@ -48,7 +48,7 @@ test("sync one composition", async () => {
   expect(await bApi.getCompositions({ account: "fred" })).toEqual([
     compositionA,
   ]);
-  await bridgeServer.close();
+  await bridgeServer.stop();
   await aApi.stop();
   await bApi.stop();
 });

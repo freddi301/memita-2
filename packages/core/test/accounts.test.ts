@@ -14,7 +14,7 @@ test("account", async () => {
       animations: "enabled",
       connectivity: {
         hyperswarm: { enabled: false },
-        bridge: { clients: [] },
+        bridge: { server: { enabled: false }, clients: [] },
       },
     },
   };
@@ -30,7 +30,7 @@ test("account", async () => {
       animations: "disabled",
       connectivity: {
         hyperswarm: { enabled: false },
-        bridge: { clients: [] },
+        bridge: { server: { enabled: false }, clients: [] },
       },
     },
   };
