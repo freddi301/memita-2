@@ -27,6 +27,7 @@
 
 ### Developing
 
+- on Windows delete `upt-native-nodejs-mobile` and `sodium-native-nodejs-mobile` from package.json
 - follow setup instructions [here](https://reactnative.dev/docs/environment-setup)
 - follow setup instructions [here](https://code.janeasystems.com/nodejs-mobile/getting-started-react-native)
 - `yarn android`

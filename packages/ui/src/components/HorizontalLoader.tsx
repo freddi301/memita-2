@@ -10,20 +10,23 @@ export function HorizontalLoader({ isLoading }: HorizontalLoaderProps) {
   const duration = 300;
   React.useLayoutEffect(() => {
     if (isLoading) {
-      const loopAnimation = Animated.loop(
-        Animated.sequence([
-          Animated.timing(fadeAnimation, {
-            toValue: 1,
-            duration,
-            useNativeDriver,
-          }),
-          Animated.timing(fadeAnimation, {
-            toValue: 0.5,
-            duration,
-            useNativeDriver,
-          }),
-        ])
-      );
+      const loopAnimation = Animated.sequence([
+        Animated.delay(300),
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(fadeAnimation, {
+              toValue: 1,
+              duration,
+              useNativeDriver,
+            }),
+            Animated.timing(fadeAnimation, {
+              toValue: 0.5,
+              duration,
+              useNativeDriver,
+            }),
+          ])
+        ),
+      ]);
       loopAnimation.start();
       return () => loopAnimation.stop();
     } else {

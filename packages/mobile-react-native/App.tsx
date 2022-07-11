@@ -10,60 +10,20 @@
 
 import React from 'react';
 import nodejs from 'nodejs-mobile-react-native';
-import {Api, Ui} from '@memita-2/ui';
-import {FlatList, Text, View} from 'react-native';
-
-const SHOW_NODEJS_MESSAGES = false;
+import {Ui} from '@memita-2/ui';
+import {createApiRpcClient} from './components/api-rpc-client';
+import {createSqlReactNativeSqlStorageRpcServer} from './components/sql-react-native-sql-storage-rpc-server';
 
 export default function App() {
-  const [messages, setMessages] = React.useState<Array<string>>([]);
   React.useEffect(() => {
     nodejs.start('main.js');
-    if (SHOW_NODEJS_MESSAGES) {
-      nodejs.channel.addListener('message', msg => {
-        setMessages(messages => [JSON.stringify(msg, null, 2), ...messages]);
-      });
-    }
+    createSqlReactNativeSqlStorageRpcServer();
+    nodejs.channel.addListener('message', message => {
+      if (message.scope === 'log') console.log(message);
+    });
   }, []);
   const api = React.useMemo(() => {
-    return new Proxy(
-      {},
-      {
-        get(target, method) {
-          return (...args: any[]) =>
-            new Promise((resolve, reject) => {
-              const requestId = Math.random();
-              const subscription = nodejs.channel.addListener(
-                'message',
-                (msg: any) => {
-                  if (msg.requestId === requestId) {
-                    if (!msg.isError) resolve(msg.result);
-                    else reject(msg.result);
-                    (subscription as any).remove();
-                  }
-                },
-              );
-
-              nodejs.channel.send({requestId, method, args});
-            });
-        },
-      },
-    ) as Api;
+    return createApiRpcClient();
   }, []);
-  if (SHOW_NODEJS_MESSAGES) {
-    return (
-      <View style={{flex: 1}}>
-        <View style={{flex: 1}}>
-          <FlatList
-            data={messages}
-            renderItem={({item}) => <Text>{item}</Text>}
-          />
-        </View>
-        <View style={{flex: 1}}>
-          <Ui api={api} />
-        </View>
-      </View>
-    );
-  }
   return <Ui api={api} />;
 }

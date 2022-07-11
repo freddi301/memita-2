@@ -1,10 +1,12 @@
 import rn_bridge from 'rn-bridge';
 import {createApi} from '@memita-2/core';
-import {createSql} from './components/sql';
 import path from 'path';
 import os from 'os';
+import {createApiRpcServer} from './components/api-rpc-server.js';
+import {createSqlSqljs} from './components/sql-sql.js.js';
+import {createSqlReactNativeSqlStorageRpcClient} from './components/slq-react-native-sql-storage-rpc-client.js';
 
-rn_bridge.channel.send({log: 'nodejs ready'});
+rn_bridge.channel.send({scope: 'log', message: 'nodejs ready'});
 
 // Set default directories
 process.env = process.env || {};
@@ -33,18 +35,15 @@ process.on('uncaughtException', (err: Error | string) => {
   });
 });
 
-const sql = createSql();
+const sql = createSql('react-native-sql-storage');
 const api = createApi(sql);
+createApiRpcServer(api);
 
-rn_bridge.channel.on('message', ({requestId, method, args}: any) => {
-  api.then((impl: any) => {
-    impl[method](...args).then(
-      (result: any) => {
-        rn_bridge.channel.send({requestId, isError: false, result});
-      },
-      (result: any) => {
-        rn_bridge.channel.send({requestId, isError: true, result});
-      },
-    );
-  });
-});
+function createSql(type: 'sql.js' | 'react-native-sql-storage') {
+  switch (type) {
+    case 'sql.js':
+      return createSqlSqljs();
+    case 'react-native-sql-storage':
+      return createSqlReactNativeSqlStorageRpcClient();
+  }
+}
