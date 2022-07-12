@@ -30,9 +30,10 @@ export function CreateNewAccountScreen({
       await api.addAccount(account);
     },
     {
-      onSuccess() {
+      onSuccess(data, account) {
         queryClient.invalidateQueries(["account"]);
         routing.back();
+        routing.push("Navigation", { account: account.author });
       },
     }
   );

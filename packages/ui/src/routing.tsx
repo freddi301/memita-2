@@ -171,12 +171,23 @@ export function Router({ initial }: RoutesProps) {
       queryClient.invalidateQueries();
     }
   }, [isAnimating, queryClient]);
+  const statusBar = (
+    <StatusBar
+      backgroundColor={themes[settings.theme].backgroundColorSecondary}
+      barStyle={
+        ({ dark: "light-content", light: "dark-content" } as const)[
+          settings.theme
+        ]
+      }
+    />
+  );
   if (!(settings.animations === "enabled")) {
     const Screen = mapping[route.screen] as any;
     return (
       <RoutingContext.Provider value={value}>
         <ThemeContext.Provider value={themes[settings.theme]}>
           <LanguageContext.Provider value={settings.language}>
+            {StatusBar}
             <Screen {...route.parameters} />
           </LanguageContext.Provider>
         </ThemeContext.Provider>
@@ -188,14 +199,7 @@ export function Router({ initial }: RoutesProps) {
       <ThemeContext.Provider value={themes[settings.theme]}>
         <LanguageContext.Provider value={settings.language}>
           <View style={{ position: "relative", flex: 1 }}>
-            <StatusBar
-              backgroundColor={themes[settings.theme].backgroundColorSecondary}
-              barStyle={
-                ({ dark: "light-content", light: "dark-content" } as const)[
-                  settings.theme
-                ]
-              }
-            />
+            {statusBar}
             {stack.map((route, i) => {
               const Screen = mapping[route.screen] as any;
               return (
