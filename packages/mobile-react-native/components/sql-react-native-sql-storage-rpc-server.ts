@@ -4,6 +4,7 @@ import nodejs from 'nodejs-mobile-react-native';
 SQLite.enablePromise(true);
 export function createSqlReactNativeSqlStorageRpcServer() {
   SQLite.openDatabase({name: 'my.db', location: 'default'}).then((db: any) => {
+    // db.executeSql('DROP TABLE accounts');
     console.log({
       scope: 'log',
       message: 'react-native-sqlite-storage db ready',

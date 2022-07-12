@@ -1,21 +1,37 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useQuery } from "react-query";
-import { Settings } from "../api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Account, Settings } from "../api";
 import { BackButton } from "../components/BackButton";
 import { I18n } from "../components/I18n";
 import { Routes } from "../routing";
 import { useTheme } from "../theme";
 import { useApi } from "../ui";
-import { useAccount } from "./AccountScreen";
+import { defaultSettings } from "./account/CreateNewAccountScreen";
 
 export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
   const theme = useTheme();
+  const queryClient = useQueryClient();
   const api = useApi();
-  const [{ settings, ...rest }, setAccount] = useAccount(account);
+  const accountQuery = useQuery(["account", { author: account }], async () => {
+    return await api.getAccount({ author: account });
+  });
+  const settings = accountQuery.data?.settings ?? defaultSettings;
+  const accountMutation = useMutation(
+    async (account: Account) => {
+      await api.addAccount(account);
+    },
+    {
+      onSuccess() {
+        queryClient.invalidateQueries(["account"]);
+      },
+    }
+  );
   const setSettings = (settings: Settings) => {
-    setAccount({ ...rest, settings });
+    if (accountQuery.data) {
+      accountMutation.mutate({ ...accountQuery.data, settings });
+    }
   };
   const connectionsQuery = useQuery(
     ["connections", { account }],
@@ -155,8 +171,13 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
-            <I18n en="Bridge Server" it="Bridge Server" /> (
-            {connectionsQuery.data?.bridge.server?.connections})
+            <I18n en="Bridge Server" it="Bridge Server" />
+            {connectionsQuery.data?.bridge.server && (
+              <React.Fragment>
+                {" "}
+                ({connectionsQuery.data?.bridge.server?.connections})
+              </React.Fragment>
+            )}
           </Text>
           <Pressable
             onPress={() =>

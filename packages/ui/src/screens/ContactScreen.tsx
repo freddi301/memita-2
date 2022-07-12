@@ -33,11 +33,6 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
         label: "",
         version_timestamp,
       });
-    },
-    {
-      onSuccess() {
-        routing.back();
-      },
     }
   );
   const deleteContactMutation = useMutation(
@@ -59,12 +54,18 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
   );
   const [author, setAuthor] = React.useState(original.author ?? "");
   const [nickname, setNickname] = React.useState("");
+  const [invite, setInvite] = React.useState("");
   React.useEffect(() => {
     if (contactQuery.data) {
       setNickname(contactQuery.data.nickname);
     }
   }, [contactQuery.data]);
-
+  React.useEffect(() => {
+    const match = invite.match(/[a-fA-F0-9]{64}/);
+    if (match && match[0]) {
+      setAuthor(match[0]);
+    }
+  }, [invite]);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -85,26 +86,43 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             flex: 1,
           }}
         >
-          <I18n en="Contact" it="Contatto" />
+          {original.author ? (
+            <I18n en="Contact" it="Contatto" />
+          ) : (
+            <I18n en="Add new contact" it="Aggiungi nuovo contatto" />
+          )}
         </Text>
         {original.author && (
           <Pressable
             onPress={() => {
-              deleteContactMutation.mutate(author);
+              deleteContactMutation.mutate(author, {
+                onSuccess() {
+                  routing.back();
+                },
+              });
             }}
             style={{ padding: 16 }}
           >
             <FontAwesomeIcon icon={"trash"} color={theme.actionTextColor} />
           </Pressable>
         )}
-        <Pressable
-          onPress={() => {
-            addContactMutation.mutate({ author, nickname });
-          }}
-          style={{ padding: 16 }}
-        >
-          <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
-        </Pressable>
+        {!original.author && (
+          <Pressable
+            onPress={() => {
+              addContactMutation.mutate(
+                { author, nickname },
+                {
+                  onSuccess() {
+                    routing.back();
+                  },
+                }
+              );
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"check"} color={theme.actionTextColor} />
+          </Pressable>
+        )}
       </View>
       <HorizontalLoader isLoading={contactQuery.isFetching} />
       <ScrollView style={{ paddingTop: 8 }}>
@@ -124,13 +142,28 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           label={<I18n en="Nickname" it="Soprannome" />}
           value={nickname}
           onChangeText={setNickname}
+          onBlur={() => addContactMutation.mutate({ author, nickname })}
           description={
             <I18n
-              en="An optional friendly name to help you remeber the person who owns this account. Nobody else see it"
-              it="Un nome legibile non obligatorio per ricordarti a quale persona appertiene questo account. Nessun altro lo vede"
+              en="A friendly name to help you remeber the person who owns this account. It is visible only to you."
+              it="Un nome legibile per ricordarti a quale persona appertiene questo account. E visibile solo a te."
             />
           }
         />
+        {!original.author && (
+          <SimpleInput
+            label={<I18n en="Invite" it="Invito" />}
+            value={invite}
+            onChangeText={setInvite}
+            multiline={6}
+            description={
+              <I18n
+                en="Paste here the invite you received, it will fill the above fields automatically."
+                it="Incolla qui l'invito che hai ricevuto, riempirà i campi qui sopra in automatico."
+              />
+            }
+          />
+        )}
       </ScrollView>
     </View>
   );

@@ -18,6 +18,7 @@ import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
+import { formatAuthor } from "../components/format";
 
 export function ConversationsScreen({
   account,
@@ -93,7 +94,9 @@ export function ConversationsScreen({
               <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
                 {accountQuery.data?.nickname ?? ""}
               </Text>
-              <Text style={{ color: theme.textColor }}>{account}</Text>
+              <Text style={{ color: theme.textColor }}>
+                {formatAuthor(account)}
+              </Text>
             </View>
             <Pressable
               onPress={() => {

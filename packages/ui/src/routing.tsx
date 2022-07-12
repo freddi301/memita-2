@@ -7,8 +7,10 @@ import { ConversationScreen } from "./screens/ConversationScreen";
 import { DatabaseScreen } from "./screens/DatabaseScreen";
 import { ConversationsScreen } from "./screens/ConversationsScreen";
 import { NavigationScreen } from "./screens/NavigationScreen";
-import { AccountsScreen } from "./screens/AccountsScreen";
-import { AccountScreen, useAccount } from "./screens/AccountScreen";
+import {
+  CreateNewAccountScreen,
+  defaultSettings,
+} from "./screens/account/CreateNewAccountScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import {
   Animated,
@@ -21,15 +23,19 @@ import { ChannelsScreen } from "./screens/ChannelsScreen";
 import { ChannelScreen } from "./screens/ChannelScreen";
 import { ThemeContext, themes } from "./theme";
 import { LanguageContext } from "./components/I18n";
-import { useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { ConnectivityScreen } from "./screens/ConnectivityScreen";
+import { ChooseAccountScreen } from "./screens/account/ChooseAccountScreen";
+import { useApi } from "./ui";
+import { YourAccountScreen } from "./screens/account/YourAccountScreen";
 
 export type Routes = {
-  Accounts: { account: undefined };
+  ChooseAccount: { account: undefined };
+  CreateNewAccount: { account: undefined };
+  YourAccount: { account: string };
   Database: { account: string };
   Connectivity: { account: string };
   Settings: { account: string };
-  Account: { account?: string };
   Navigation: { account: string };
   Contacts: { account: string };
   Contact: { account: string; author?: string };
@@ -62,8 +68,9 @@ type Route = {
 const mapping: {
   [Screen in keyof Routes]: React.ComponentType<Routes[Screen]>;
 } = applyReactMemo({
-  Accounts: AccountsScreen,
-  Account: AccountScreen,
+  ChooseAccount: ChooseAccountScreen,
+  CreateNewAccount: CreateNewAccountScreen,
+  YourAccount: YourAccountScreen,
   Navigation: NavigationScreen,
   Settings: SettingsScreen,
   Connectivity: ConnectivityScreen,
@@ -149,8 +156,16 @@ export function Router({ initial }: RoutesProps) {
   }, [index, indexAnimation]);
   const { width } = useWindowDimensions();
   const route = stack[index] ?? initial;
-  const [{ settings }] = useAccount(route.parameters.account);
   const queryClient = useQueryClient();
+  const api = useApi();
+  const accountQuery = useQuery(
+    ["account", { author: route.parameters.account }],
+    async () => {
+      return await api.getAccount({ author: route.parameters.account ?? "" });
+    },
+    { enabled: route.parameters.account !== undefined }
+  );
+  const settings = accountQuery.data?.settings ?? defaultSettings;
   React.useEffect(() => {
     if (!isAnimating) {
       queryClient.invalidateQueries();

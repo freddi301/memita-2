@@ -6,9 +6,9 @@ const dark = {
   textColor: "#abb2bf",
   textSecondaryColor: "#7f848e",
   errorColor: "#f64587",
-  activeColor: "#61afef",
-  actionTextColor: "#abb2bf",
-  borderColor: "#282c34",
+  activeColor: "#61efaf",
+  actionTextColor: "#61afef",
+  borderColor: "#5f646e",
   mockColor: "#74b3f0",
   headerHeight: 48,
 };

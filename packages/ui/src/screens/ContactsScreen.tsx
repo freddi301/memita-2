@@ -17,6 +17,7 @@ import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
+import { formatAuthor } from "../components/format";
 
 export function ContactsScreen({ account }: Routes["Contacts"]) {
   const api = useApi();
@@ -134,7 +135,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
                     color: theme.textColor,
                   }}
                 >
-                  {author}
+                  {formatAuthor(author)}
                 </Text>
               </View>
             </View>

@@ -24,7 +24,7 @@ export function Ui({ api }: UiProps) {
       <QueryClientProvider client={queryClient}>
         <Router
           initial={{
-            screen: "Accounts",
+            screen: "ChooseAccount",
             parameters: { account: undefined },
             salt: 0,
           }}

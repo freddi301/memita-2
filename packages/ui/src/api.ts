@@ -2,6 +2,7 @@ import { Language } from "./components/I18n";
 
 export type Account = {
   author: string;
+  secret: string;
   nickname: string;
   settings: Settings;
 };
@@ -51,9 +52,10 @@ export type Composition = {
 
 export type Api = {
   getDatabase(): Promise<Record<string, Array<unknown>>>;
+  generateAccount(): Promise<{ author: string; secret: string }>;
   addAccount(account: Account): Promise<void>;
   getAccount(params: { author: string }): Promise<Account | undefined>;
-  getAccounts(params: { nickname?: string }): Promise<Array<Account>>;
+  getAccounts(params: {}): Promise<Array<Account>>;
   addContact(contact: Contact): Promise<void>;
   getContact(params: {
     account: string;

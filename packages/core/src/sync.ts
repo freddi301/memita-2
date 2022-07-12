@@ -12,7 +12,7 @@ import {
   CryptoHashableDataSyncRPC,
 } from "./components/cryptoHashableDataSync";
 import { Sql } from "./components/sql";
-import { cryptoHashFunction } from "./components/cryptoHashFunction";
+import { cryptoHashFunction } from "./components/crypto";
 
 export function createSync({ sql, api }: { sql: Sql; api: Api }) {
   const repository: CryptoHashableDataRepository<string, Composition> = {

@@ -8,6 +8,7 @@ import { useQuery } from "react-query";
 import { useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { I18n } from "../components/I18n";
+import { formatAuthor } from "../components/format";
 
 export function NavigationScreen({ account }: Routes["Navigation"]) {
   const routing = useRouting();
@@ -36,7 +37,9 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
           <Text style={{ color: theme.textColor, fontWeight: "bold" }}>
             {accountQuery.data?.nickname ?? ""}
           </Text>
-          <Text style={{ color: theme.textColor }}>{account}</Text>
+          <Text style={{ color: theme.textColor }}>
+            {formatAuthor(account)}
+          </Text>
         </View>
       </View>
       <ScrollView style={{ paddingVertical: 8 }}>
@@ -108,7 +111,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
-            routing.push("Account", { account });
+            routing.push("YourAccount", { account });
           }}
           style={{
             flexDirection: "row",

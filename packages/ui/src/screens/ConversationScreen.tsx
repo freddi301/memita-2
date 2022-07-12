@@ -19,6 +19,7 @@ import { Composition } from "../api";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
+import { formatAuthor } from "../components/format";
 
 export function ConversationScreen({
   account,
@@ -151,7 +152,7 @@ export function ConversationScreen({
                     color: theme.textColor,
                   }}
                 >
-                  {channel || other}
+                  {channel || formatAuthor(other)}
                 </Text>
               </View>
             </View>
@@ -215,7 +216,7 @@ export function ConversationScreen({
                       flex: 1,
                     }}
                   >
-                    {author}
+                    {formatAuthor(author)}
                   </Text>
                   <Text
                     style={{

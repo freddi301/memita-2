@@ -9,10 +9,13 @@ export function createSqlReactNativeSqlStorageRpcClient(): Sql {
   rn_bridge.channel.on('message', (message: any) => {
     if (message.scope === 'sql') {
       const pendingRequest = pendingRequests.get(message.id);
-      if (!pendingRequest) throw new Error('unknown request id');
-      if (!message.isError) pendingRequest.resolve(message.result);
-      else pendingRequest.reject(message.result);
-      pendingRequests.delete(message.id);
+      if (pendingRequest) {
+        if (!message.isError) pendingRequest.resolve(message.result);
+        else pendingRequest.reject(message.result);
+        pendingRequests.delete(message.id);
+      } else {
+        console.warn('sql: unknown request id');
+      }
     }
   });
   const sql = (strings: TemplateStringsArray, ...values: any[]) => {

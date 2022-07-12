@@ -1,17 +1,36 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Settings } from "../api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { Account, Settings } from "../api";
 import { BackButton } from "../components/BackButton";
 import { I18n } from "../components/I18n";
 import { Routes } from "../routing";
 import { useTheme } from "../theme";
-import { useAccount } from "./AccountScreen";
+import { useApi } from "../ui";
+import { defaultSettings } from "./account/CreateNewAccountScreen";
 
 export function SettingsScreen({ account }: Routes["Settings"]) {
   const theme = useTheme();
-  const [{ settings, ...rest }, setAccount] = useAccount(account);
+  const queryClient = useQueryClient();
+  const api = useApi();
+  const accountQuery = useQuery(["account", { author: account }], async () => {
+    return await api.getAccount({ author: account });
+  });
+  const settings = accountQuery.data?.settings ?? defaultSettings;
+  const accountMutation = useMutation(
+    async (account: Account) => {
+      await api.addAccount(account);
+    },
+    {
+      onSuccess() {
+        queryClient.invalidateQueries(["account"]);
+      },
+    }
+  );
   const setSettings = (settings: Settings) => {
-    setAccount({ ...rest, settings });
+    if (accountQuery.data) {
+      accountMutation.mutate({ ...accountQuery.data, settings });
+    }
   };
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

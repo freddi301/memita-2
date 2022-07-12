@@ -2,7 +2,10 @@ import type { Api } from "@memita-2/ui";
 import { Sql } from "./components/sql";
 import { createSync } from "./sync";
 import { createTables, optimizeDb } from "./tables";
-import { cryptoHashFunction } from "./components/cryptoHashFunction";
+import {
+  cryptoCreateAsymmetricKeyPair,
+  cryptoHashFunction,
+} from "./components/crypto";
 import { createHyperSwarm } from "./components/swarm/hyperSwarm";
 import { createBridgeClient } from "./components/bridge/bridgeClient";
 import { createBridgeServer } from "./components/bridge/bridgeServer";
@@ -20,34 +23,35 @@ export async function createApi(sql: Sql) {
         compositions: await sql`SELECT * from compositions`.all(),
       };
     },
-    async addAccount({ author, nickname, settings }) {
+    async addAccount({ author, secret, nickname, settings }) {
       await sql`
-        INSERT OR REPLACE INTO accounts (author, nickname, settings)
-        VALUES (${author}, ${nickname}, ${JSON.stringify(settings)})
+        INSERT OR REPLACE INTO accounts (author, secret, nickname, settings)
+        VALUES (${author}, ${secret}, ${nickname}, ${JSON.stringify(settings)})
       `.run();
       await connectAccounts();
     },
     async getAccount({ author }) {
       const result = (
         await sql`
-          SELECT author, nickname, settings FROM accounts
+          SELECT author, secret, nickname, settings FROM accounts
           WHERE author = ${author}
       `.all()
       )[0] as any;
       if (result) return { ...result, settings: JSON.parse(result.settings) };
     },
-    async getAccounts({ nickname = "DONTFILTER" }) {
-      const nicknameSearch = "%" + asSearch(nickname) + "%";
+    async getAccounts({}) {
       const result = (await sql`
-      SELECT author, nickname, settings FROM accounts
-      WHERE
-        (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END)
+      SELECT author, secret, nickname, settings FROM accounts
       ORDER BY nickname ASC
     `.all()) as any;
       return result.map((account: any) => ({
         ...account,
         settings: JSON.parse(account.settings),
       }));
+    },
+    async generateAccount() {
+      const { publicKey, privateKey } = await cryptoCreateAsymmetricKeyPair();
+      return { author: publicKey, secret: privateKey };
     },
     async addContact({ account, author, nickname, label, version_timestamp }) {
       const crypto_hash = await cryptoHashFunction({

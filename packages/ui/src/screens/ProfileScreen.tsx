@@ -10,6 +10,7 @@ import { useApi } from "../ui";
 import { DateTime } from "luxon";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
+import { formatAuthor } from "../components/format";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
@@ -58,7 +59,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
               color: theme.textColor,
             }}
           >
-            {author}
+            {formatAuthor(author)}
           </Text>
         </View>
         <Pressable

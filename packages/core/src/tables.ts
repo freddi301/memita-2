@@ -3,6 +3,7 @@ import { Sql } from "./components/sql";
 export async function createTables(sql: Sql) {
   await sql`CREATE TABLE IF NOT EXISTS accounts (
     author TEXT PRIMARY KEY,
+    secret TEXT NOT NULL,
     nickname TEXT NOT NULL,
     settings TEXT NOT NULL
   )`.run();

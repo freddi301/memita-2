@@ -13,3 +13,8 @@ export async function cryptoHashFunction(value: unknown) {
     "hex"
   );
 }
+
+export async function cryptoCreateAsymmetricKeyPair() {
+  await libsodium.ready;
+  return libsodium.crypto_box_keypair("hex");
+}
