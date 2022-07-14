@@ -1,7 +1,7 @@
 import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
 import { createBridgeServer } from "../src/components/bridge/bridgeServer";
-import { createSql } from "./sqlite/sqlite3";
+import { createSql } from "./utils/sqlite/sqlite3";
 
 test("bridge client toggle", async () => {
   const server = createBridgeServer();
@@ -9,6 +9,7 @@ test("bridge client toggle", async () => {
   const api = await createApi(createSql());
   const account: Account = {
     author: "fred",
+    secret: "",
     nickname: "Fred",
     settings: {
       theme: "dark",

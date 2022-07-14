@@ -1,12 +1,12 @@
 import { createApi } from "../src/api";
-import { createSql } from "./sqlite/sql";
+import { createSql } from "./utils/sqlite/sql";
 import { createSync } from "../src/sync";
 import { createBridgeServer } from "../src/components/bridge/bridgeServer";
-import { Composition } from "@memita-2/ui";
 import { createBridgeClient } from "../src/components/bridge/bridgeClient";
-import { deferable } from "./deferable";
+import { deferable } from "./utils/deferable";
+import { DirectMessage } from "@memita-2/ui/dist/api";
 
-test("sync one composition", async () => {
+test("sync one direct message", async () => {
   const bridgeServer = createBridgeServer();
   await bridgeServer.start();
   const aSql = createSql();
@@ -30,24 +30,23 @@ test("sync one composition", async () => {
     connected.resolve();
     bOnConnection(connection);
   }).start((await bridgeServer.getPort()) ?? 0, "127.0.01");
-  const compositionA: Composition = {
+  const directMessageA: DirectMessage = {
     author: "fred",
-    channel: "",
-    recipient: "",
+    recipient: "alice",
     quote: "",
     salt: "1",
     content: "hello",
     version_timestamp: 1,
   };
-  await aApi.addComposition(compositionA);
-  expect(await aApi.getCompositions({ account: "fred" })).toEqual([
-    compositionA,
-  ]);
+  await aApi.addDirectMessage(directMessageA);
+  expect(
+    await aApi.getConversation({ account: "fred", other: "alice" })
+  ).toEqual([directMessageA]);
   await connected.promise;
   await bSync();
-  expect(await bApi.getCompositions({ account: "fred" })).toEqual([
-    compositionA,
-  ]);
+  expect(
+    await bApi.getConversation({ account: "fred", other: "alice" })
+  ).toEqual([directMessageA]);
   await bridgeServer.stop();
   await aApi.stop();
   await bApi.stop();

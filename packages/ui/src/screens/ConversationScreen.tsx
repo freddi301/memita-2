@@ -15,17 +15,14 @@ import { useTheme } from "../theme";
 import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
-import { Composition } from "../api";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
+import { DirectMessage } from "../api";
+import { DevAlert } from "../components/DevAlert";
 
-export function ConversationScreen({
-  account,
-  channel,
-  other,
-}: Routes["Conversation"]) {
+export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const api = useApi();
   const theme = useTheme();
   const routing = useRouting();
@@ -34,14 +31,9 @@ export function ConversationScreen({
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
   const conversationQuery = useQuery(
-    ["conversation", { account, channel, other, searchTextDebounced }],
+    ["conversation", { account, other }],
     async () => {
-      return await api.getConversation({
-        account,
-        channel,
-        other,
-        content: searchTextDebounced || undefined,
-      });
+      return await api.getConversation({ account, other });
     },
     {
       refetchInterval: 1000,
@@ -58,12 +50,12 @@ export function ConversationScreen({
       return await api.getContact({ account, author: other });
     }
   );
-  const channelQuery = useQuery(["channel", { account, channel }], async () => {
-    return await api.getChannel({ account, channel });
+  const accountQuery = useQuery(["account", { account }], async () => {
+    return await api.getAccount({ author: account });
   });
-  const addCompositionMutation = useMutation(
-    async (comunication: Composition) => {
-      await api.addComposition(comunication);
+  const addDirectMessageMutation = useMutation(
+    async (message: DirectMessage) => {
+      await api.addDirectMessage(message);
     },
     {
       onSuccess() {
@@ -76,9 +68,8 @@ export function ConversationScreen({
   const send = () => {
     const version_timestamp = Date.now();
     const salt = String(Math.random());
-    addCompositionMutation.mutate({
+    addDirectMessageMutation.mutate({
       author: account,
-      channel: channel ?? "",
       recipient: other ?? "",
       quote: "",
       salt,
@@ -86,7 +77,7 @@ export function ConversationScreen({
       version_timestamp,
     });
   };
-  const ref = React.useRef<FlatList<Composition>>(null);
+  const ref = React.useRef<FlatList<DirectMessage>>(null);
   const isAtEnd = React.useRef(true);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
@@ -143,16 +134,14 @@ export function ConversationScreen({
                     fontWeight: "bold",
                   }}
                 >
-                  {contactQuery.data?.nickname ??
-                    channelQuery.data?.nickname ??
-                    ""}
+                  {contactQuery.data?.nickname}
                 </Text>
                 <Text
                   style={{
                     color: theme.textColor,
                   }}
                 >
-                  {channel || formatAuthor(other)}
+                  {formatAuthor(other)}
                 </Text>
               </View>
             </View>
@@ -176,29 +165,12 @@ export function ConversationScreen({
               event.nativeEvent.layoutMeasurement.height >=
             event.nativeEvent.contentSize.height - 10;
         }}
-        renderItem={({
-          item: {
-            author,
-            channel,
-            recipient,
-            quote,
-            salt,
-            content,
-            version_timestamp,
-          },
-        }) => {
+        renderItem={({ item: { author, content, version_timestamp } }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
           return (
             <Pressable
               onPress={() => {
-                routing.push("Composition", {
-                  account,
-                  author,
-                  channel,
-                  recipient,
-                  quote,
-                  salt,
-                });
+                DevAlert.alert("Coming soon");
               }}
               style={{
                 flexDirection: "row",
@@ -206,8 +178,7 @@ export function ConversationScreen({
                 paddingHorizontal: 16,
               }}
             >
-              <Avatar />
-              <View style={{ marginLeft: 16, flex: 1 }}>
+              <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row" }}>
                   <Text
                     style={{
@@ -216,7 +187,9 @@ export function ConversationScreen({
                       flex: 1,
                     }}
                   >
-                    {formatAuthor(author)}
+                    {author === account
+                      ? accountQuery.data?.nickname
+                      : contactQuery.data?.nickname}
                   </Text>
                   <Text
                     style={{

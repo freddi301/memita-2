@@ -25,5 +25,14 @@ export default function App() {
   const api = React.useMemo(() => {
     return createApiRpcClient();
   }, []);
-  return <Ui api={api} />;
+  return (
+    <Ui
+      api={api}
+      overrides={{
+        copyToClipboard(text) {
+          console.log(text);
+        },
+      }}
+    />
+  );
 }

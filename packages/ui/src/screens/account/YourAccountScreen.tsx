@@ -1,14 +1,15 @@
 import React from "react";
-import { Pressable, Share, Text, View } from "react-native";
+import { Platform, Pressable, Share, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Routes } from "../../routing";
 import { useTheme } from "../../theme";
-import { useApi } from "../../ui";
+import { OverridesContext, useApi } from "../../ui";
 import { BackButton } from "../../components/BackButton";
 import { SimpleInput } from "../../components/SimpleInput";
 import { Account } from "../../api";
-import { I18n } from "../../components/I18n";
+import { I18n, useI18n } from "../../components/I18n";
 import { Avatar } from "../../components/Avatar";
+import { DevAlert } from "../../components/DevAlert";
 
 export function YourAccountScreen({ account }: Routes["YourAccount"]) {
   const theme = useTheme();
@@ -36,7 +37,15 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
       },
     }
   );
-
+  const invite = useI18n({
+    en: `Add me to your memita contacts!\nMy name is: ${nickname}\n\n${account}`,
+    it: `Aggiungini ai tuoi contatti memita!\nIl mio nome è: ${nickname}\n\n${account}`,
+  });
+  const inviteCopied = useI18n({
+    en: "Invite copied",
+    it: "Invito copiato",
+  });
+  const { copyToClipboard } = React.useContext(OverridesContext);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -82,9 +91,12 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
         <Pressable
           style={{ paddingVertical: 8 }}
           onPress={() => {
-            Share.share({
-              message: `Add me to your memita contacts!\nMy name is: ${nickname}\n\n${account}`,
-            });
+            if (Platform.OS === "web") {
+              copyToClipboard(invite);
+              DevAlert.alert(inviteCopied);
+            } else {
+              Share.share({ message: invite });
+            }
           }}
         >
           <Text

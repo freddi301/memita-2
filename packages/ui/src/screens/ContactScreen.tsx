@@ -137,6 +137,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
               it="Una combinazione unica di lettere che identificano l'account del tuo contatto"
             />
           }
+          multiline={2}
         />
         <SimpleInput
           label={<I18n en="Nickname" it="Soprannome" />}

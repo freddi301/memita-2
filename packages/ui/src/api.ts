@@ -32,17 +32,8 @@ export type Contact = {
   version_timestamp: number;
 };
 
-export type Channel = {
-  account: string;
-  channel: string;
-  nickname: string;
-  label: string;
-  version_timestamp: number;
-};
-
-export type Composition = {
+export type DirectMessage = {
   author: string;
-  channel: string;
   recipient: string;
   quote: string;
   salt: string;
@@ -50,12 +41,20 @@ export type Composition = {
   version_timestamp: number;
 };
 
+export type PublicMessage = {
+  author: string;
+  quote: string;
+  salt: string;
+  content: string;
+  version_timestamp: number;
+};
+
 export type Api = {
-  getDatabase(): Promise<Record<string, Array<unknown>>>;
   generateAccount(): Promise<{ author: string; secret: string }>;
   addAccount(account: Account): Promise<void>;
   getAccount(params: { author: string }): Promise<Account | undefined>;
   getAccounts(params: {}): Promise<Array<Account>>;
+  getDatabase(): Promise<Record<string, Array<unknown>>>;
   addContact(contact: Contact): Promise<void>;
   getContact(params: {
     account: string;
@@ -66,49 +65,16 @@ export type Api = {
     nickname?: string;
     label?: string;
   }): Promise<Array<Contact>>;
-  addChannel(contact: Channel): Promise<void>;
-  getChannel(params: {
-    account: string;
-    channel: string;
-  }): Promise<Channel | undefined>;
-  getChannels(params: {
-    account: string;
-    nickname?: string;
-    label?: string;
-  }): Promise<Array<Channel>>;
-  addComposition(composition: Composition): Promise<void>;
-  getComposition(params: {
-    account: string;
-    author: string;
-    channel: string;
-    recipient: string;
-    quote: string;
-    salt: string;
-  }): Promise<Composition | undefined>;
-  getCompositions(params: {
-    account: string;
-    author?: string;
-    channel?: string;
-    recipient?: string;
-    quote?: string;
-    content?: string;
-  }): Promise<Array<Composition>>;
+  addDirectMessage(message: DirectMessage): Promise<void>;
   getConversation(params: {
     account: string;
-    channel?: string;
-    other?: string;
-    quote?: string;
-    content?: string;
-  }): Promise<Array<Composition>>;
-  getConversations(params: {
-    account: string;
-    channel?: string;
-    content?: string;
-  }): Promise<
+    other: string;
+  }): Promise<Array<DirectMessage>>;
+  getConversations(params: { account: string }): Promise<
     Array<{
       author: string;
-      channel: string;
       recipient: string;
+      nickname: string;
       content: string;
       version_timestamp: number;
     }>

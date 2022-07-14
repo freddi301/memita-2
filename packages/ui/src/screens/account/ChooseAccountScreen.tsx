@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { useQuery } from "react-query";
 import { useRouting } from "../../routing";
 import { useTheme } from "../../theme";
@@ -15,6 +8,7 @@ import { useApi } from "../../ui";
 import { HorizontalLoader } from "../../components/HorizontalLoader";
 import { I18n } from "../../components/I18n";
 import { formatAuthor } from "../../components/format";
+import { DevAlert } from "../../components/DevAlert";
 
 export function ChooseAccountScreen() {
   const api = useApi();
@@ -44,34 +38,33 @@ export function ChooseAccountScreen() {
             onPress={() => {
               routing.push("Navigation", { account: author });
             }}
+            style={{
+              flexDirection: "row",
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              alignItems: "center",
+              backgroundColor: theme.backgroundColorPrimary,
+              borderBottomWidth: 1,
+              borderColor: theme.borderColor,
+            }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                alignItems: "center",
-                backgroundColor: theme.backgroundColorPrimary,
-              }}
-            >
-              <Avatar />
-              <View style={{ marginLeft: 16 }}>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                    fontWeight: "bold",
-                  }}
-                >
-                  {nickname}
-                </Text>
-                <Text
-                  style={{
-                    color: theme.textColor,
-                  }}
-                >
-                  {formatAuthor(author)}
-                </Text>
-              </View>
+            <Avatar />
+            <View style={{ marginLeft: 16 }}>
+              <Text
+                style={{
+                  color: theme.textColor,
+                  fontWeight: "bold",
+                }}
+              >
+                {nickname}
+              </Text>
+              <Text
+                style={{
+                  color: theme.textColor,
+                }}
+              >
+                {formatAuthor(author)}
+              </Text>
             </View>
           </Pressable>
         )}
@@ -92,7 +85,7 @@ export function ChooseAccountScreen() {
           marginBottom: 48,
         }}
       >
-        <Pressable onPress={() => Alert.alert("Coming soon")}>
+        <Pressable onPress={() => DevAlert.alert("Coming soon")}>
           <Text
             style={{
               color: theme.actionTextColor,

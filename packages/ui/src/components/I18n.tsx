@@ -14,3 +14,8 @@ export function I18n(props: I18nProps): JSX.Element {
   const language = React.useContext(LanguageContext);
   return (props[language] ?? `<missing label for language ${language}>`) as any;
 }
+
+export function useI18n(props: I18nProps) {
+  const language = React.useContext(LanguageContext);
+  return props[language] ?? `<missing label for language ${language}>`;
+}

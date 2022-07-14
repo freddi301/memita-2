@@ -1,31 +1,36 @@
-import { Settings } from "@memita-2/ui";
 import { createApi } from "../src/api";
-import { createSql } from "./sqlite/sql";
+import { createSql } from "./utils/sqlite/sql";
 
 test("conversations aggregation", async () => {
   const api = await createApi(createSql());
   expect(await api.getConversations({ account: "fred" })).toEqual([]);
-  await api.addComposition({
+  await api.addDirectMessage({
     author: "fred",
-    channel: "",
     recipient: "alice",
     quote: "",
     salt: "1",
     content: "hello",
     version_timestamp: 1,
   });
+  expect(await api.getConversations({ account: "fred" })).toEqual([]);
+  await api.addContact({
+    account: "fred",
+    author: "alice",
+    nickname: "Alice",
+    label: "",
+    version_timestamp: 10,
+  });
   expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "fred",
-      channel: "",
       recipient: "alice",
+      nickname: "Alice",
       content: "hello",
       version_timestamp: 1,
     },
   ]);
-  await api.addComposition({
+  await api.addDirectMessage({
     author: "alice",
-    channel: "",
     recipient: "fred",
     quote: "",
     salt: "1",
@@ -35,15 +40,14 @@ test("conversations aggregation", async () => {
   expect(await api.getConversations({ account: "fred" })).toEqual([
     {
       author: "alice",
-      channel: "",
       recipient: "fred",
+      nickname: "Alice",
       content: "bye",
       version_timestamp: 2,
     },
   ]);
-  await api.addComposition({
+  await api.addDirectMessage({
     author: "fred",
-    channel: "",
     recipient: "chris",
     quote: "",
     salt: "1",
@@ -52,82 +56,34 @@ test("conversations aggregation", async () => {
   });
   expect(await api.getConversations({ account: "fred" })).toEqual([
     {
+      author: "alice",
+      recipient: "fred",
+      nickname: "Alice",
+      content: "bye",
+      version_timestamp: 2,
+    },
+  ]);
+  await api.addContact({
+    account: "fred",
+    author: "chris",
+    nickname: "Chris",
+    label: "",
+    version_timestamp: 20,
+  });
+  expect(await api.getConversations({ account: "fred" })).toEqual([
+    {
       author: "fred",
-      channel: "",
       recipient: "chris",
+      nickname: "Chris",
       content: "test",
       version_timestamp: 3,
     },
     {
       author: "alice",
-      channel: "",
       recipient: "fred",
+      nickname: "Alice",
       content: "bye",
       version_timestamp: 2,
-    },
-  ]);
-  await api.stop();
-});
-
-test("conversations aggregation group/private", async () => {
-  const settings: Settings = {
-    language: "en",
-    theme: "dark",
-    animations: "disabled",
-    connectivity: {
-      hyperswarm: { enabled: false },
-      bridge: { server: { enabled: false }, clients: [] },
-    },
-  };
-  const api = await createApi(createSql());
-  expect(await api.getAccounts({})).toEqual([]);
-  const accountA = { author: "fred", nickname: "Fred", settings };
-  await api.addAccount(accountA);
-  expect(await api.getAccounts({})).toEqual([accountA]);
-  const accountB = { author: "ali", nickname: "Ali", settings };
-  await api.addAccount(accountB);
-  expect(await api.getAccounts({})).toEqual([accountB, accountA]);
-  await api.addComposition({
-    author: "fred",
-    channel: "home",
-    recipient: "",
-    quote: "",
-    content: "buy",
-    salt: "1",
-    version_timestamp: 1,
-  });
-  expect(await api.getConversations({ account: "fred" })).toEqual([
-    {
-      author: "fred",
-      channel: "home",
-      recipient: "",
-      content: "buy",
-      version_timestamp: 1,
-    },
-  ]);
-  await api.addComposition({
-    author: "fred",
-    channel: "",
-    recipient: "ali",
-    quote: "",
-    content: "hi",
-    salt: "2",
-    version_timestamp: 2,
-  });
-  expect(await api.getConversations({ account: "fred" })).toEqual([
-    {
-      author: "fred",
-      channel: "",
-      recipient: "ali",
-      content: "hi",
-      version_timestamp: 2,
-    },
-    {
-      author: "fred",
-      channel: "home",
-      recipient: "",
-      content: "buy",
-      version_timestamp: 1,
     },
   ]);
   await api.stop();

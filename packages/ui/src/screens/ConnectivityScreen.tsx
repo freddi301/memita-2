@@ -111,7 +111,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         >
           <I18n
             en="Connect directly to other devices using peer-to-peer technology without relying on a server"
-            it="Connettiti direttamente agli altri dispositivi usando la tecnlogia peer-to-peer senza affidarti ad un server"
+            it="Connettiti direttamente agli altri dispositivi usando la tecnologia peer-to-peer senza affidarti ad un server"
           />
         </Text>
         <View

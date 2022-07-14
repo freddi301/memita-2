@@ -15,21 +15,29 @@ export function useApi() {
   return React.useContext(ApiContext);
 }
 
+export const OverridesContext = React.createContext<Overrides>(null as any);
+type Overrides = {
+  copyToClipboard(text: string): void;
+};
+
 type UiProps = {
   api: Api;
+  overrides: Overrides;
 };
-export function Ui({ api }: UiProps) {
+export function Ui({ api, overrides }: UiProps) {
   return (
-    <ApiContext.Provider value={api}>
-      <QueryClientProvider client={queryClient}>
-        <Router
-          initial={{
-            screen: "ChooseAccount",
-            parameters: { account: undefined },
-            salt: 0,
-          }}
-        />
-      </QueryClientProvider>
-    </ApiContext.Provider>
+    <OverridesContext.Provider value={overrides}>
+      <ApiContext.Provider value={api}>
+        <QueryClientProvider client={queryClient}>
+          <Router
+            initial={{
+              screen: "ChooseAccount",
+              parameters: { account: undefined },
+              salt: 0,
+            }}
+          />
+        </QueryClientProvider>
+      </ApiContext.Provider>
+    </OverridesContext.Provider>
   );
 }

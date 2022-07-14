@@ -11,6 +11,8 @@ import { DateTime } from "luxon";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
+import { PublicMessage } from "../api";
+import { DevAlert } from "../components/DevAlert";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
@@ -19,18 +21,9 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const contactQuery = useQuery(["contact", { account, author }], async () => {
     return await api.getContact({ account, author });
   });
-  const postsQuery = useQuery(
-    ["compositions", { author, channel: "", quote: "", recipient: "" }],
-    async () => {
-      return await api.getCompositions({
-        account,
-        author,
-        channel: "",
-        quote: "",
-        recipient: "",
-      });
-    }
-  );
+  const postsQuery = useQuery(["posts", { author }], async () => {
+    return [] as Array<PublicMessage>;
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -74,11 +67,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
         <Pressable
           onPress={() => {
-            routing.push("Conversation", {
-              account,
-              channel: "",
-              other: author,
-            });
+            routing.push("Conversation", { account, other: author });
           }}
           style={{ padding: 16 }}
         >
@@ -109,28 +98,13 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
       <FlatList
         data={postsQuery.data}
         renderItem={({
-          item: {
-            author,
-            channel,
-            recipient,
-            quote,
-            salt,
-            version_timestamp,
-            content,
-          },
+          item: { author, quote, salt, version_timestamp, content },
         }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
           return (
             <Pressable
               onPress={() => {
-                routing.push("Composition", {
-                  account,
-                  author,
-                  channel,
-                  recipient,
-                  quote,
-                  salt,
-                });
+                DevAlert.alert("Coming soon");
               }}
             >
               <View

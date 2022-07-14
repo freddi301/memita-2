@@ -28,7 +28,9 @@ export function SimpleInput({
         paddingHorizontal: 16,
       }}
     >
-      <Text style={{ color: theme.textColor }}>{label as any}: </Text>
+      <Text style={{ color: theme.textColor, marginBottom: 4 }}>
+        {label as any}:{" "}
+      </Text>
       <TextInput
         value={value}
         onChangeText={(newText) => {
@@ -37,8 +39,8 @@ export function SimpleInput({
         editable={editable}
         style={{
           color: theme.textColor,
-          paddingVertical: 0,
-          height: multiline ? multiline * 16 : 32,
+          padding: 8,
+          height: multiline ? multiline * 16 + 16 : 32,
           backgroundColor: theme.backgroundColorSecondary,
         }}
         onBlur={onBlur}
@@ -46,7 +48,13 @@ export function SimpleInput({
         numberOfLines={multiline}
       />
       {description && (
-        <Text style={{ color: theme.textSecondaryColor, marginBottom: 8 }}>
+        <Text
+          style={{
+            color: theme.textSecondaryColor,
+            marginBottom: 8,
+            marginTop: 4,
+          }}
+        >
           {description as any}
         </Text>
       )}

@@ -1,5 +1,5 @@
 import initSqlJs from "sql.js";
-import { Sql } from "../../src/components/sql";
+import { Sql } from "../../../src/components/sql";
 
 export function createSql(): Sql {
   const db = (async () => {

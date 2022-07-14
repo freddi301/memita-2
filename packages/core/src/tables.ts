@@ -14,30 +14,17 @@ export async function createTables(sql: Sql) {
     author TEXT NOT NULL,
     nickname TEXT NOT NULL,
     label TEXT NOT NULL,
-    version_timestamp INT NOT NUll,
-    UNIQUE (account, author, nickname, label, version_timestamp)
+    version_timestamp INT NOT NUll
   )`.run();
 
-  await sql`CREATE TABLE IF NOT EXISTS channels (
-    crypto_hash TEXT PRIMARY KEY,
-    account TEXT NOT NULL,
-    channel TEXT NOT NULL,
-    nickname TEXT NOT NULL,
-    label TEXT NOT NULL,
-    version_timestamp INT NOT NUll,
-    UNIQUE (account, channel, nickname, label, version_timestamp)
-  )`.run();
-
-  await sql`CREATE TABLE IF NOT EXISTS compositions (
+  await sql`CREATE TABLE IF NOT EXISTS direct_messages (
     crypto_hash TEXT PRIMARY KEY,
     author TEXT NOT NULL,
-    channel TEXT NOT NULL,
     recipient TEXT NOT NULL,
     quote TEXT NOT NULL,
     salt TEXT NOT NULL,
     content TEXT NOT NULL,
-    version_timestamp INTEGER NOT NULL,
-    UNIQUE (author, channel, recipient, quote, salt, content, version_timestamp)
+    version_timestamp INTEGER NOT NULL
   )`.run();
 }
 

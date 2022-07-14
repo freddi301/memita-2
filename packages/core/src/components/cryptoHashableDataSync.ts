@@ -1,6 +1,9 @@
-export type CryptoHashableDataSyncRPC<Hash, Data> = {
-  list(): Promise<Array<Hash>>;
-  get(hash: Hash): Promise<Data>;
+export type CryptoHashableDataSyncRPC<
+  Hash,
+  Datas extends Record<string, any>
+> = {
+  list<K extends keyof Datas>(scope: K): Promise<Array<Hash>>;
+  get<K extends keyof Datas>(scope: K, hash: Hash): Promise<Datas[K]>;
 };
 
 export type CryptoHashableDataRepository<Hash, Data> = {
@@ -11,34 +14,40 @@ export type CryptoHashableDataRepository<Hash, Data> = {
   hashFunction(data: Data): Promise<Hash>;
 };
 
-export function createCryptoHashableDataSyncRpcServer<Hash, Data>({
-  getHashes,
-  getData,
-}: CryptoHashableDataRepository<Hash, Data>): CryptoHashableDataSyncRPC<
+export function createCryptoHashableDataSyncRpcServer<
   Hash,
-  Data
-> {
+  Datas extends Record<string, any>
+>(repositories: {
+  [K in keyof Datas]: CryptoHashableDataRepository<Hash, Datas[K]>;
+}): CryptoHashableDataSyncRPC<Hash, Datas> {
   return {
-    async list() {
-      return await getHashes();
+    async list(scope) {
+      return await repositories[scope].getHashes();
     },
-    async get(hash) {
-      return await getData(hash);
+    async get(scope, hash) {
+      return await repositories[scope].getData(hash);
     },
   };
 }
 
-export async function syncCryptoHashableData<Hash, Data>(
-  repository: CryptoHashableDataRepository<Hash, Data>,
-  client: CryptoHashableDataSyncRPC<Hash, Data>
+export async function syncCryptoHashableData<
+  Hash,
+  Datas extends Record<string, any>
+>(
+  repositories: {
+    [K in keyof Datas]: CryptoHashableDataRepository<Hash, Datas[K]>;
+  },
+  client: CryptoHashableDataSyncRPC<Hash, Datas>
 ) {
-  const available = await client.list();
-  for (const hash of available) {
-    if (!(await repository.hasHash(hash))) {
-      const data = await client.get(hash);
-      if ((await repository.hashFunction(data)) !== hash)
-        throw new Error("corrupt");
-      await repository.addData(data);
+  for (const scope of Object.keys(repositories)) {
+    const available = await client.list(scope);
+    for (const hash of available) {
+      if (!(await repositories[scope].hasHash(hash))) {
+        const data = await client.get(scope, hash);
+        if ((await repositories[scope].hashFunction(data)) !== hash)
+          throw new Error("corrupt");
+        await repositories[scope].addData(data);
+      }
     }
   }
 }

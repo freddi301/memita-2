@@ -1,12 +1,13 @@
 import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
-import { createSql } from "./sqlite/sql";
+import { createSql } from "./utils/sqlite/sql";
 
 test("account", async () => {
   const api = await createApi(createSql());
   expect(await api.getAccounts({})).toEqual([]);
   const accountA: Account = {
     author: "fred",
+    secret: "",
     nickname: "Fred",
     settings: {
       language: "it",
@@ -23,6 +24,7 @@ test("account", async () => {
   expect(await api.getAccounts({})).toEqual([accountA]);
   const accountB: Account = {
     author: "fred",
+    secret: "",
     nickname: "Macco",
     settings: {
       language: "en",

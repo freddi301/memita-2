@@ -43,7 +43,7 @@ export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
     const message = data as RpcResponse<RPC, keyof RPC>;
     const pendingRequest = pendingRequests.get(message.id);
     if (message.type === "response" && pendingRequest) {
-      if (message.isError) pendingRequest.reject(new Error("rpc error "));
+      if (message.isError) pendingRequest.reject(new Error("rpc error"));
       else pendingRequest.resolve(message.result);
       pendingRequests.delete(message.id);
     }
@@ -114,6 +114,7 @@ export function createRpcServer<RPC extends RpcShape>(
           })
         );
       } catch (error) {
+        console.error(error);
         const response: RpcResponse<RPC, Method> = {
           type: "response",
           id: message.id,

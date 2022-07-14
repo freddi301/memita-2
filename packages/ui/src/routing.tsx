@@ -1,5 +1,4 @@
 import React from "react";
-import { CompositionScreen } from "./screens/CompositionScreen";
 import { ContactScreen } from "./screens/ContactScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { ContactsScreen } from "./screens/ContactsScreen";
@@ -19,8 +18,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { ChannelsScreen } from "./screens/ChannelsScreen";
-import { ChannelScreen } from "./screens/ChannelScreen";
 import { ThemeContext, themes } from "./theme";
 import { LanguageContext } from "./components/I18n";
 import { useQuery, useQueryClient } from "react-query";
@@ -39,26 +36,9 @@ export type Routes = {
   Navigation: { account: string };
   Contacts: { account: string };
   Contact: { account: string; author?: string };
-  Channels: { account: string };
-  Channel: { account: string; channel?: string };
   Profile: { account: string; author: string };
-  Composition: {
-    account: string;
-    author?: string;
-    channel?: string;
-    recipient?: string;
-    quote?: string;
-    salt?: string;
-  };
-  Conversations: {
-    account: string;
-    channel?: string;
-  };
-  Conversation: {
-    account: string;
-    channel: string;
-    other: string;
-  };
+  Conversations: { account: string };
+  Conversation: { account: string; other: string };
 };
 
 type Route = {
@@ -77,10 +57,7 @@ const mapping: {
   Database: DatabaseScreen,
   Contacts: ContactsScreen,
   Contact: ContactScreen,
-  Channels: ChannelsScreen,
-  Channel: ChannelScreen,
   Profile: ProfileScreen,
-  Composition: CompositionScreen,
   Conversations: ConversationsScreen,
   Conversation: ConversationScreen,
 });

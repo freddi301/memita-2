@@ -2,7 +2,7 @@ import { PassThrough } from "stream";
 import duplexify from "duplexify";
 import { createBridgeServer } from "../src/components/bridge/bridgeServer";
 import { createBridgeClient } from "../src/components/bridge/bridgeClient";
-import { deferable } from "./deferable";
+import { deferable } from "./utils/deferable";
 
 test("passtrough correctly ends streams", async () => {
   const duplex = new PassThrough();

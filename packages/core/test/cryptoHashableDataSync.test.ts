@@ -18,15 +18,16 @@ test("cryptoHashableDataSync syncs data", async () => {
   const x = createDuplexCbor(duplexify(a, b));
   const y = createDuplexCbor(duplexify(b, a));
   createRpcServer(
-    createCryptoHashableDataSyncRpcServer<string, string>(
-      createRepoFromArray(["a", "b", "c"])
-    ),
+    createCryptoHashableDataSyncRpcServer<string, { text: string }>({
+      text: createRepoFromArray(["a", "b", "c"]),
+    }),
     x
   );
-  const client = createRpcClient<CryptoHashableDataSyncRPC<string, string>>(y);
-  const repository = createRepoFromArray(["c", "d", "e"]);
-  await syncCryptoHashableData(repository, client);
-  expect(Array.from(repository.map.values())).toEqual([
+  const client =
+    createRpcClient<CryptoHashableDataSyncRPC<string, { text: string }>>(y);
+  const textRepository = createRepoFromArray(["c", "d", "e"]);
+  await syncCryptoHashableData({ text: textRepository }, client);
+  expect(Array.from(textRepository.map.values())).toEqual([
     "c",
     "d",
     "e",

@@ -20,10 +20,7 @@ import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
 
-export function ConversationsScreen({
-  account,
-  channel,
-}: Routes["Conversations"]) {
+export function ConversationsScreen({ account }: Routes["Conversations"]) {
   const api = useApi();
   const routing = useRouting();
   const theme = useTheme();
@@ -31,13 +28,9 @@ export function ConversationsScreen({
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
   const conversationsQuery = useQuery(
-    ["conversations", { account, channel, searchTextDebounced }],
+    ["conversations", { account }],
     async () => {
-      return await api.getConversations({
-        account,
-        channel,
-        content: searchTextDebounced || undefined,
-      });
+      return await api.getConversations({ account });
     }
   );
   const accountQuery = useQuery(["account", { author: account }], async () => {
@@ -117,11 +110,7 @@ export function ConversationsScreen({
           return (
             <Pressable
               onPress={() => {
-                routing.push("Conversation", {
-                  account,
-                  channel: item.channel,
-                  other: item.recipient ? other : "",
-                });
+                routing.push("Conversation", { account, other });
               }}
               style={{
                 paddingHorizontal: 16,
@@ -139,7 +128,7 @@ export function ConversationsScreen({
                       flex: 1,
                     }}
                   >
-                    {item.channel || other}
+                    {item.nickname}
                   </Text>
                   <Text
                     style={{

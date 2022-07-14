@@ -9,6 +9,7 @@ import { useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
+import { DevAlert } from "../components/DevAlert";
 
 export function NavigationScreen({ account }: Routes["Navigation"]) {
   const routing = useRouting();
@@ -66,7 +67,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
-            routing.push("Channels", { account });
+            DevAlert.alert("Coming soon");
           }}
           style={{
             flexDirection: "row",
