@@ -35,7 +35,12 @@ const overrides: Overrides = {
   copyToClipboard(text) {
     console.warn('copy to clipboard', text);
   },
-  QrCodeScanner({onData}) {
-    return <QRCodeScannerAny onRead={(e: any) => onData(e.data)} />;
+  QrCodeScanner({onData, width, height}) {
+    return (
+      <QRCodeScannerAny
+        onRead={(e: any) => onData(e.data)}
+        cameraStyle={{width, height}}
+      />
+    );
   },
 };

@@ -45,7 +45,7 @@ export function createLanSwarm(onConnection: (stream: Duplex) => void) {
   }
   broadcastSocket.on("message", (message, info) => {
     const [host, port] = message.toString().split(":");
-    const otherAddress = `${host}:${port}`;
+    const otherAddress = `${host}`;
     if (!connections.has(otherAddress) && !(host in broadcastAddresses)) {
       const socket = createConnection(Number(port), host);
       connections.set(otherAddress, socket);

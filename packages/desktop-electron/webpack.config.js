@@ -40,7 +40,7 @@ module.exports = {
       },
       {
         test: /\.jsx?$/,
-        include: /node_modules\/react-native-qrcode-svg/,
+        include: /react-native-qrcode-svg/,
         use: {
           loader: "babel-loader",
           options: {

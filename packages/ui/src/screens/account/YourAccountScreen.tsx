@@ -5,6 +5,7 @@ import {
   ScrollView,
   Share,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -56,6 +57,7 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
     it: "Invito copiato",
   });
   const { copyToClipboard } = React.useContext(OverridesContext);
+  const { width, height } = useWindowDimensions();
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -124,24 +126,6 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
           </Text>
         </View>
         <View style={{ alignItems: "center", marginVertical: 8 }}>
-          <Text
-            style={{
-              color: theme.textColor,
-              textAlign: "center",
-              paddingVertical: 8,
-            }}
-          >
-            <I18n en="Let it scan" it="Fai inquadrare" />
-          </Text>
-          <QRCodeAny value={invite} size={128 + 64} />
-          <Text
-            style={{
-              color: theme.textSecondaryColor,
-              marginVertical: 8,
-            }}
-          >
-            <I18n en="or" it="oppure" />
-          </Text>
           <Pressable
             onPress={() => {
               if (Platform.OS === "web") {
@@ -161,6 +145,24 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
               <I18n en="Send your contact" it="Invia il tuo contatto" />
             </Text>
           </Pressable>
+          <Text
+            style={{
+              color: theme.textSecondaryColor,
+              marginTop: 8,
+            }}
+          >
+            <I18n en="or" it="oppure" />
+          </Text>
+          <Text
+            style={{
+              color: theme.textColor,
+              textAlign: "center",
+              paddingVertical: 8,
+            }}
+          >
+            <I18n en="Let it scan" it="Fai inquadrare" />
+          </Text>
+          <QRCodeAny value={invite} size={Math.min(width, height) - 32} />
         </View>
       </ScrollView>
     </View>

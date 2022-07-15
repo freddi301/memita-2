@@ -127,7 +127,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
         )}
       </View>
       <ScrollView
-        style={{ paddingTop: 8 }}
+        style={{ paddingVertical: 8 }}
         StickyHeaderComponent={() => (
           <HorizontalLoader isLoading={contactQuery.isFetching} />
         )}
@@ -171,26 +171,47 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             }
           />
         )}
-        {!original.author && !isQrCodeScannerOpen && (
+        {!original.author && (
           <View style={{ alignItems: "center" }}>
             <Pressable
               onPress={() => {
-                setIsQrCodeScannerOpen(true);
+                setIsQrCodeScannerOpen(!isQrCodeScannerOpen);
               }}
               style={{
                 paddingVertical: 8,
                 paddingHorizontal: 16,
               }}
             >
-              <Text style={{ color: theme.actionTextColor }}>
-                <I18n en="Scan QR Code" it="Inquadra QR Code" />
-              </Text>
+              {isQrCodeScannerOpen ? (
+                <Text style={{ color: theme.actionTextColor }}>
+                  <I18n en="Close camera" it="Chiudi telecamera" />
+                </Text>
+              ) : (
+                <Text style={{ color: theme.actionTextColor }}>
+                  <I18n en="Scan QR Code" it="Inquadra QR Code" />
+                </Text>
+              )}
             </Pressable>
           </View>
         )}
         {isQrCodeScannerOpen && (
-          <View>
-            <QrCodeScanner onData={(data) => setInvite(data)} />
+          <View
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              alignItems: "center",
+              width: 400,
+              height: 400,
+            }}
+          >
+            <QrCodeScanner
+              onData={(data) => {
+                setInvite(data);
+                setIsQrCodeScannerOpen(false);
+              }}
+              width={200}
+              height={200}
+            />
           </View>
         )}
       </ScrollView>
