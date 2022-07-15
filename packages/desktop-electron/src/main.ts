@@ -86,7 +86,7 @@ function createSql(path: string) {
 }
 
 function createSqlSqlite3(path: string): Sql {
-  const db = sqlite3.cached.Database(":memory:");
+  const db = sqlite3.cached.Database(path);
   sqlite3.verbose();
   const sql = (strings: TemplateStringsArray, ...values: any[]) => {
     const doIt = () =>

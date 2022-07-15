@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery } from "react-query";
 import { Routes, useRouting } from "../routing";
 import { useTheme } from "../theme";
-import { useApi } from "../ui";
+import { OverridesContext, useApi } from "../ui";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
@@ -66,6 +66,8 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
       setAuthor(match[0]);
     }
   }, [invite]);
+  const [isQrCodeScannerOpen, setIsQrCodeScannerOpen] = React.useState(false);
+  const { QrCodeScanner } = React.useContext(OverridesContext);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -124,8 +126,12 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           </Pressable>
         )}
       </View>
-      <HorizontalLoader isLoading={contactQuery.isFetching} />
-      <ScrollView style={{ paddingTop: 8 }}>
+      <ScrollView
+        style={{ paddingTop: 8 }}
+        StickyHeaderComponent={() => (
+          <HorizontalLoader isLoading={contactQuery.isFetching} />
+        )}
+      >
         <SimpleInput
           label={<I18n en="Author" it="Autore" />}
           value={author}
@@ -164,6 +170,28 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
               />
             }
           />
+        )}
+        {!original.author && !isQrCodeScannerOpen && (
+          <View style={{ alignItems: "center" }}>
+            <Pressable
+              onPress={() => {
+                setIsQrCodeScannerOpen(true);
+              }}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text style={{ color: theme.actionTextColor }}>
+                <I18n en="Scan QR Code" it="Inquadra QR Code" />
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        {isQrCodeScannerOpen && (
+          <View>
+            <QrCodeScanner onData={(data) => setInvite(data)} />
+          </View>
         )}
       </ScrollView>
     </View>

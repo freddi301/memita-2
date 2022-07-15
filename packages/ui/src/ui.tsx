@@ -16,8 +16,9 @@ export function useApi() {
 }
 
 export const OverridesContext = React.createContext<Overrides>(null as any);
-type Overrides = {
+export type Overrides = {
   copyToClipboard(text: string): void;
+  QrCodeScanner: React.ComponentType<{ onData(data: string): void }>;
 };
 
 type UiProps = {

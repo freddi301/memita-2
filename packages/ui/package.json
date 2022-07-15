@@ -24,6 +24,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-native-fontawesome": "^0.3.0",
     "luxon": "^2.4.0",
+    "react-native-qrcode-svg": "^6.1.2",
     "react-query": "^3.39.1"
   }
 }

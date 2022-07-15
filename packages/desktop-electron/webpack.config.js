@@ -39,6 +39,27 @@ module.exports = {
         },
       },
       {
+        test: /\.jsx?$/,
+        include: /node_modules\/react-native-qrcode-svg/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            plugins: [
+              "macros",
+              [
+                "@babel/plugin-transform-runtime",
+                {
+                  regenerator: true,
+                },
+              ],
+              isDevelopment && "react-refresh/babel",
+              ["react-native-web", { commonjs: true }],
+            ].filter(Boolean),
+            presets: ["@babel/preset-env", "@babel/react"],
+          },
+        },
+      },
+      {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
       },

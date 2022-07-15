@@ -1,5 +1,12 @@
 import React from "react";
-import { Platform, Pressable, Share, Text, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  Text,
+  View,
+} from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Routes } from "../../routing";
 import { useTheme } from "../../theme";
@@ -10,6 +17,9 @@ import { Account } from "../../api";
 import { I18n, useI18n } from "../../components/I18n";
 import { Avatar } from "../../components/Avatar";
 import { DevAlert } from "../../components/DevAlert";
+import QRCode from "react-native-qrcode-svg";
+import { HorizontalLoader } from "../../components/HorizontalLoader";
+const QRCodeAny = QRCode as any;
 
 export function YourAccountScreen({ account }: Routes["YourAccount"]) {
   const theme = useTheme();
@@ -69,56 +79,90 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
           <I18n en="Your account" it="Il tuo account" />
         </Text>
       </View>
-      <View style={{ alignItems: "center", paddingVertical: 16 }}>
-        <Avatar size={96} />
-      </View>
-      <SimpleInput
-        label={<I18n en="Nickname" it="Soprannome" />}
-        value={nickname}
-        onChangeText={setNickname}
-        onBlur={() =>
-          accountQuery.data &&
-          addAccountMutation.mutate({ ...accountQuery.data, nickname })
-        }
-        description={
-          <I18n
-            en="An friendly name to help you remeber which account this is. It is visible only to you"
-            it="Un nome mnemonico per aiutarti a ricordare di quale account si tratta. E visibile solo a te."
-          />
-        }
-      />
-      <View style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
-        <Pressable
-          style={{ paddingVertical: 8 }}
-          onPress={() => {
-            if (Platform.OS === "web") {
-              copyToClipboard(invite);
-              DevAlert.alert(inviteCopied);
-            } else {
-              Share.share({ message: invite });
-            }
+      <ScrollView
+        StickyHeaderComponent={() => (
+          <HorizontalLoader isLoading={accountQuery.isFetching} />
+        )}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            paddingTop: 16,
+            alignItems: "center",
           }}
         >
+          <View style={{ marginLeft: 16 }}>
+            <Avatar size={96} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <SimpleInput
+              label={<I18n en="Nickname" it="Soprannome" />}
+              value={nickname}
+              onChangeText={setNickname}
+              onBlur={() =>
+                accountQuery.data &&
+                addAccountMutation.mutate({ ...accountQuery.data, nickname })
+              }
+              description={
+                <I18n
+                  en="An friendly name to help you remeber which account this is. It is visible only to you"
+                  it="Un nome mnemonico per aiutarti a ricordare di quale account si tratta. E visibile solo a te."
+                />
+              }
+            />
+          </View>
+        </View>
+        <View style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
+          <Text style={{ color: theme.textColor, fontFamily: "monospace" }}>
+            {account}
+          </Text>
+          <Text style={{ color: theme.textSecondaryColor }}>
+            <I18n
+              en="Unique alphanumeric combinations that identifies your account. It is visible to others and is used to send you messages, like a phone number."
+              it="Una combinazione alfanumerica unica che identifica il tuo account. E visibile agli altri e viene usata per inviarti i messaggi, come se fosse un numero di telefono."
+            />
+          </Text>
+        </View>
+        <View style={{ alignItems: "center", marginVertical: 8 }}>
           <Text
             style={{
-              color: theme.actionTextColor,
-              textDecorationLine: "underline",
+              color: theme.textColor,
               textAlign: "center",
+              paddingVertical: 8,
             }}
           >
-            <I18n en="Send your contact" it="Invia il tuo contatto" />
+            <I18n en="Let it scan" it="Fai inquadrare" />
           </Text>
-        </Pressable>
-        <Text style={{ color: theme.textColor, fontFamily: "monospace" }}>
-          #{account}
-        </Text>
-        <Text style={{ color: theme.textSecondaryColor }}>
-          <I18n
-            en="Unique alphanumeric combinations that identifies your account. It is visible to others and is used to send you messages, like a phone number."
-            it="Una combinazione alfanumerica unica che identifica il tuo account. E visibile agli altri e viene usata per inviarti i messaggi, come se fosse un numero di telefono."
-          />
-        </Text>
-      </View>
+          <QRCodeAny value={invite} size={128 + 64} />
+          <Text
+            style={{
+              color: theme.textSecondaryColor,
+              marginVertical: 8,
+            }}
+          >
+            <I18n en="or" it="oppure" />
+          </Text>
+          <Pressable
+            onPress={() => {
+              if (Platform.OS === "web") {
+                copyToClipboard(invite);
+                DevAlert.alert(inviteCopied);
+              } else {
+                Share.share({ message: invite });
+              }
+            }}
+          >
+            <Text
+              style={{
+                color: theme.actionTextColor,
+                textDecorationLine: "underline",
+              }}
+            >
+              <I18n en="Send your contact" it="Invia il tuo contatto" />
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }
