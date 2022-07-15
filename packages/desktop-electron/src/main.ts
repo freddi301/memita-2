@@ -3,6 +3,7 @@ import path from "path";
 import { createApi } from "@memita-2/core";
 import { Sql } from "@memita-2/core";
 import Database from "better-sqlite3";
+import sqlite3 from "sqlite3";
 
 (async () => {
   await app.whenReady();
@@ -46,25 +47,6 @@ import Database from "better-sqlite3";
   });
 })();
 
-function createSql(path: string): Sql {
-  const db = new Database(path);
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
-    text() {
-      return strings.join("");
-    },
-    async run() {
-      db.prepare(strings.join("?")).run(values);
-    },
-    async all() {
-      return db.prepare(strings.join("?")).all(values);
-    },
-  });
-  sql.close = async () => {
-    db.close();
-  };
-  return sql;
-}
-
 function createWindow(title: string) {
   const window = new BrowserWindow({
     width: app.isPackaged ? 300 : 800,
@@ -96,4 +78,58 @@ function installExtensions() {
     .catch((err: unknown) => {
       console.log("An error occurred: ", err);
     });
+}
+
+function createSql(path: string) {
+  if (process.platform === "win32") return createSqlSqlite3(path);
+  return createSqlBetterSqlite3(path);
+}
+
+function createSqlSqlite3(path: string): Sql {
+  const db = sqlite3.cached.Database(":memory:");
+  sqlite3.verbose();
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => {
+    const doIt = () =>
+      new Promise<any>((resolve, reject) => {
+        db.all(strings.join("?"), values, (error, rows) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(rows as any);
+          }
+        });
+      });
+    return {
+      run: doIt,
+      all: doIt,
+      text() {
+        return strings.join("");
+      },
+    };
+  };
+  sql.close = () => {
+    return new Promise<void>((resolve, reject) =>
+      db.close((error) => (error ? reject(error) : resolve(undefined)))
+    );
+  };
+  return sql;
+}
+
+function createSqlBetterSqlite3(path: string): Sql {
+  const db = new Database(path);
+  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
+    text() {
+      return strings.join("");
+    },
+    async run() {
+      db.prepare(strings.join("?")).run(values);
+    },
+    async all() {
+      return db.prepare(strings.join("?")).all(values);
+    },
+  });
+  sql.close = async () => {
+    db.close();
+  };
+  return sql;
 }
