@@ -77,8 +77,10 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
           }}
         >
           <Text style={{ flex: 1, color: theme.textColor }}>
-            <I18n en="Hyper Swarm" it="Hyper Swarm" /> (
-            {connectionsQuery.data?.hyperswarm.connections})
+            <I18n en="Hyper Swarm" it="Hyper Swarm" />{" "}
+            {settings.connectivity.hyperswarm.enabled && (
+              <>({connectionsQuery.data?.hyperswarm.connections})</>
+            )}
           </Text>
           <Pressable
             onPress={() =>
@@ -259,6 +261,56 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
               </View>
             );
           })}
+        <View
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ flex: 1, color: theme.textColor }}>
+            <I18n en="LAN" it="LAN" />{" "}
+            {settings.connectivity.lan.enabled && (
+              <>({connectionsQuery.data?.lan.connections})</>
+            )}
+          </Text>
+          <Pressable
+            onPress={() =>
+              setSettings({
+                ...settings,
+                connectivity: {
+                  ...settings.connectivity,
+                  lan: {
+                    ...settings.connectivity.lan,
+                    enabled: !settings.connectivity.lan.enabled,
+                  },
+                },
+              })
+            }
+          >
+            <FontAwesomeIcon
+              icon={"power-off"}
+              color={
+                settings.connectivity.lan.enabled
+                  ? theme.activeColor
+                  : theme.textSecondaryColor
+              }
+            />
+          </Pressable>
+        </View>
+        <Text
+          style={{
+            paddingHorizontal: 16,
+            paddingBottom: 8,
+            color: theme.textSecondaryColor,
+          }}
+        >
+          <I18n
+            en="Connect to other devices on the same Wifi or Ethernet network"
+            it="Connettiti agli altri dispositivi sulla stese rete Wifi o Ethernet"
+          />
+        </Text>
       </ScrollView>
     </View>
   );

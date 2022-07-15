@@ -6,9 +6,10 @@ import {
   cryptoCreateAsymmetricKeyPair,
   cryptoHashFunction,
 } from "./components/crypto";
-import { createHyperSwarm } from "./components/swarm/hyperSwarm";
-import { createBridgeClient } from "./components/bridge/bridgeClient";
-import { createBridgeServer } from "./components/bridge/bridgeServer";
+import { createHyperSwarm } from "./connectivity/swarm/hyperSwarm";
+import { createBridgeClient } from "./connectivity/bridge/bridgeClient";
+import { createBridgeServer } from "./connectivity/bridge/bridgeServer";
+import { createLanSwarm } from "./connectivity/swarm/lanSwarm";
 
 export async function createApi(sql: Sql) {
   let stopped = false;
@@ -123,7 +124,7 @@ export async function createApi(sql: Sql) {
         WHERE
           (author = ${account} AND recipient = ${other}) OR
           (author = ${other} AND recipient = ${account})
-        GROUP BY author, recipient, quote, salt
+        GROUP BY author, recipient, salt
         ORDER BY MAX(version_timestamp) ASC
       `.all()) as any;
     },
@@ -169,6 +170,9 @@ export async function createApi(sql: Sql) {
             }))
           ),
         },
+        lan: {
+          connections: await instances.lan.getConnections(),
+        },
       };
     },
     async stop() {
@@ -180,6 +184,7 @@ export async function createApi(sql: Sql) {
             await bridgeClient.stop();
           }
           await instances.bridgeServer.stop();
+          await instances.lan.stop();
         }
         await sql.close();
       }
@@ -203,6 +208,7 @@ export async function createApi(sql: Sql) {
     hyperswarm: ReturnType<typeof createHyperSwarm>;
     bridgeServer: ReturnType<typeof createBridgeServer>;
     bridgeClients: Array<ReturnType<typeof createBridgeClient>>;
+    lan: ReturnType<typeof createLanSwarm>;
   };
   const connectivityModuleInstances = new Map<
     string,
@@ -223,6 +229,7 @@ export async function createApi(sql: Sql) {
           bridgeClients: account.settings.connectivity.bridge.clients.map(() =>
             createBridgeClient(onConnection)
           ),
+          lan: createLanSwarm(onConnection),
         };
         connectivityModuleInstances.set(account.author, instances);
       }
@@ -248,6 +255,11 @@ export async function createApi(sql: Sql) {
         } else {
           await instance.stop();
         }
+      }
+      if (account.settings.connectivity.lan.enabled) {
+        await instances.lan.start();
+      } else {
+        await instances.lan.stop();
       }
     }
   }

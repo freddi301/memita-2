@@ -1,3 +1,3 @@
-import { createBridgeServer } from "../components/bridge/bridgeServer";
+import { createBridgeServer } from "../connectivity/bridge/bridgeServer";
 
 createBridgeServer(8001).start();

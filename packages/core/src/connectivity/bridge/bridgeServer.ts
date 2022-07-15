@@ -145,18 +145,18 @@ export function createBridgeServer(port?: number) {
         )
         .map(({ address }) => address);
     },
-    start() {
-      if (isRunning) return Promise.resolve(undefined);
-      return new Promise<void>((resolve) =>
+    async start() {
+      if (isRunning) return;
+      await new Promise<void>((resolve) =>
         server.listen(port ?? 0, "0.0.0.0", resolve)
       );
     },
-    stop() {
-      if (!isRunning) return Promise.resolve(undefined);
+    async stop() {
+      if (!isRunning) return;
       for (const [, { encoder }] of connections) {
         encoder.end();
       }
-      return new Promise<void>((resolve, reject) =>
+      await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve(undefined)))
       );
     },

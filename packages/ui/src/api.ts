@@ -21,6 +21,7 @@ export type Settings = {
         enabled: boolean;
       }>;
     };
+    lan: { enabled: boolean };
   };
 };
 
@@ -94,6 +95,9 @@ export type Api = {
             online: boolean;
             connections: number;
           }>;
+        };
+        lan: {
+          connections: number;
         };
       }
     | undefined

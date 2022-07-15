@@ -1,8 +1,8 @@
 import { createApi } from "../src/api";
 import { createSql } from "./utils/sqlite/sql";
 import { createSync } from "../src/sync";
-import { createBridgeServer } from "../src/components/bridge/bridgeServer";
-import { createBridgeClient } from "../src/components/bridge/bridgeClient";
+import { createBridgeServer } from "../src/connectivity/bridge/bridgeServer";
+import { createBridgeClient } from "../src/connectivity/bridge/bridgeClient";
 import { deferable } from "./utils/deferable";
 import { DirectMessage } from "@memita-2/ui/dist/api";
 

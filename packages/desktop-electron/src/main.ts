@@ -33,6 +33,17 @@ import Database from "better-sqlite3";
   app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
   });
+  process.on("SIGINT", function () {
+    api.stop().then(
+      () => {
+        process.exit(0);
+      },
+      (error) => {
+        console.error(error);
+        process.exit(1);
+      }
+    );
+  });
 })();
 
 function createSql(path: string): Sql {

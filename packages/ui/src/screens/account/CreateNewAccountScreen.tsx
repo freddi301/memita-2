@@ -121,6 +121,9 @@ export const defaultSettings: Settings = {
         { enabled: false, port: 8001, host: "127.0.0.1" },
       ],
     },
+    lan: {
+      enabled: true,
+    },
   },
 };
 
