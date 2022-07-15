@@ -30,7 +30,13 @@ export function createSqlReactNativeSqlStorageRpcClient(): Sql {
           parameters: values,
         });
       });
-    return {run: doIt, all: doIt};
+    return {
+      run: doIt,
+      all: doIt,
+      text() {
+        return strings.join('');
+      },
+    };
   };
   sql.close = async () => {};
   return sql;

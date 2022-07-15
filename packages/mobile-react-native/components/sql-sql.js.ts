@@ -22,7 +22,13 @@ export function createSqlSqljs(): Sql {
         ),
       ) as any;
     };
-    return {run: doIt, all: doIt};
+    return {
+      run: doIt,
+      all: doIt,
+      text() {
+        return strings.join('');
+      },
+    };
   };
   sql.close = async () => {
     (await db).close();

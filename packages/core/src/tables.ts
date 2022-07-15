@@ -1,31 +1,51 @@
 import { Sql } from "./components/sql";
 
 export async function createTables(sql: Sql) {
-  await sql`CREATE TABLE IF NOT EXISTS accounts (
-    author TEXT PRIMARY KEY,
-    secret TEXT NOT NULL,
-    nickname TEXT NOT NULL,
-    settings TEXT NOT NULL
-  )`.run();
+  const tables = {
+    accounts: sql`CREATE TABLE accounts (
+      author TEXT PRIMARY KEY,
+      secret TEXT NOT NULL,
+      nickname TEXT NOT NULL,
+      settings TEXT NOT NULL
+    )`,
+    contacts: sql`CREATE TABLE contacts (
+      crypto_hash TEXT PRIMARY KEY,
+      account TEXT NOT NULL,
+      author TEXT NOT NULL,
+      nickname TEXT NOT NULL,
+      label TEXT NOT NULL,
+      version_timestamp INT NOT NUll
+    )`,
+    direct_messages: sql`CREATE TABLE direct_messages (
+      crypto_hash TEXT PRIMARY KEY,
+      author TEXT NOT NULL,
+      recipient TEXT NOT NULL,
+      quote TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      content TEXT NOT NULL,
+      version_timestamp INTEGER NOT NULL
+    )`,
+  };
 
-  await sql`CREATE TABLE IF NOT EXISTS contacts (
-    crypto_hash TEXT PRIMARY KEY,
-    account TEXT NOT NULL,
-    author TEXT NOT NULL,
-    nickname TEXT NOT NULL,
-    label TEXT NOT NULL,
-    version_timestamp INT NOT NUll
-  )`.run();
+  const existingTables = Object.fromEntries(
+    (await sql`select * from sqlite_master`.all())
+      .filter(({ type, name }: any) => type === "table" && name in tables)
+      .map(({ name, sql }: any) => [name, sql])
+  );
 
-  await sql`CREATE TABLE IF NOT EXISTS direct_messages (
-    crypto_hash TEXT PRIMARY KEY,
-    author TEXT NOT NULL,
-    recipient TEXT NOT NULL,
-    quote TEXT NOT NULL,
-    salt TEXT NOT NULL,
-    content TEXT NOT NULL,
-    version_timestamp INTEGER NOT NULL
-  )`.run();
+  for (const [table, sql] of Object.entries(tables)) {
+    if (!(table in existingTables)) {
+      await sql.run();
+    } else {
+      if (uniformSpaces(sql.text()) !== uniformSpaces(existingTables[table])) {
+        throw new Error("database migration not supported");
+      }
+    }
+  }
+}
+
+function uniformSpaces(sqlText: string) {
+  return sqlText.replace(/\s+/g, " ");
 }
 
 export async function optimizeDb(sql: Sql) {

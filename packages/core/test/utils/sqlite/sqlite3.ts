@@ -15,7 +15,13 @@ export function createSql(): Sql {
           }
         });
       });
-    return { run: doIt, all: doIt };
+    return {
+      run: doIt,
+      all: doIt,
+      text() {
+        return strings.join("");
+      },
+    };
   };
   sql.close = () => {
     return new Promise<void>((resolve, reject) =>

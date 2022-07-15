@@ -10,6 +10,9 @@ export function createSql(): Sql {
     async all() {
       return db.prepare(strings.join("?")).all(values);
     },
+    text() {
+      return strings.join("");
+    },
   });
   sql.close = async () => {
     db.close();

@@ -38,6 +38,9 @@ import Database from "better-sqlite3";
 function createSql(path: string): Sql {
   const db = new Database(path);
   const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
+    text() {
+      return strings.join("");
+    },
     async run() {
       db.prepare(strings.join("?")).run(values);
     },

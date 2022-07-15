@@ -22,6 +22,9 @@ export function createSql(): Sql {
     return {
       run: doIt,
       all: doIt,
+      text() {
+        return strings.join("");
+      },
     };
   };
   sql.close = async () => {
