@@ -4,10 +4,11 @@ import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Account, Settings } from "../api";
 import { BackButton } from "../components/BackButton";
+import { DevAlert } from "../components/DevAlert";
 import { I18n } from "../components/I18n";
 import { Routes } from "../routing";
 import { useTheme } from "../theme";
-import { useApi } from "../ui";
+import { OverridesContext, useApi } from "../ui";
 import { defaultSettings } from "./account/CreateNewAccountScreen";
 
 export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
@@ -42,6 +43,7 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
       refetchInterval: 1000,
     }
   );
+  const { copyToClipboard } = React.useContext(OverridesContext);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -221,16 +223,40 @@ export function ConnectivityScreen({ account }: Routes["Connectivity"]) {
         {connectionsQuery.data?.bridge.server &&
           connectionsQuery.data?.bridge.server.adresses.map((address) => {
             return (
-              <Text
+              <View
                 key={address}
                 style={{
-                  color: theme.textColor,
+                  flexDirection: "row",
+                  alignItems: "center",
                   paddingHorizontal: 16,
                   paddingVertical: 8,
                 }}
               >
-                {address}:{connectionsQuery.data?.bridge.server?.port}
-              </Text>
+                <Text
+                  style={{
+                    color: theme.textColor,
+                    flex: 1,
+                  }}
+                >
+                  <Text style={{ color: theme.textSecondaryColor }}>
+                    LAN IP{" "}
+                  </Text>
+                  {address}:{connectionsQuery.data?.bridge.server?.port}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    copyToClipboard(
+                      `${address}:${connectionsQuery.data?.bridge.server?.port}`
+                    );
+                    DevAlert.alert("copied to clipboard");
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={"clipboard"}
+                    color={theme.actionTextColor}
+                  />
+                </Pressable>
+              </View>
             );
           })}
       </ScrollView>
@@ -252,8 +278,7 @@ function BridgeClientEntry({
 }: BridgeClientEntryProps) {
   const theme = useTheme();
   const [isModifying, setIsModifying] = React.useState(false);
-  const [hostText, setHostText] = React.useState("");
-  const [portText, setPortText] = React.useState("");
+  const [addressText, setAddressText] = React.useState("");
   if (isModifying) {
     return (
       <View
@@ -266,11 +291,11 @@ function BridgeClientEntry({
         }}
       >
         <TextInput
-          placeholder="example.com"
-          value={hostText}
-          onChangeText={setHostText}
+          placeholder="example.com:8080"
+          value={addressText}
+          onChangeText={setAddressText}
           style={{
-            color: hostText ? theme.textColor : theme.textSecondaryColor,
+            color: theme.textColor,
             borderBottomWidth: 1,
             borderStyle: "dashed",
             borderColor: theme.textColor,
@@ -280,25 +305,18 @@ function BridgeClientEntry({
             height: 16,
           }}
         />
-        <Text style={{ color: theme.textColor }}>: </Text>
-        <TextInput
-          placeholder="80"
-          value={portText}
-          onChangeText={setPortText}
-          style={{
-            color: portText ? theme.textColor : theme.textSecondaryColor,
-            borderBottomWidth: 1,
-            borderStyle: "dashed",
-            borderColor: theme.textColor,
-            width: 40,
-            padding: 0,
-            height: 16,
-          }}
-        />
         <Pressable
           onPress={() => {
-            setIsModifying(false);
-            onChange({ ...value, host: hostText, port: Number(portText) });
+            const [, host, port] =
+              addressText.match(
+                /([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|[a-z0-9]+\.[a-z]+):([0-9]{1,5})/i
+              ) ?? [];
+            if (host && port) {
+              setIsModifying(false);
+              onChange({ ...value, host, port: Number(port) });
+            } else {
+              DevAlert.alert("invalid address");
+            }
           }}
           style={{ marginLeft: 16 }}
         >
@@ -341,8 +359,7 @@ function BridgeClientEntry({
         <Pressable
           onPress={() => {
             setIsModifying(true);
-            setHostText(value.host);
-            setPortText(value.port.toString());
+            setAddressText(`${value.host}:${value.port}`);
           }}
           style={{ marginRight: 16 }}
         >
