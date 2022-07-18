@@ -206,7 +206,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           >
             <QrCodeScanner
               onData={(data) => {
-                setInvite(data);
+                if (data) setInvite(data);
                 setIsQrCodeScannerOpen(false);
               }}
               width={200}

@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Routes } from "../../routing";
+import { Routes, useRouting } from "../../routing";
 import { useTheme } from "../../theme";
 import { OverridesContext, useApi } from "../../ui";
 import { BackButton } from "../../components/BackButton";
@@ -20,9 +20,11 @@ import { Avatar } from "../../components/Avatar";
 import { DevAlert } from "../../components/DevAlert";
 import QRCode from "react-native-qrcode-svg";
 import { HorizontalLoader } from "../../components/HorizontalLoader";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 const QRCodeAny = QRCode as any;
 
 export function YourAccountScreen({ account }: Routes["YourAccount"]) {
+  const routing = useRouting();
   const theme = useTheme();
   const [nickname, setNickname] = React.useState("");
   const api = useApi();
@@ -48,6 +50,16 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
       },
     }
   );
+  const deleteAccountMutation = useMutation(
+    async (account: Account) => {
+      await api.deleteAccount(account);
+    },
+    {
+      onSuccess() {
+        queryClient.invalidateQueries(["account"]);
+      },
+    }
+  );
   const invite = useI18n({
     en: `Add me to your memita contacts!\nMy name is: ${nickname}\n\n${account}`,
     it: `Aggiungini ai tuoi contatti memita!\nIl mio nome è: ${nickname}\n\n${account}`,
@@ -55,6 +67,18 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
   const inviteCopied = useI18n({
     en: "Invite copied",
     it: "Invito copiato",
+  });
+  const promptDelete = useI18n({
+    en: "Are you sure that you want to delete the account on this device? You will lose all related data on this device. This operation is irreversible.",
+    it: "Sei sicuro di voler eliminare l'account da questo dispositivo? Perderai tutti i relativi dati su questo dispositivo. Questa operazione è irreversibile.",
+  });
+  const confirmDelete = useI18n({
+    en: "Yes. Do delete",
+    it: "Si. Elimina",
+  });
+  const cancelDelete = useI18n({
+    en: "Do not delete",
+    it: "Non eliminare",
   });
   const { copyToClipboard } = React.useContext(OverridesContext);
   const { width, height } = useWindowDimensions();
@@ -80,8 +104,31 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
         >
           <I18n en="Your account" it="Il tuo account" />
         </Text>
+        <Pressable
+          onPress={async () => {
+            if (accountQuery.data) {
+              if (
+                await DevAlert.alert(promptDelete, [
+                  { text: cancelDelete, value: false },
+                  { text: confirmDelete, value: true },
+                ])
+              ) {
+                deleteAccountMutation.mutate(accountQuery.data, {
+                  onSuccess() {
+                    routing.back();
+                    routing.back();
+                  },
+                });
+              }
+            }
+          }}
+          style={{ padding: 16 }}
+        >
+          <FontAwesomeIcon icon={"trash"} color={theme.actionTextColor} />
+        </Pressable>
       </View>
       <ScrollView
+        style={{ paddingVertical: 8 }}
         StickyHeaderComponent={() => (
           <HorizontalLoader isLoading={accountQuery.isFetching} />
         )}
@@ -89,7 +136,6 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
         <View
           style={{
             flexDirection: "row",
-            paddingTop: 16,
             alignItems: "center",
           }}
         >
@@ -114,17 +160,19 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
             />
           </View>
         </View>
-        <View style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
-          <Text style={{ color: theme.textColor, fontFamily: "monospace" }}>
-            {account}
-          </Text>
-          <Text style={{ color: theme.textSecondaryColor }}>
+        <SimpleInput
+          label={<I18n en="Author" it="Autore" />}
+          value={account}
+          onChangeText={() => {}}
+          editable={false}
+          multiline={2}
+          description={
             <I18n
               en="Unique alphanumeric combinations that identifies your account. It is visible to others and is used to send you messages, like a phone number."
               it="Una combinazione alfanumerica unica che identifica il tuo account. E visibile agli altri e viene usata per inviarti i messaggi, come se fosse un numero di telefono."
             />
-          </Text>
-        </View>
+          }
+        />
         <View style={{ alignItems: "center", marginVertical: 8 }}>
           <Pressable
             onPress={() => {
@@ -162,7 +210,9 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
           >
             <I18n en="Let it scan" it="Fai inquadrare" />
           </Text>
-          <QRCodeAny value={invite} size={Math.min(width, height) - 32} />
+          <View style={{ backgroundColor: "white", padding: 16 }}>
+            <QRCodeAny value={invite} size={Math.min(width, height) - 64} />
+          </View>
         </View>
       </ScrollView>
     </View>

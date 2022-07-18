@@ -1,6 +1,7 @@
 import { Api, Overrides, Ui } from "@memita-2/ui";
 import React from "react";
 import ReactDOM from "react-dom";
+import { QrReader } from "react-qr-reader";
 
 const api = new Proxy(
   {},
@@ -13,11 +14,24 @@ const api = new Proxy(
 
 const overrides: Overrides = {
   copyToClipboard: (window as any).copyToClipboard,
-  QrCodeScanner() {
-    React.useEffect(() => {
-      window.alert("coming soon");
-    }, []);
-    return null;
+  QrCodeScanner({ onData, width, height }) {
+    return (
+      <QrReader
+        constraints={{ width: { min: width }, height: { min: height } }}
+        containerStyle={{ width, height }}
+        videoContainerStyle={{ width, height }}
+        videoStyle={{ width, height }}
+        onResult={(result, error) => {
+          if (result) {
+            onData(result.getText());
+          }
+          if (error) {
+            console.log(error);
+            onData(null);
+          }
+        }}
+      />
+    );
   },
 };
 
