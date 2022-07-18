@@ -2,6 +2,8 @@ import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
 import { createSql } from "./utils/sqlite/sql";
 
+jest.setTimeout(30 * 1000);
+
 test("account", async () => {
   const api = await createApi(createSql());
   expect(await api.getAccounts({})).toEqual([]);
@@ -41,5 +43,33 @@ test("account", async () => {
   await api.addAccount(accountB);
   expect(await api.getAccount({ author: "fred" })).toEqual(accountB);
   expect(await api.getAccounts({})).toEqual([accountB]);
+  await api.stop();
+});
+
+test("account delete", async () => {
+  const api = await createApi(createSql());
+  expect(await api.getAccounts({})).toEqual([]);
+  const accountA: Account = {
+    author: "fred",
+    secret: "",
+    nickname: "Fred",
+    settings: {
+      language: "it",
+      theme: "dark",
+      animations: "enabled",
+      connectivity: {
+        hyperswarm: { enabled: true },
+        bridge: {
+          server: { enabled: true },
+          clients: [{ host: "127.0.0.1", port: 8888, enabled: true }],
+        },
+        lan: { enabled: true },
+      },
+    },
+  };
+  await api.addAccount(accountA);
+  expect(await api.getAccount({ author: "fred" })).toEqual(accountA);
+  await api.deleteAccount(accountA);
+  expect(await api.getAccounts({})).toEqual([]);
   await api.stop();
 });

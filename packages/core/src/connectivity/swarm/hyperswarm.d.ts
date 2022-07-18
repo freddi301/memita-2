@@ -14,6 +14,7 @@ declare module "hyperswarm" {
       options: { server: boolean; client: boolean }
     ): Promise<void>;
     leave(topic: Buffer): Promise<void>;
+    destroy(): Promise<void>;
     connections: Set<Duplex>;
   }
   type PeerInfo = {

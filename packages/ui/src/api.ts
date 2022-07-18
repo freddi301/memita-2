@@ -53,6 +53,7 @@ export type PublicMessage = {
 export type Api = {
   generateAccount(): Promise<{ author: string; secret: string }>;
   addAccount(account: Account): Promise<void>;
+  deleteAccount(account: Account): Promise<void>;
   getAccount(params: { author: string }): Promise<Account | undefined>;
   getAccounts(params: {}): Promise<Array<Account>>;
   getDatabase(): Promise<Record<string, Array<unknown>>>;

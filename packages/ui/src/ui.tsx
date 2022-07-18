@@ -19,7 +19,7 @@ export const OverridesContext = React.createContext<Overrides>(null as any);
 export type Overrides = {
   copyToClipboard(text: string): void;
   QrCodeScanner: React.ComponentType<{
-    onData(data: string): void;
+    onData(data: string | null): void;
     width: number;
     height: number;
   }>;

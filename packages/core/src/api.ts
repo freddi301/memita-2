@@ -31,6 +31,12 @@ export async function createApi(sql: Sql) {
       `.run();
       await connectAccounts();
     },
+    async deleteAccount({ author }) {
+      await sql`
+        DELETE FROM accounts WHERE author = ${author}
+      `.run();
+      await disconnectAccounts();
+    },
     async getAccount({ author }) {
       const result = (
         await sql`
@@ -260,6 +266,20 @@ export async function createApi(sql: Sql) {
         await instances.lan.start();
       } else {
         await instances.lan.stop();
+      }
+    }
+  }
+  async function disconnectAccounts() {
+    const accounts = await api.getAccounts({});
+    for (const [author, instances] of connectivityModuleInstances) {
+      if (!accounts.some((account) => account.author === author)) {
+        await instances.hyperswarm.stop();
+        for (const client of instances.bridgeClients) {
+          await client.stop();
+        }
+        await instances.bridgeServer.stop();
+        await instances.lan.stop();
+        connectivityModuleInstances.delete(author);
       }
     }
   }
