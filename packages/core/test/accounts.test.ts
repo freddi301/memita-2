@@ -1,5 +1,6 @@
 import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
+import { createBridgeServer } from "../src/connectivity/bridge/bridgeServer";
 import { createSql } from "./utils/sqlite/sql";
 
 jest.setTimeout(30 * 1000);
@@ -49,6 +50,8 @@ test("account", async () => {
 test("account delete", async () => {
   const api = await createApi(createSql());
   expect(await api.getAccounts({})).toEqual([]);
+  const bridgeServer = createBridgeServer();
+  await bridgeServer.start();
   const accountA: Account = {
     author: "fred",
     secret: "",
@@ -61,7 +64,13 @@ test("account delete", async () => {
         hyperswarm: { enabled: true },
         bridge: {
           server: { enabled: true },
-          clients: [{ host: "127.0.0.1", port: 8888, enabled: true }],
+          clients: [
+            {
+              host: "127.0.0.1",
+              port: (await bridgeServer.getPort()) as number,
+              enabled: true,
+            },
+          ],
         },
         lan: { enabled: true },
       },
@@ -72,4 +81,5 @@ test("account delete", async () => {
   await api.deleteAccount(accountA);
   expect(await api.getAccounts({})).toEqual([]);
   await api.stop();
+  await bridgeServer.stop();
 });
