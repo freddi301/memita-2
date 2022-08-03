@@ -5,6 +5,7 @@ import { createBridgeServer } from "../src/connectivity/bridge/bridgeServer";
 import { createBridgeClient } from "../src/connectivity/bridge/bridgeClient";
 import { deferable } from "./utils/deferable";
 import { Contact, DirectMessage } from "@memita-2/ui";
+import { basicSettings } from "./utils/basic-settings";
 
 async function createPair() {
   const bridgeServer = createBridgeServer();
@@ -63,24 +64,42 @@ test("sync one direct message", async () => {
   await b.sync();
   expect(
     await b.api.getConversation({ account: "fred", other: "alice" })
+  ).toEqual([]);
+  await b.api.addAccount({
+    author: "fred",
+    nickname: "",
+    secret: "",
+    settings: basicSettings,
+  });
+  await b.sync();
+  expect(
+    await b.api.getConversation({ account: "fred", other: "alice" })
   ).toEqual([directMessageA]);
   await stop();
 });
 
-false &&
-  test("sync one contact", async () => {
-    const [a, b, stop] = await createPair();
-    const contactA: Contact = {
-      account: "fred",
-      author: "alice",
-      label: "",
-      nickname: "Alice",
-      version_timestamp: 1,
-    };
-    await a.api.addContact(contactA);
-    expect(await a.api.getContacts({ account: "fred" })).toEqual([contactA]);
-    await b.connected;
-    await b.sync();
-    expect(await b.api.getContacts({ account: "fred" })).toEqual([contactA]);
-    await stop();
+test("sync one contact", async () => {
+  const [a, b, stop] = await createPair();
+  const contactA: Contact = {
+    account: "fred",
+    author: "alice",
+    label: "",
+    nickname: "Alice",
+    version_timestamp: 1,
+  };
+  await a.api.addContact(contactA);
+  expect(await a.api.getContacts({ account: "fred" })).toEqual([contactA]);
+  await b.connected;
+  await b.sync();
+  expect(await b.api.getContacts({ account: "fred" })).toEqual([]);
+  await b.api.addAccount({
+    author: "fred",
+    nickname: "",
+    secret: "",
+    settings: basicSettings,
   });
+  await b.sync();
+  expect(await b.api.getContacts({ account: "fred" })).toEqual([contactA]);
+
+  await stop();
+});
