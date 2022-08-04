@@ -6,21 +6,38 @@ import {
   createRpcServer,
 } from "./components/rpc";
 import { Sql } from "./components/sql";
-import { cryptoHashFunction } from "./components/crypto";
+import {
+  createNonce,
+  cryptoHashFunction,
+  decrypt,
+  encrypt,
+} from "./components/crypto";
 import { Contact, DirectMessage } from "@memita-2/ui";
 
 export function createSync({ sql, api }: { sql: Sql; api: Api }) {
-  const contactsRepository = {
-    async getHashes(account: string) {
+  type Repository<Data> = {
+    getHashes(
+      requirerAuthor: string,
+      providerAuthor: string
+    ): Promise<Array<string>>;
+    hasHash(hash: string): Promise<boolean>;
+    getData(
+      requirerAuthor: string,
+      providerAuthor: string,
+      hash: string
+    ): Promise<Data | undefined>;
+  };
+  const contactsRepository: Repository<Contact> = {
+    async getHashes(requirerAuthor, providerAuthor) {
       return (
         await sql`
         SELECT crypto_hash
         FROM contacts
-        WHERE account = ${account}
+        WHERE account = ${requirerAuthor} AND account = ${providerAuthor}
       `.all()
       ).map(({ crypto_hash }: any) => crypto_hash);
     },
-    async hasHash(hash: string) {
+    async hasHash(hash) {
       return (
         (
           await sql`
@@ -31,87 +48,164 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
         ).map(({ crypto_hash }: any) => crypto_hash).length > 0
       );
     },
-    async getData(account: string, hash: string) {
+    async getData(requirerAuthor, providerAuthor, hash) {
       return (
         await sql`
           SELECT account, author, nickname, label, version_timestamp
           FROM contacts
-          WHERE account = ${account} AND crypto_hash = ${hash}
+          WHERE
+            account = ${requirerAuthor} AND
+            account = ${providerAuthor} AND
+            crypto_hash = ${hash}
         `.all()
       )[0] as any;
     },
   };
 
-  const directMessagesRepository = {
-    async getHashes(account: string) {
+  const directMessagesRepository: Repository<DirectMessage> = {
+    async getHashes(requirerAuthor, providerAuthor) {
       return (
         await sql`
         SELECT crypto_hash
         FROM direct_messages
-        WHERE author = ${account} OR recipient = ${account}
+        WHERE
+         (author = ${requirerAuthor} OR recipient = ${providerAuthor}) OR
+         (author = ${providerAuthor} OR recipient = ${requirerAuthor})
       `.all()
       ).map(({ crypto_hash }: any) => crypto_hash);
     },
-    async hasHash(hash: string) {
+    async hasHash(hash) {
       return (
         (
-          await sql`SELECT crypto_hash FROM direct_messages WHERE crypto_hash = ${hash}`.all()
+          await sql`
+            SELECT crypto_hash
+            FROM direct_messages
+            WHERE crypto_hash = ${hash}
+          `.all()
         ).map(({ crypto_hash }: any) => crypto_hash).length > 0
       );
     },
-    async getData(account: string, hash: string) {
+    async getData(requirerAuthor, providerAuthor, hash) {
       return (
         await sql`
           SELECT author, recipient, quote, salt, content, version_timestamp
           FROM direct_messages
-          WHERE crypto_hash = ${hash} AND (author = ${account} OR recipient = ${account})
+          WHERE
+            (
+              (author = ${requirerAuthor} OR recipient = ${providerAuthor}) OR
+              (author = ${providerAuthor} OR recipient = ${requirerAuthor})
+            ) AND
+            crypto_hash = ${hash}
         `.all()
       )[0] as any;
     },
   };
 
   const rpcServer = {
-    async listContacts(account: string): Promise<Array<string>> {
-      return await contactsRepository.getHashes(account);
+    async listAuthors() {
+      const accounts = await api.getAccounts({});
+      const authors = accounts.map((account) => account.author);
+      return authors;
+    },
+    async listContacts(
+      requirerAuthor: string,
+      providerAuthor: string
+    ): Promise<Array<string>> {
+      return await contactsRepository.getHashes(requirerAuthor, providerAuthor);
     },
     async getContact(
-      account: string,
+      requirerAuthor: string,
+      providerAuthor: string,
+      nonce: string,
       hash: string
-    ): Promise<Contact | undefined> {
-      return await contactsRepository.getData(account, hash);
+    ): Promise<Uint8Array | undefined> {
+      const contact = await contactsRepository.getData(
+        requirerAuthor,
+        providerAuthor,
+        hash
+      );
+      if (!contact) return;
+      const account = await api.getAccount({ author: providerAuthor });
+      if (!account) return;
+      const encrypted = await encrypt(
+        contact,
+        nonce,
+        account.secret,
+        requirerAuthor
+      );
+      return encrypted;
     },
-    async listDirectMessages(account: string): Promise<Array<string>> {
-      return await directMessagesRepository.getHashes(account);
+    async listDirectMessages(
+      requirerAuthor: string,
+      providerAuthor: string
+    ): Promise<Array<string>> {
+      return await directMessagesRepository.getHashes(
+        requirerAuthor,
+        providerAuthor
+      );
     },
     async getDirectMessage(
-      account: string,
+      requirerAuthor: string,
+      providerAuthor: string,
+      nonce: string,
       hash: string
-    ): Promise<DirectMessage | undefined> {
-      return await directMessagesRepository.getData(account, hash);
+    ): Promise<Uint8Array | undefined> {
+      const directMessage = await directMessagesRepository.getData(
+        requirerAuthor,
+        providerAuthor,
+        hash
+      );
+      if (!directMessage) return;
+      const account = await api.getAccount({ author: providerAuthor });
+      if (!account) return;
+      const encrypted = await encrypt(
+        directMessage,
+        nonce,
+        account.secret,
+        requirerAuthor
+      );
+      return encrypted;
     },
   };
 
   async function syncTable<Data>({
-    account,
+    localAccount,
+    remoteAuthor,
     list,
     has,
     get,
     add,
   }: {
-    account: string;
-    list(account: string): Promise<Array<string>>;
+    localAccount: { author: string; secret: string };
+    remoteAuthor: string;
+    list(
+      requirerAuthor: string,
+      providerAuthor: string
+    ): Promise<Array<string>>;
     has(hash: string): Promise<boolean>;
-    get(account: string, hash: string): Promise<Data>;
+    get(
+      requirerAuthor: string,
+      providerAuthor: string,
+      nonce: string,
+      hash: string
+    ): Promise<Uint8Array | undefined>;
     add(data: Data): Promise<void>;
   }) {
-    const hashes = await list(account);
+    const hashes = await list(localAccount.author, remoteAuthor);
     for (const hash of hashes) {
       if (!(await has(hash))) {
-        const data = await get(account, hash);
+        const nonce = await createNonce();
+        const data = await get(localAccount.author, remoteAuthor, nonce, hash);
         if (!data) throw new Error("mising");
-        if ((await cryptoHashFunction(data)) !== hash)
+        const decrypted = await decrypt(
+          data,
+          nonce,
+          localAccount.secret,
+          remoteAuthor
+        );
+        if ((await cryptoHashFunction(decrypted)) !== hash)
           throw new Error("corrupt");
-        await add(data);
+        await add(decrypted);
       }
     }
   }
@@ -124,27 +218,34 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
       createRpcServer(rpcServer, objectStream);
       const client = createRpcClient<typeof rpcServer>(objectStream);
       const sync = async () => {
-        const accounts = await api.getAccounts({});
-        for (const { author: account } of accounts) {
-          try {
-            await syncTable({
-              account,
-              list: client.listContacts,
-              has: contactsRepository.hasHash,
-              get: client.getContact,
-              add: api.addContact,
-            });
-            await syncTable({
-              account,
-              list: client.listDirectMessages,
-              has: directMessagesRepository.hasHash,
-              get: client.getDirectMessage,
-              add: api.addDirectMessage,
-            });
-          } catch (error) {
-            console.error(error);
-            syncs.delete(sync);
+        const localAccounts = await api.getAccounts({});
+        const remoteAuthors = await client.listAuthors();
+        try {
+          for (const localAccount of localAccounts) {
+            for (const remoteAuthor of remoteAuthors) {
+              if (localAccount.author === remoteAuthor) {
+                await syncTable({
+                  localAccount,
+                  remoteAuthor,
+                  list: client.listContacts,
+                  has: contactsRepository.hasHash,
+                  get: client.getContact,
+                  add: api.addContact,
+                });
+              }
+              await syncTable({
+                localAccount,
+                remoteAuthor,
+                list: client.listDirectMessages,
+                has: directMessagesRepository.hasHash,
+                get: client.getDirectMessage,
+                add: api.addDirectMessage,
+              });
+            }
           }
+        } catch (error) {
+          console.error(error);
+          syncs.delete(sync);
         }
       };
       syncs.add(sync);

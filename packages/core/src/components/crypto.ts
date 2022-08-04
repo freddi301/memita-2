@@ -19,3 +19,48 @@ export async function cryptoCreateAsymmetricKeyPair() {
   await libsodium.ready;
   return libsodium.crypto_box_keypair("hex");
 }
+
+export async function createNonce() {
+  await libsodium.ready;
+  const nonce = libsodium.randombytes_buf(
+    libsodium.crypto_box_NONCEBYTES,
+    "hex"
+  );
+  return nonce;
+}
+
+export async function encrypt(
+  unencrypted: unknown,
+  nonce: string,
+  secret: string,
+  author: string
+) {
+  await libsodium.ready;
+  return libsodium.crypto_box_easy(
+    libsodium.from_string(stringify(unencrypted)),
+    libsodium.from_hex(nonce),
+    libsodium.from_hex(author),
+    libsodium.from_hex(secret),
+    "uint8array"
+  );
+}
+
+export async function decrypt(
+  encrypted: Uint8Array,
+  nonce: string,
+  secret: string,
+  author: string
+) {
+  await libsodium.ready;
+  return JSON.parse(
+    libsodium.to_string(
+      libsodium.crypto_box_open_easy(
+        encrypted,
+        libsodium.from_hex(nonce),
+        libsodium.from_hex(author),
+        libsodium.from_hex(secret),
+        "uint8array"
+      )
+    )
+  );
+}

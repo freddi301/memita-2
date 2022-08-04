@@ -5,7 +5,7 @@ import { createBridgeServer } from "../src/connectivity/bridge/bridgeServer";
 import { createBridgeClient } from "../src/connectivity/bridge/bridgeClient";
 import { deferable } from "./utils/deferable";
 import { Contact, DirectMessage } from "@memita-2/ui";
-import { basicSettings } from "./utils/basic-settings";
+import { createTestAccount } from "./utils/createTestAccount";
 
 async function createPair() {
   const bridgeServer = createBridgeServer();
@@ -46,60 +46,68 @@ async function createPair() {
   ] as const;
 }
 
-test("sync one direct message", async () => {
+test("sync one direct message to self", async () => {
   const [a, b, stop] = await createPair();
+  const fredAccount = await createTestAccount();
+  const aliceAccount = await createTestAccount();
   const directMessageA: DirectMessage = {
-    author: "fred",
-    recipient: "alice",
+    author: fredAccount.author,
+    recipient: aliceAccount.author,
     quote: "",
     salt: "1",
     content: "hello",
     version_timestamp: 1,
   };
+  await a.api.addAccount(fredAccount);
   await a.api.addDirectMessage(directMessageA);
   expect(
-    await a.api.getConversation({ account: "fred", other: "alice" })
+    await a.api.getConversation({
+      account: fredAccount.author,
+      other: aliceAccount.author,
+    })
   ).toEqual([directMessageA]);
   await b.connected;
   await b.sync();
   expect(
-    await b.api.getConversation({ account: "fred", other: "alice" })
+    await b.api.getConversation({
+      account: fredAccount.author,
+      other: aliceAccount.author,
+    })
   ).toEqual([]);
-  await b.api.addAccount({
-    author: "fred",
-    nickname: "",
-    secret: "",
-    settings: basicSettings,
-  });
+  await b.api.addAccount(fredAccount);
   await b.sync();
   expect(
-    await b.api.getConversation({ account: "fred", other: "alice" })
+    await b.api.getConversation({
+      account: fredAccount.author,
+      other: aliceAccount.author,
+    })
   ).toEqual([directMessageA]);
   await stop();
 });
 
-test("sync one contact", async () => {
+test("sync one contact to self", async () => {
   const [a, b, stop] = await createPair();
+  const fredAccount = await createTestAccount();
+  const aliceAccount = await createTestAccount();
   const contactA: Contact = {
-    account: "fred",
-    author: "alice",
+    account: fredAccount.author,
+    author: aliceAccount.author,
     label: "",
     nickname: "Alice",
     version_timestamp: 1,
   };
+  await a.api.addAccount(fredAccount);
   await a.api.addContact(contactA);
-  expect(await a.api.getContacts({ account: "fred" })).toEqual([contactA]);
+  expect(await a.api.getContacts({ account: fredAccount.author })).toEqual([
+    contactA,
+  ]);
   await b.connected;
   await b.sync();
-  expect(await b.api.getContacts({ account: "fred" })).toEqual([]);
-  await b.api.addAccount({
-    author: "fred",
-    nickname: "",
-    secret: "",
-    settings: basicSettings,
-  });
+  expect(await b.api.getContacts({ account: fredAccount.author })).toEqual([]);
+  await b.api.addAccount(fredAccount);
   await b.sync();
-  expect(await b.api.getContacts({ account: "fred" })).toEqual([contactA]);
-
+  expect(await b.api.getContacts({ account: fredAccount.author })).toEqual([
+    contactA,
+  ]);
   await stop();
 });
