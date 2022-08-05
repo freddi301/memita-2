@@ -133,3 +133,10 @@ function createSqlBetterSqlite3(path: string): Sql {
   };
   return sql;
 }
+
+ipcMain.handle("pickFiles", async (event, ...args) => {
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ["openFile", "multiSelections"],
+  });
+  return filePaths;
+});

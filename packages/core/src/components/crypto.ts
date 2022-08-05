@@ -1,5 +1,6 @@
 import libsodium from "libsodium-wrappers";
 import stringify from "fast-json-stable-stringify";
+import { Readable } from "stream";
 
 export async function cryptoHashFunction(value: unknown) {
   await libsodium.ready;
@@ -13,6 +14,27 @@ export async function cryptoHashFunction(value: unknown) {
     libsodium.crypto_generichash_KEYBYTES,
     "hex"
   );
+}
+
+export async function cryptoHashStream(stream: Readable) {
+  await libsodium.ready;
+  const state = libsodium.crypto_generichash_init(
+    "",
+    libsodium.crypto_generichash_KEYBYTES
+  );
+  stream.on("data", (data) => libsodium.crypto_generichash_update(state, data));
+  return new Promise<string>((resolve, reject) => {
+    stream.once("end", () =>
+      resolve(
+        libsodium.crypto_generichash_final(
+          state,
+          libsodium.crypto_generichash_KEYBYTES,
+          "hex"
+        )
+      )
+    );
+    stream.once("error", (error) => reject(error));
+  });
 }
 
 export async function cryptoCreateAsymmetricKeyPair() {

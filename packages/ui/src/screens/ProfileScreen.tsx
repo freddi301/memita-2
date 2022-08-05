@@ -11,7 +11,6 @@ import { DateTime } from "luxon";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
-import { PublicMessage } from "../api";
 import { DevAlert } from "../components/DevAlert";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
@@ -22,7 +21,13 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
     return await api.getContact({ account, author });
   });
   const postsQuery = useQuery(["posts", { author }], async () => {
-    return [] as Array<PublicMessage>;
+    return [] as Array<{
+      author: string;
+      quote: string;
+      salt: string;
+      version_timestamp: number;
+      content: string;
+    }>;
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

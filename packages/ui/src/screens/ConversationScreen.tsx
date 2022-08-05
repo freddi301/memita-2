@@ -3,6 +3,7 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -12,21 +13,23 @@ import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { useApi } from "../ui";
+import { OverridesContext, useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
-import { DirectMessage } from "../api";
+import { Attachment, DirectMessage } from "../api";
 import { DevAlert } from "../components/DevAlert";
+import prettyBytes from "pretty-bytes";
 
 export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const api = useApi();
   const theme = useTheme();
   const routing = useRouting();
   const queryClient = useQueryClient();
+  const { pickFiles } = React.useContext(OverridesContext);
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
@@ -61,10 +64,12 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
       onSuccess() {
         queryClient.invalidateQueries(["conversation"]);
         setContent("");
+        setAttachments([]);
       },
     }
   );
   const [content, setContent] = React.useState("");
+  const [attachments, setAttachments] = React.useState<Array<Attachment>>([]);
   const send = () => {
     const version_timestamp = Date.now();
     const salt = String(Math.random());
@@ -74,6 +79,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
       quote: "",
       salt,
       content,
+      attachments,
       version_timestamp,
     });
   };
@@ -165,52 +171,112 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
               event.nativeEvent.layoutMeasurement.height >=
             event.nativeEvent.contentSize.height - 10;
         }}
-        renderItem={({ item: { author, content, version_timestamp } }) => {
+        renderItem={({
+          item: { author, content, attachments, version_timestamp },
+        }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
           return (
-            <Pressable
-              onPress={() => {
-                DevAlert.alert("Coming soon");
-              }}
-              style={{
-                flexDirection: "row",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row" }}>
+            <View>
+              <Pressable
+                onPress={() => {
+                  DevAlert.alert("Coming soon");
+                }}
+                style={{
+                  flexDirection: "row",
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row" }}>
+                    <Text
+                      style={{
+                        color: theme.textColor,
+                        fontWeight: "bold",
+                        flex: 1,
+                      }}
+                    >
+                      {author === account
+                        ? accountQuery.data?.nickname
+                        : contactQuery.data?.nickname}
+                    </Text>
+                    <Text
+                      style={{
+                        color: theme.textSecondaryColor,
+                      }}
+                    >
+                      {!datetime.hasSame(DateTime.now(), "day") &&
+                        datetime.toLocaleString(DateTime.DATE_MED)}
+                      {"  "}
+                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                    </Text>
+                  </View>
                   <Text
                     style={{
                       color: theme.textColor,
-                      fontWeight: "bold",
-                      flex: 1,
                     }}
                   >
-                    {author === account
-                      ? accountQuery.data?.nickname
-                      : contactQuery.data?.nickname}
-                  </Text>
-                  <Text
-                    style={{
-                      color: theme.textSecondaryColor,
-                    }}
-                  >
-                    {!datetime.hasSame(DateTime.now(), "day") &&
-                      datetime.toLocaleString(DateTime.DATE_MED)}
-                    {"  "}
-                    {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                    {content}
                   </Text>
                 </View>
-                <Text
+              </Pressable>
+              {attachments.length > 0 && (
+                <View
                   style={{
-                    color: theme.textColor,
+                    height: 48,
                   }}
                 >
-                  {content}
-                </Text>
-              </View>
-            </Pressable>
+                  <ScrollView
+                    horizontal={true}
+                    style={{ flexDirection: "row" }}
+                  >
+                    {attachments.map((attachment, index, array) => {
+                      return (
+                        <Pressable
+                          key={index}
+                          style={{
+                            flexDirection: "row",
+                            borderLeftWidth: index === 0 ? 1 : 0,
+                            borderRightWidth: 1,
+                            borderTopWidth: 1,
+                            borderBottomWidth: 1,
+                            borderColor: theme.borderColor,
+                            backgroundColor: theme.backgroundColorSecondary,
+                          }}
+                        >
+                          <View
+                            style={{
+                              alignItems: "center",
+                              justifyContent: "center",
+                              height: 48,
+                              marginLeft: 16,
+                            }}
+                          >
+                            <FontAwesomeIcon
+                              icon={"paperclip"}
+                              color={theme.textSecondaryColor}
+                            />
+                          </View>
+                          <View
+                            style={{
+                              paddingHorizontal: 16,
+                              paddingVertical: 8,
+                            }}
+                          >
+                            <Text style={{ color: theme.textColor }}>
+                              {attachment.name}
+                            </Text>
+                            <Text style={{ color: theme.textSecondaryColor }}>
+                              {prettyBytes(attachment.size)}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
           );
         }}
         ListEmptyComponent={
@@ -251,6 +317,64 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
           <HorizontalLoader isLoading={conversationQuery.isFetching} />
         )}
       />
+      {attachments.length > 0 && (
+        <View
+          style={{
+            height: 48,
+          }}
+        >
+          <ScrollView horizontal={true} style={{ flexDirection: "row" }}>
+            {attachments.map((attachment, index, array) => {
+              return (
+                <Pressable
+                  key={index}
+                  style={{
+                    flexDirection: "row",
+                    borderLeftWidth: index === 0 ? 1 : 0,
+                    borderRightWidth: 1,
+                    borderTopWidth: 1,
+                    borderColor: theme.borderColor,
+                    backgroundColor: theme.backgroundColorSecondary,
+                  }}
+                  onPress={() => {
+                    setAttachments((attachments) => [
+                      ...attachments.slice(0, index),
+                      ...attachments.slice(index + 1),
+                    ]);
+                  }}
+                >
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 48,
+                      marginLeft: 16,
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={"paperclip"}
+                      color={theme.textSecondaryColor}
+                    />
+                  </View>
+                  <View
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                    }}
+                  >
+                    <Text style={{ color: theme.textColor }}>
+                      {attachment.name}
+                    </Text>
+                    <Text style={{ color: theme.textSecondaryColor }}>
+                      {prettyBytes(attachment.size)}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
       <View
         style={{
           flexDirection: "row",
@@ -275,14 +399,42 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
         ></TextInput>
         <View>
           <View style={{ flex: 1 }}></View>
-          <Pressable onPress={send} style={{ padding: 16 }}>
-            <FontAwesomeIcon
-              icon={"paper-plane"}
-              color={theme.actionTextColor}
-            />
-          </Pressable>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              onPress={() => {
+                pickFiles().then((filePaths) => {
+                  filePaths.forEach((filePath) => {
+                    api.getAttachment(filePath).then(({ size, hash }) => {
+                      setAttachments((attachments) => [
+                        ...attachments,
+                        { size, hash, name: getFileNameFromPath(filePath) },
+                      ]);
+                    });
+                  });
+                });
+              }}
+              style={{ padding: 16 }}
+            >
+              <FontAwesomeIcon
+                icon={"paperclip"}
+                color={theme.actionTextColor}
+              />
+            </Pressable>
+            <Pressable onPress={send} style={{ padding: 16 }}>
+              <FontAwesomeIcon
+                icon={"paper-plane"}
+                color={theme.actionTextColor}
+              />
+            </Pressable>
+          </View>
         </View>
       </View>
     </View>
   );
+}
+
+function getFileNameFromPath(path: string) {
+  const parts = path.split("/");
+  const fileName = parts[parts.length - 1];
+  return fileName;
 }

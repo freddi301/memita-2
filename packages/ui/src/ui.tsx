@@ -23,6 +23,7 @@ export type Overrides = {
     width: number;
     height: number;
   }>;
+  pickFiles(): Promise<Array<string>>;
 };
 
 type UiProps = {

@@ -7,3 +7,7 @@ contextBridge.exposeInMainWorld("api", (method: string, ...args: any) =>
 contextBridge.exposeInMainWorld("copyToClipboard", (text: string) =>
   clipboard.writeText(text)
 );
+
+contextBridge.exposeInMainWorld("pickFiles", () =>
+  ipcRenderer.invoke("pickFiles")
+);

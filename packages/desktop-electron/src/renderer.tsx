@@ -14,6 +14,7 @@ const api = new Proxy(
 
 const overrides: Overrides = {
   copyToClipboard: (window as any).copyToClipboard,
+  pickFiles: (window as any).pickFiles,
   QrCodeScanner({ onData, width, height }) {
     return (
       <QrReader

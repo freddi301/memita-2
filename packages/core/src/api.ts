@@ -5,11 +5,13 @@ import { createTables, optimizeDb } from "./tables";
 import {
   cryptoCreateAsymmetricKeyPair,
   cryptoHashFunction,
+  cryptoHashStream,
 } from "./components/crypto";
 import { createHyperSwarm } from "./connectivity/swarm/hyperSwarm";
 import { createBridgeClient } from "./connectivity/bridge/bridgeClient";
 import { createBridgeServer } from "./connectivity/bridge/bridgeServer";
 import { createLanSwarm } from "./connectivity/swarm/lanSwarm";
+import fs from "fs";
 
 export async function createApi(sql: Sql) {
   let stopped = false;
@@ -108,6 +110,7 @@ export async function createApi(sql: Sql) {
       quote,
       salt,
       content,
+      attachments,
       version_timestamp,
     }) {
       const crypto_hash = await cryptoHashFunction({
@@ -119,13 +122,28 @@ export async function createApi(sql: Sql) {
         version_timestamp,
       });
       await sql`
-        INSERT OR REPLACE INTO direct_messages (crypto_hash, author, recipient, quote, salt, content, version_timestamp)
-        VALUES (${crypto_hash}, ${author}, ${recipient}, ${quote}, ${salt}, ${content}, ${version_timestamp})
+        INSERT OR REPLACE INTO direct_messages (crypto_hash, author, recipient, quote, salt, content, attachments, version_timestamp)
+        VALUES (
+          ${crypto_hash},
+          ${author},
+          ${recipient},
+          ${quote},
+          ${salt},
+          ${content},
+          ${JSON.stringify(attachments)},
+          ${version_timestamp}
+        )
       `.run();
     },
+    async getAttachment(path: string) {
+      const { size } = await fs.promises.stat(path);
+      const fileStream = fs.createReadStream(path);
+      const hash = await cryptoHashStream(fileStream);
+      return { hash, size };
+    },
     async getConversation({ account, other }) {
-      return (await sql`
-        SELECT author, recipient, quote, salt, content, MAX(version_timestamp) AS version_timestamp
+      const result = (await sql`
+        SELECT author, recipient, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
         FROM direct_messages
         WHERE
           (author = ${account} AND recipient = ${other}) OR
@@ -133,6 +151,10 @@ export async function createApi(sql: Sql) {
         GROUP BY author, recipient, salt
         ORDER BY MAX(version_timestamp) ASC
       `.all()) as any;
+      return result.map((directMessage: any) => ({
+        ...directMessage,
+        attachments: JSON.parse(directMessage.attachments),
+      }));
     },
     async getConversations({ account }) {
       return (await sql`

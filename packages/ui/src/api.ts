@@ -39,15 +39,14 @@ export type DirectMessage = {
   quote: string;
   salt: string;
   content: string;
+  attachments: Array<Attachment>;
   version_timestamp: number;
 };
 
-export type PublicMessage = {
-  author: string;
-  quote: string;
-  salt: string;
-  content: string;
-  version_timestamp: number;
+export type Attachment = {
+  name: string;
+  size: number;
+  hash: string;
 };
 
 export type Api = {
@@ -68,6 +67,7 @@ export type Api = {
     label?: string;
   }): Promise<Array<Contact>>;
   addDirectMessage(message: DirectMessage): Promise<void>;
+  getAttachment(path: string): Promise<{ size: number; hash: string }>;
   getConversation(params: {
     account: string;
     other: string;

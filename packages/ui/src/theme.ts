@@ -1,8 +1,8 @@
 import React from "react";
 
 const dark = {
-  backgroundColorPrimary: "#282c34",
-  backgroundColorSecondary: "#21252b",
+  backgroundColorPrimary: "#23272e",
+  backgroundColorSecondary: "#1e2227",
   textColor: "#abb2bf",
   textSecondaryColor: "#7f848e",
   errorColor: "#f64587",

@@ -23,6 +23,7 @@ export async function createTables(sql: Sql) {
       quote TEXT NOT NULL,
       salt TEXT NOT NULL,
       content TEXT NOT NULL,
+      attachments TEXT NOT NULL,
       version_timestamp INTEGER NOT NULL
     )`,
   };
