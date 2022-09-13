@@ -56,6 +56,7 @@ test("sync one direct message to self", async () => {
     quote: "",
     salt: "1",
     content: "hello",
+    attachments: [],
     version_timestamp: 1,
   };
   await a.api.addAccount(fredAccount);

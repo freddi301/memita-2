@@ -10,6 +10,7 @@ test("conversations aggregation", async () => {
     quote: "",
     salt: "1",
     content: "hello",
+    attachments: [],
     version_timestamp: 1,
   });
   expect(await api.getConversations({ account: "fred" })).toEqual([]);
@@ -35,6 +36,7 @@ test("conversations aggregation", async () => {
     quote: "",
     salt: "1",
     content: "bye",
+    attachments: [],
     version_timestamp: 2,
   });
   expect(await api.getConversations({ account: "fred" })).toEqual([
@@ -52,6 +54,7 @@ test("conversations aggregation", async () => {
     quote: "",
     salt: "1",
     content: "test",
+    attachments: [],
     version_timestamp: 3,
   });
   expect(await api.getConversations({ account: "fred" })).toEqual([

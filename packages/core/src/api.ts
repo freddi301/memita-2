@@ -24,6 +24,7 @@ export async function createApi(sql: Sql) {
         contacts: await sql`SELECT * from contacts`.all(),
         channels: await sql`SELECT * from channels`.all(),
         direct_messages: await sql`SELECT * from direct_messages`.all(),
+        public_messages: await sql`SELECT * from public_messages`.all(),
       };
     },
     async addAccount({ author, secret, nickname, settings }) {
@@ -119,6 +120,7 @@ export async function createApi(sql: Sql) {
         quote,
         salt,
         content,
+        attachments,
         version_timestamp,
       });
       await sql`
@@ -174,6 +176,48 @@ export async function createApi(sql: Sql) {
           MIN(direct_messages.author, direct_messages.recipient)
         ORDER BY MAX(direct_messages.version_timestamp) DESC
       `.all()) as any;
+    },
+    async addPublicMessage({
+      author,
+      quote,
+      salt,
+      content,
+      attachments,
+      version_timestamp,
+    }) {
+      const crypto_hash = await cryptoHashFunction({
+        author,
+        quote,
+        salt,
+        content,
+        attachments,
+        version_timestamp,
+      });
+      await sql`
+        INSERT OR REPLACE INTO public_messages (crypto_hash, author, quote, salt, content, attachments, version_timestamp)
+        VALUES (
+          ${crypto_hash},
+          ${author},
+          ${quote},
+          ${salt},
+          ${content},
+          ${JSON.stringify(attachments)},
+          ${version_timestamp}
+        )
+      `.run();
+    },
+    async getPublicMessages({ account, author }) {
+      const result = (await sql`
+        SELECT author, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
+        FROM public_messages
+        WHERE author = ${author}
+        GROUP BY author, salt
+        ORDER BY MAX(version_timestamp) DESC
+      `.all()) as any;
+      return result.map((publicMessage: any) => ({
+        ...publicMessage,
+        attachments: JSON.parse(publicMessage.attachments),
+      }));
     },
     async getConnections(account) {
       const instances = connectivityModuleInstances.get(account);

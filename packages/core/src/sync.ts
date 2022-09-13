@@ -11,8 +11,10 @@ import {
   cryptoHashFunction,
   decrypt,
   encrypt,
+  sign,
+  verify,
 } from "./components/crypto";
-import { Contact, DirectMessage } from "@memita-2/ui";
+import { Contact, DirectMessage, PublicMessage } from "@memita-2/ui";
 
 export function createSync({ sql, api }: { sql: Sql; api: Api }) {
   type Repository<Data> = {
@@ -88,7 +90,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
     async getData(requirerAuthor, providerAuthor, hash) {
       return (
         await sql`
-          SELECT author, recipient, quote, salt, content, version_timestamp
+          SELECT author, recipient, quote, salt, content, attachments, version_timestamp
           FROM direct_messages
           WHERE
             (
@@ -97,7 +99,47 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
             ) AND
             crypto_hash = ${hash}
         `.all()
-      )[0] as any;
+      ).map((directMessage: any) => ({
+        ...directMessage,
+        attachments: JSON.parse(directMessage.attachments),
+      }))[0] as any;
+    },
+  };
+
+  const publicMessagesRepository: Repository<PublicMessage> = {
+    async getHashes(requirerAuthor, providerAuthor) {
+      return (
+        await sql`
+        SELECT crypto_hash
+        FROM public_messages
+        WHERE author = ${providerAuthor}         
+      `.all()
+      ).map(({ crypto_hash }: any) => crypto_hash);
+    },
+    async hasHash(hash) {
+      return (
+        (
+          await sql`
+            SELECT crypto_hash
+            FROM public_messages
+            WHERE crypto_hash = ${hash}
+          `.all()
+        ).map(({ crypto_hash }: any) => crypto_hash).length > 0
+      );
+    },
+    async getData(requirerAuthor, providerAuthor, hash) {
+      return (
+        await sql`
+          SELECT author, quote, salt, content, attachments, version_timestamp
+          FROM public_messages
+          WHERE
+            author = ${providerAuthor} AND     
+            crypto_hash = ${hash}
+        `.all()
+      ).map((publicMessage: any) => ({
+        ...publicMessage,
+        attachments: JSON.parse(publicMessage.attachments),
+      }))[0] as any;
     },
   };
 
@@ -166,6 +208,32 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
       );
       return encrypted;
     },
+    async listPublicMessages(
+      requirerAuthor: string,
+      providerAuthor: string
+    ): Promise<Array<string>> {
+      return await publicMessagesRepository.getHashes(
+        requirerAuthor,
+        providerAuthor
+      );
+    },
+    async getPublicMessage(
+      requirerAuthor: string,
+      providerAuthor: string,
+      nonce: string,
+      hash: string
+    ): Promise<Uint8Array | undefined> {
+      const publicMessage = await directMessagesRepository.getData(
+        requirerAuthor,
+        providerAuthor,
+        hash
+      );
+      if (!publicMessage) return;
+      const account = await api.getAccount({ author: providerAuthor });
+      if (!account) return;
+      const signed = await sign(publicMessage, account.secret);
+      return signed;
+    },
   };
 
   async function syncTable<Data>({
@@ -175,6 +243,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
     has,
     get,
     add,
+    type,
   }: {
     localAccount: { author: string; secret: string };
     remoteAuthor: string;
@@ -190,6 +259,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
       hash: string
     ): Promise<Uint8Array | undefined>;
     add(data: Data): Promise<void>;
+    type: "encrypted" | "signed";
   }) {
     const hashes = await list(localAccount.author, remoteAuthor);
     for (const hash of hashes) {
@@ -197,15 +267,15 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
         const nonce = await createNonce();
         const data = await get(localAccount.author, remoteAuthor, nonce, hash);
         if (!data) throw new Error("mising");
-        const decrypted = await decrypt(
-          data,
-          nonce,
-          localAccount.secret,
-          remoteAuthor
-        );
-        if ((await cryptoHashFunction(decrypted)) !== hash)
+        const opened =
+          type === "encrypted"
+            ? await decrypt(data, nonce, localAccount.secret, remoteAuthor)
+            : await verify(data, remoteAuthor);
+        console.log(opened, (await cryptoHashFunction(opened)) !== hash);
+        if ((await cryptoHashFunction(opened)) !== hash) {
           throw new Error("corrupt");
-        await add(decrypted);
+        }
+        await add(opened);
       }
     }
   }
@@ -231,6 +301,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
                   has: contactsRepository.hasHash,
                   get: client.getContact,
                   add: api.addContact,
+                  type: "encrypted",
                 });
               }
               await syncTable({
@@ -240,6 +311,16 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
                 has: directMessagesRepository.hasHash,
                 get: client.getDirectMessage,
                 add: api.addDirectMessage,
+                type: "encrypted",
+              });
+              await syncTable({
+                localAccount,
+                remoteAuthor,
+                list: client.listPublicMessages,
+                has: publicMessagesRepository.hasHash,
+                get: client.getPublicMessage,
+                add: api.addPublicMessage,
+                type: "signed",
               });
             }
           }

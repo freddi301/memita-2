@@ -13,7 +13,7 @@ import { Routes, useRouting } from "../routing";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { BackButton } from "../components/BackButton";
 import { useTheme } from "../theme";
-import { OverridesContext, useApi } from "../ui";
+import { useApi } from "../ui";
 import { useDebounce } from "../components/useDebounce";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { Avatar } from "../components/Avatar";
@@ -23,13 +23,14 @@ import { formatAuthor } from "../components/format";
 import { Attachment, DirectMessage } from "../api";
 import { DevAlert } from "../components/DevAlert";
 import prettyBytes from "pretty-bytes";
+import { ComposeMessage } from "../components/ComposeMessage";
+import { MessageAttachments } from "../components/MessageAttachments";
 
 export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const api = useApi();
   const theme = useTheme();
   const routing = useRouting();
   const queryClient = useQueryClient();
-  const { pickFiles } = React.useContext(OverridesContext);
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
@@ -221,60 +222,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
                 </View>
               </Pressable>
               {attachments.length > 0 && (
-                <View
-                  style={{
-                    height: 48,
-                  }}
-                >
-                  <ScrollView
-                    horizontal={true}
-                    style={{ flexDirection: "row" }}
-                  >
-                    {attachments.map((attachment, index, array) => {
-                      return (
-                        <Pressable
-                          key={index}
-                          style={{
-                            flexDirection: "row",
-                            borderLeftWidth: index === 0 ? 1 : 0,
-                            borderRightWidth: 1,
-                            borderTopWidth: 1,
-                            borderBottomWidth: 1,
-                            borderColor: theme.borderColor,
-                            backgroundColor: theme.backgroundColorSecondary,
-                          }}
-                        >
-                          <View
-                            style={{
-                              alignItems: "center",
-                              justifyContent: "center",
-                              height: 48,
-                              marginLeft: 16,
-                            }}
-                          >
-                            <FontAwesomeIcon
-                              icon={"paperclip"}
-                              color={theme.textSecondaryColor}
-                            />
-                          </View>
-                          <View
-                            style={{
-                              paddingHorizontal: 16,
-                              paddingVertical: 8,
-                            }}
-                          >
-                            <Text style={{ color: theme.textColor }}>
-                              {attachment.name}
-                            </Text>
-                            <Text style={{ color: theme.textSecondaryColor }}>
-                              {prettyBytes(attachment.size)}
-                            </Text>
-                          </View>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
+                <MessageAttachments attachments={attachments} />
               )}
             </View>
           );
@@ -317,124 +265,13 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
           <HorizontalLoader isLoading={conversationQuery.isFetching} />
         )}
       />
-      {attachments.length > 0 && (
-        <View
-          style={{
-            height: 48,
-          }}
-        >
-          <ScrollView horizontal={true} style={{ flexDirection: "row" }}>
-            {attachments.map((attachment, index, array) => {
-              return (
-                <Pressable
-                  key={index}
-                  style={{
-                    flexDirection: "row",
-                    borderLeftWidth: index === 0 ? 1 : 0,
-                    borderRightWidth: 1,
-                    borderTopWidth: 1,
-                    borderColor: theme.borderColor,
-                    backgroundColor: theme.backgroundColorSecondary,
-                  }}
-                  onPress={() => {
-                    setAttachments((attachments) => [
-                      ...attachments.slice(0, index),
-                      ...attachments.slice(index + 1),
-                    ]);
-                  }}
-                >
-                  <View
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: 48,
-                      marginLeft: 16,
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={"paperclip"}
-                      color={theme.textSecondaryColor}
-                    />
-                  </View>
-                  <View
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                    }}
-                  >
-                    <Text style={{ color: theme.textColor }}>
-                      {attachment.name}
-                    </Text>
-                    <Text style={{ color: theme.textSecondaryColor }}>
-                      {prettyBytes(attachment.size)}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
-      <View
-        style={{
-          flexDirection: "row",
-          backgroundColor: theme.backgroundColorSecondary,
-          alignItems: "center",
-          borderTopWidth: 1,
-          borderTopColor: theme.borderColor,
-        }}
-      >
-        <TextInput
-          value={content}
-          onChangeText={setContent}
-          style={{
-            flex: 1,
-            color: theme.textColor,
-            marginLeft: 16,
-            paddingVertical: 0,
-            marginVertical: 8,
-          }}
-          multiline
-          numberOfLines={content.split("\n").length}
-        ></TextInput>
-        <View>
-          <View style={{ flex: 1 }}></View>
-          <View style={{ flexDirection: "row" }}>
-            <Pressable
-              onPress={() => {
-                pickFiles().then((filePaths) => {
-                  filePaths.forEach((filePath) => {
-                    api.getAttachment(filePath).then(({ size, hash }) => {
-                      setAttachments((attachments) => [
-                        ...attachments,
-                        { size, hash, name: getFileNameFromPath(filePath) },
-                      ]);
-                    });
-                  });
-                });
-              }}
-              style={{ padding: 16 }}
-            >
-              <FontAwesomeIcon
-                icon={"paperclip"}
-                color={theme.actionTextColor}
-              />
-            </Pressable>
-            <Pressable onPress={send} style={{ padding: 16 }}>
-              <FontAwesomeIcon
-                icon={"paper-plane"}
-                color={theme.actionTextColor}
-              />
-            </Pressable>
-          </View>
-        </View>
-      </View>
+      <ComposeMessage
+        content={content}
+        onContentChange={setContent}
+        attachments={attachments}
+        onAttachmentsChange={setAttachments}
+        onSend={send}
+      />
     </View>
   );
-}
-
-function getFileNameFromPath(path: string) {
-  const parts = path.split("/");
-  const fileName = parts[parts.length - 1];
-  return fileName;
 }

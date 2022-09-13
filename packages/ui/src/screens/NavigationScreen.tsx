@@ -112,7 +112,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
         </Pressable>
         <Pressable
           onPress={() => {
-            routing.push("YourAccount", { account });
+            routing.push("Profile", { account, author: account });
           }}
           style={{
             flexDirection: "row",
@@ -128,7 +128,7 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
               marginLeft: 16,
             }}
           >
-            <I18n en="Account" it="Account" />
+            <I18n en="Profile" it="Profilo" />
           </Text>
         </Pressable>
         <Pressable

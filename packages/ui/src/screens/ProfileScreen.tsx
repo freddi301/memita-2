@@ -12,23 +12,36 @@ import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
 import { DevAlert } from "../components/DevAlert";
+import { MessageAttachments } from "../components/MessageAttachments";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
   const routing = useRouting();
   const api = useApi();
-  const contactQuery = useQuery(["contact", { account, author }], async () => {
-    return await api.getContact({ account, author });
-  });
-  const postsQuery = useQuery(["posts", { author }], async () => {
-    return [] as Array<{
-      author: string;
-      quote: string;
-      salt: string;
-      version_timestamp: number;
-      content: string;
-    }>;
-  });
+  const contactQuery = useQuery(
+    ["contact", { account, author }],
+    async () => {
+      return await api.getContact({ account, author });
+    },
+    {
+      enabled: account !== author,
+    }
+  );
+  const accountQuery = useQuery(
+    ["account", { account }],
+    async () => {
+      return await api.getAccount({ author: account });
+    },
+    {
+      enabled: account === author,
+    }
+  );
+  const postsQuery = useQuery(
+    ["public-messages", { account, author }],
+    async () => {
+      return await api.getPublicMessages({ account, author });
+    }
+  );
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -50,7 +63,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
               fontWeight: "bold",
             }}
           >
-            {contactQuery.data?.nickname ?? ""}
+            {contactQuery.data?.nickname ?? accountQuery.data?.nickname ?? ""}
           </Text>
           <Text
             style={{
@@ -60,14 +73,25 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
             {formatAuthor(author)}
           </Text>
         </View>
-        <Pressable
-          onPress={() => {
-            routing.push("Contact", { account, author });
-          }}
-          style={{ padding: 16 }}
-        >
-          <FontAwesomeIcon icon={"pen"} color={theme.actionTextColor} />
-        </Pressable>
+        {account === author ? (
+          <Pressable
+            onPress={() => {
+              routing.push("YourAccount", { account });
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"cog"} color={theme.actionTextColor} />
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => {
+              routing.push("Contact", { account, author });
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"pen"} color={theme.actionTextColor} />
+          </Pressable>
+        )}
       </View>
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
         <Pressable
@@ -103,34 +127,47 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
       <FlatList
         data={postsQuery.data}
         renderItem={({
-          item: { author, quote, salt, version_timestamp, content },
+          item: { author, content, attachments, version_timestamp },
         }) => {
           const datetime = DateTime.fromMillis(version_timestamp);
           return (
-            <Pressable
-              onPress={() => {
-                DevAlert.alert("Coming soon");
-              }}
-            >
-              <View
+            <View>
+              <Pressable
+                onPress={() => {
+                  DevAlert.alert("Coming soon");
+                }}
                 style={{
                   flexDirection: "row",
                   paddingVertical: 8,
-                  paddingHorizontal: 16,
-                  alignItems: "center",
                 }}
               >
-                <Avatar />
-                <View style={{ marginHorizontal: 8, flex: 1 }}>
-                  <Text
-                    style={{
-                      color: theme.textColor,
-                      fontWeight: "bold",
-                      flex: 1,
-                    }}
-                  >
-                    {author}
-                  </Text>
+                <View style={{ paddingHorizontal: 8 }}>
+                  <Avatar />
+                </View>
+                <View style={{ flex: 1, paddingRight: 16 }}>
+                  <View style={{ flexDirection: "row" }}>
+                    <Text
+                      style={{
+                        color: theme.textColor,
+                        fontWeight: "bold",
+                        flex: 1,
+                      }}
+                    >
+                      {author === account
+                        ? accountQuery.data?.nickname
+                        : contactQuery.data?.nickname}
+                    </Text>
+                    <Text
+                      style={{
+                        color: theme.textSecondaryColor,
+                      }}
+                    >
+                      {!datetime.hasSame(DateTime.now(), "day") &&
+                        datetime.toLocaleString(DateTime.DATE_MED)}
+                      {"  "}
+                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
+                    </Text>
+                  </View>
                   <Text
                     style={{
                       color: theme.textColor,
@@ -139,39 +176,13 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
                     {content}
                   </Text>
                 </View>
-                <View>
-                  <View style={{ flexDirection: "row" }}>
-                    {!!quote && (
-                      <View style={{ marginRight: 8 }}>
-                        <FontAwesomeIcon
-                          icon={"reply"}
-                          color={theme.textColor}
-                        />
-                      </View>
-                    )}
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        textAlign: "right",
-                        flex: 1,
-                      }}
-                    >
-                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
-                    </Text>
-                  </View>
-                  {!datetime.hasSame(DateTime.now(), "day") && (
-                    <Text
-                      style={{ color: theme.textColor, textAlign: "right" }}
-                    >
-                      {datetime.toLocaleString(DateTime.DATE_MED)}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </Pressable>
+              </Pressable>
+              {attachments.length > 0 && (
+                <MessageAttachments attachments={attachments} />
+              )}
+            </View>
           );
         }}
-        style={{ paddingVertical: 8 }}
         ListEmptyComponent={
           postsQuery.isLoading ? null : (
             <Text
@@ -195,6 +206,23 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
           <HorizontalLoader isLoading={postsQuery.isFetching} />
         )}
       />
+      {author === account && (
+        <Pressable
+          style={{
+            padding: 16,
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            backgroundColor: theme.backgroundColorSecondary,
+            borderRadius: 24,
+          }}
+          onPress={() => {
+            routing.push("ComposePublicMessage", { account });
+          }}
+        >
+          <FontAwesomeIcon icon={"feather"} color={theme.actionTextColor} />
+        </Pressable>
+      )}
     </View>
   );
 }

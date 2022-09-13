@@ -113,7 +113,7 @@ export function DatabaseScreen() {
                 <React.Fragment>
                   <I18n
                     en="There are no database entries for term"
-                    it="Non ci sono voci nel databse per il termine"
+                    it="Non ci sono voci nel database per il termine"
                   />{" "}
                   <Text style={{ fontWeight: "bold" }}>{searchText}</Text>
                 </React.Fragment>

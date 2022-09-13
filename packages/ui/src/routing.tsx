@@ -25,6 +25,7 @@ import { ConnectivityScreen } from "./screens/ConnectivityScreen";
 import { ChooseAccountScreen } from "./screens/account/ChooseAccountScreen";
 import { useApi } from "./ui";
 import { YourAccountScreen } from "./screens/account/YourAccountScreen";
+import { ComposePublicMessageScreen } from "./screens/ComposePublicMessageScreen";
 
 export type Routes = {
   ChooseAccount: { account: undefined };
@@ -39,6 +40,7 @@ export type Routes = {
   Profile: { account: string; author: string };
   Conversations: { account: string };
   Conversation: { account: string; other: string };
+  ComposePublicMessage: { account: string };
 };
 
 type Route = {
@@ -60,6 +62,7 @@ const mapping: {
   Profile: ProfileScreen,
   Conversations: ConversationsScreen,
   Conversation: ConversationScreen,
+  ComposePublicMessage: ComposePublicMessageScreen,
 });
 
 function applyReactMemo<M extends Record<string, React.ComponentType<any>>>(

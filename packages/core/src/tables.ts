@@ -26,6 +26,15 @@ export async function createTables(sql: Sql) {
       attachments TEXT NOT NULL,
       version_timestamp INTEGER NOT NULL
     )`,
+    public_messages: sql`CREATE TABLE public_messages (
+      crypto_hash TEXT PRIMARY KEY,
+      author TEXT NOT NULL,
+      quote TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      content TEXT NOT NULL,
+      attachments TEXT NOT NULL,
+      version_timestamp INTEGER NOT NULL
+    )`,
   };
 
   const existingTables = Object.fromEntries(

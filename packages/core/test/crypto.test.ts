@@ -4,6 +4,8 @@ import {
   cryptoHashFunction,
   decrypt,
   encrypt,
+  sign,
+  verify,
 } from "../src/components/crypto";
 
 test("crypto hash function", async () => {
@@ -30,4 +32,12 @@ test("encrypt decrypt", async () => {
     fred.publicKey
   );
   expect(decrypted).toEqual(unencrypted);
+});
+
+test("sign verify", async () => {
+  const unsigned = { hello: "world" };
+  const fred = await cryptoCreateAsymmetricKeyPair();
+  const signed = await sign(unsigned, fred.privateKey);
+  const opened = await verify(signed, fred.publicKey);
+  expect(opened).toEqual(unsigned);
 });

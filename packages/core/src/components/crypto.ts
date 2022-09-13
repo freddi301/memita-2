@@ -39,7 +39,7 @@ export async function cryptoHashStream(stream: Readable) {
 
 export async function cryptoCreateAsymmetricKeyPair() {
   await libsodium.ready;
-  return libsodium.crypto_box_keypair("hex");
+  return libsodium.crypto_sign_keypair("hex");
 }
 
 export async function createNonce() {
@@ -61,8 +61,8 @@ export async function encrypt(
   return libsodium.crypto_box_easy(
     libsodium.from_string(stringify(unencrypted)),
     libsodium.from_hex(nonce),
-    libsodium.from_hex(author),
-    libsodium.from_hex(secret),
+    libsodium.crypto_sign_ed25519_pk_to_curve25519(libsodium.from_hex(author)),
+    libsodium.crypto_sign_ed25519_sk_to_curve25519(libsodium.from_hex(secret)),
     "uint8array"
   );
 }
@@ -79,8 +79,34 @@ export async function decrypt(
       libsodium.crypto_box_open_easy(
         encrypted,
         libsodium.from_hex(nonce),
+        libsodium.crypto_sign_ed25519_pk_to_curve25519(
+          libsodium.from_hex(author)
+        ),
+        libsodium.crypto_sign_ed25519_sk_to_curve25519(
+          libsodium.from_hex(secret)
+        ),
+        "uint8array"
+      )
+    )
+  );
+}
+
+export async function sign(unsigned: unknown, secret: string) {
+  await libsodium.ready;
+  return libsodium.crypto_sign(
+    libsodium.from_string(stringify(unsigned)),
+    libsodium.from_hex(secret),
+    "uint8array"
+  );
+}
+
+export async function verify(signed: Uint8Array, author: string) {
+  await libsodium.ready;
+  return JSON.parse(
+    libsodium.to_string(
+      libsodium.crypto_sign_open(
+        signed,
         libsodium.from_hex(author),
-        libsodium.from_hex(secret),
         "uint8array"
       )
     )

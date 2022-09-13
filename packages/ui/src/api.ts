@@ -49,6 +49,15 @@ export type Attachment = {
   hash: string;
 };
 
+export type PublicMessage = {
+  author: string;
+  quote: string;
+  salt: string;
+  content: string;
+  attachments: Array<Attachment>;
+  version_timestamp: number;
+};
+
 export type Api = {
   generateAccount(): Promise<{ author: string; secret: string }>;
   addAccount(account: Account): Promise<void>;
@@ -81,6 +90,11 @@ export type Api = {
       version_timestamp: number;
     }>
   >;
+  addPublicMessage(message: PublicMessage): Promise<void>;
+  getPublicMessages(params: {
+    account: string;
+    author: string;
+  }): Promise<Array<PublicMessage>>;
   getConnections(account: string): Promise<
     | {
         hyperswarm: {

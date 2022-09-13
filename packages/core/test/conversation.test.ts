@@ -12,6 +12,7 @@ test("conversation aggregation", async () => {
     quote: "",
     salt: "1",
     content: "hello",
+    attachments: [],
     version_timestamp: 1,
   };
   await api.addDirectMessage(directMessageA);
@@ -40,6 +41,7 @@ test("conversation aggregation", async () => {
     quote: "",
     salt: "1",
     content: "bye",
+    attachments: [],
     version_timestamp: 2,
   };
   await api.addDirectMessage(directMessageB);
