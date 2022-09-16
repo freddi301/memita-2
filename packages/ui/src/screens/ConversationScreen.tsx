@@ -141,7 +141,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
                     fontWeight: "bold",
                   }}
                 >
-                  {contactQuery.data?.nickname}
+                  {contactQuery.data?.nickname ?? accountQuery.data?.nickname}
                 </Text>
                 <Text
                   style={{

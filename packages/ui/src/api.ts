@@ -95,6 +95,7 @@ export type Api = {
     account: string;
     author: string;
   }): Promise<Array<PublicMessage>>;
+  getFeed(params: { account: string }): Promise<Array<PublicMessage>>;
   getConnections(account: string): Promise<
     | {
         hyperswarm: {

@@ -7,12 +7,10 @@ import { Avatar } from "../components/Avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useQuery } from "react-query";
 import { useApi } from "../ui";
-import { DateTime } from "luxon";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
-import { DevAlert } from "../components/DevAlert";
-import { MessageAttachments } from "../components/MessageAttachments";
+import { PublicMessageView } from "../components/PublicMessageView";
 
 export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const theme = useTheme();
@@ -63,7 +61,9 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
               fontWeight: "bold",
             }}
           >
-            {contactQuery.data?.nickname ?? accountQuery.data?.nickname ?? ""}
+            {(account === author
+              ? accountQuery.data?.nickname
+              : contactQuery.data?.nickname) ?? ""}
           </Text>
           <Text
             style={{
@@ -126,62 +126,8 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
       </View>
       <FlatList
         data={postsQuery.data}
-        renderItem={({
-          item: { author, content, attachments, version_timestamp },
-        }) => {
-          const datetime = DateTime.fromMillis(version_timestamp);
-          return (
-            <View>
-              <Pressable
-                onPress={() => {
-                  DevAlert.alert("Coming soon");
-                }}
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                }}
-              >
-                <View style={{ paddingHorizontal: 8 }}>
-                  <Avatar />
-                </View>
-                <View style={{ flex: 1, paddingRight: 16 }}>
-                  <View style={{ flexDirection: "row" }}>
-                    <Text
-                      style={{
-                        color: theme.textColor,
-                        fontWeight: "bold",
-                        flex: 1,
-                      }}
-                    >
-                      {author === account
-                        ? accountQuery.data?.nickname
-                        : contactQuery.data?.nickname}
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.textSecondaryColor,
-                      }}
-                    >
-                      {!datetime.hasSame(DateTime.now(), "day") &&
-                        datetime.toLocaleString(DateTime.DATE_MED)}
-                      {"  "}
-                      {datetime.toLocaleString(DateTime.TIME_WITH_SECONDS)}
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      color: theme.textColor,
-                    }}
-                  >
-                    {content}
-                  </Text>
-                </View>
-              </Pressable>
-              {attachments.length > 0 && (
-                <MessageAttachments attachments={attachments} />
-              )}
-            </View>
-          );
+        renderItem={({ item }) => {
+          return <PublicMessageView account={account} publicMessage={item} />;
         }}
         ListEmptyComponent={
           postsQuery.isLoading ? null : (

@@ -219,6 +219,18 @@ export async function createApi(sql: Sql) {
         attachments: JSON.parse(publicMessage.attachments),
       }));
     },
+    async getFeed({ account }) {
+      const result = (await sql`
+        SELECT author, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
+        FROM public_messages
+        GROUP BY author, salt
+        ORDER BY MAX(version_timestamp) DESC
+      `.all()) as any;
+      return result.map((publicMessage: any) => ({
+        ...publicMessage,
+        attachments: JSON.parse(publicMessage.attachments),
+      }));
+    },
     async getConnections(account) {
       const instances = connectivityModuleInstances.get(account);
       if (!instances) return;

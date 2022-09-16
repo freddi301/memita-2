@@ -46,6 +46,27 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
       <ScrollView style={{ paddingVertical: 8 }}>
         <Pressable
           onPress={() => {
+            routing.push("Feed", { account });
+          }}
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            alignItems: "center",
+          }}
+        >
+          <FontAwesomeIcon icon={"newspaper"} color={theme.actionTextColor} />
+          <Text
+            style={{
+              color: theme.textColor,
+              marginLeft: 16,
+            }}
+          >
+            <I18n en="Feed" it="Feed" />
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
             routing.push("Conversations", { account });
           }}
           style={{
