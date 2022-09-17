@@ -3,6 +3,7 @@ import prettyBytes from "pretty-bytes";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Attachment } from "../api";
+import { useRouting } from "../routing";
 import { useTheme } from "../theme";
 
 type MessageAttachmentsProps = {
@@ -10,6 +11,7 @@ type MessageAttachmentsProps = {
 };
 export function MessageAttachments({ attachments }: MessageAttachmentsProps) {
   const theme = useTheme();
+  const routing = useRouting();
   return (
     <View
       style={{
@@ -29,6 +31,12 @@ export function MessageAttachments({ attachments }: MessageAttachmentsProps) {
                 borderBottomWidth: 1,
                 borderColor: theme.borderColor,
                 backgroundColor: theme.backgroundColorSecondary,
+              }}
+              onPress={() => {
+                routing.push("FileView", {
+                  account: undefined,
+                  hash: attachment.hash,
+                });
               }}
             >
               <View

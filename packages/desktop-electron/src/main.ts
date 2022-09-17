@@ -19,7 +19,7 @@ import sqlite3 from "sqlite3";
   }
   const title = `Memita 2 ${filePaths[0]}`;
   const sql = createSql(path.join(filePaths[0], "db.db"));
-  const api = await createApi(sql);
+  const api = await createApi(sql, path.join(filePaths[0], "files"));
   for (const [methodName, method] of Object.entries(api)) {
     ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
   }
@@ -55,6 +55,7 @@ function createWindow(title: string) {
     title,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      webSecurity: process.env.NODE_ENV !== "development",
     },
   });
   if (process.env.NODE_ENV === "development") {

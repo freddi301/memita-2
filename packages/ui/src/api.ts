@@ -77,6 +77,7 @@ export type Api = {
   }): Promise<Array<Contact>>;
   addDirectMessage(message: DirectMessage): Promise<void>;
   getAttachment(path: string): Promise<{ size: number; hash: string }>;
+  getAttachmentUri(hash: string): Promise<string>;
   getConversation(params: {
     account: string;
     other: string;

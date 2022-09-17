@@ -27,6 +27,7 @@ import { useApi } from "./ui";
 import { YourAccountScreen } from "./screens/account/YourAccountScreen";
 import { ComposePublicMessageScreen } from "./screens/ComposePublicMessageScreen";
 import { FeedScreen } from "./screens/FeedScreen";
+import { FileViewScreen } from "./screens/FileViewScreen";
 
 export type Routes = {
   ChooseAccount: { account: undefined };
@@ -43,6 +44,7 @@ export type Routes = {
   Conversation: { account: string; other: string };
   ComposePublicMessage: { account: string };
   Feed: { account: string };
+  FileView: { account: undefined; hash: string };
 };
 
 type Route = {
@@ -66,6 +68,7 @@ const mapping: {
   Conversation: ConversationScreen,
   ComposePublicMessage: ComposePublicMessageScreen,
   Feed: FeedScreen,
+  FileView: FileViewScreen,
 });
 
 function applyReactMemo<M extends Record<string, React.ComponentType<any>>>(

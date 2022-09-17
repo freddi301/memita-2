@@ -12,8 +12,9 @@ import { createBridgeClient } from "./connectivity/bridge/bridgeClient";
 import { createBridgeServer } from "./connectivity/bridge/bridgeServer";
 import { createLanSwarm } from "./connectivity/swarm/lanSwarm";
 import fs from "fs";
+import path from "path";
 
-export async function createApi(sql: Sql) {
+export async function createApi(sql: Sql, filesPath: string) {
   let stopped = false;
   await optimizeDb(sql);
   await createTables(sql);
@@ -137,11 +138,16 @@ export async function createApi(sql: Sql) {
         )
       `.run();
     },
-    async getAttachment(path: string) {
-      const { size } = await fs.promises.stat(path);
-      const fileStream = fs.createReadStream(path);
+    async getAttachment(filePath: string) {
+      const { size } = await fs.promises.stat(filePath);
+      const fileStream = fs.createReadStream(filePath);
       const hash = await cryptoHashStream(fileStream);
+      await fs.promises.mkdir(filesPath, { recursive: true });
+      await fs.promises.copyFile(filePath, path.join(filesPath, hash));
       return { hash, size };
+    },
+    async getAttachmentUri(hash: string) {
+      return path.join(filesPath, hash);
     },
     async getConversation({ account, other }) {
       const result = (await sql`
