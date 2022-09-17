@@ -5,7 +5,7 @@ const MAX_CHUNK_SIZE = 1024;
 
 export function createMultiplexer(
   stream: Duplex,
-  onStream: (substream: Duplex) => void
+  onStream: (substream: Duplex, header: Buffer) => void
 ) {
   checkSetup(stream);
   const subStreams = new Map<
@@ -40,9 +40,9 @@ export function createMultiplexer(
     });
     return duplex;
   }
-  function initializeStream() {
+  function initializeStream(header: Buffer) {
     const subStreamId = Math.trunc(Math.random() * Math.pow(2, 32));
-    stream.write(serialize.open(subStreamId));
+    stream.write(serialize.open(subStreamId, header));
     return createStream(subStreamId);
   }
   let isLooping = false;
@@ -83,10 +83,10 @@ export function createMultiplexer(
     }
   }
   const handlers: Deserialize = {
-    open(subStreamId) {
+    open(subStreamId, header) {
       const subStream = subStreams.get(subStreamId);
       if (subStream) throw new Error("sub stream already exists");
-      onStream(createStream(subStreamId));
+      onStream(createStream(subStreamId), header);
     },
     data(subStreamId, data) {
       const subStream = subStreams.get(subStreamId);
@@ -112,7 +112,9 @@ export function createMultiplexer(
     }
   })();
 
-  return initializeStream;
+  return {
+    createStream: initializeStream,
+  };
 }
 
 function checkSetup(stream: Duplex) {
@@ -131,7 +133,7 @@ const codes = {
 };
 
 type Protocol = {
-  open(subStreamId: number): void;
+  open(subStreamId: number, header: Buffer): void;
   data(subStreamId: number, data: Buffer): void;
   end(subStreamId: number): void;
   error(subStreamId: number): void;
@@ -146,11 +148,12 @@ type Deserialize = {
 };
 
 const serialize: Serialize = {
-  open(subStreamId): Buffer {
-    const buffer = Buffer.alloc(1 + 4);
+  open(subStreamId, header): Buffer {
+    const buffer = Buffer.alloc(1 + 4 + 4);
     buffer.writeUInt8(codes.open, 0);
     buffer.writeUint32BE(subStreamId, 1);
-    return buffer;
+    buffer.writeUint32BE(header.byteLength, 5);
+    return Buffer.concat([buffer, header]);
   },
   data(subStreamId, data): Buffer {
     const buffer = Buffer.alloc(1 + 4 + 4);
@@ -178,7 +181,9 @@ async function deserialize(stream: Readable, handlers: Deserialize) {
   switch (code) {
     case codes.open: {
       const subStreamId = (await readBytes(stream, 4)).readUInt32BE();
-      handlers.open(subStreamId);
+      const dataByteLength = (await readBytes(stream, 4)).readUInt32BE();
+      const data = await readBytes(stream, dataByteLength);
+      handlers.open(subStreamId, data);
       break;
     }
     case codes.data: {

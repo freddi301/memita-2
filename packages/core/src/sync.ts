@@ -15,6 +15,7 @@ import {
   verify,
 } from "./components/crypto";
 import { Contact, DirectMessage, PublicMessage } from "@memita-2/ui";
+import { createMultiplexer } from "./components/multiplexer";
 
 export function createSync({ sql, api }: { sql: Sql; api: Api }) {
   type Repository<Data> = {
@@ -271,7 +272,6 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
           type === "encrypted"
             ? await decrypt(data, nonce, localAccount.secret, remoteAuthor)
             : await verify(data, remoteAuthor);
-        console.log(opened, (await cryptoHashFunction(opened)) !== hash);
         if ((await cryptoHashFunction(opened)) !== hash) {
           throw new Error("corrupt");
         }
@@ -284,8 +284,17 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
 
   return {
     onConnection(stream: Duplex) {
-      const objectStream = createDuplexCbor(stream);
-      createRpcServer(rpcServer, objectStream);
+      const multiplexer = createMultiplexer(stream, (stream, header) => {
+        if (header.toString("utf8") === "blocks") {
+          const objectStream = createDuplexCbor(stream);
+          createRpcServer(rpcServer, objectStream);
+        } else {
+          throw new Error();
+        }
+      });
+      const objectStream = createDuplexCbor(
+        multiplexer.createStream(Buffer.from("blocks"))
+      );
       const client = createRpcClient<typeof rpcServer>(objectStream);
       const sync = async () => {
         const localAccounts = await api.getAccounts({});
