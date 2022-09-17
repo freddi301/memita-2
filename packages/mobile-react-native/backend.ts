@@ -36,7 +36,7 @@ process.on('uncaughtException', (err: Error | string) => {
 });
 
 const sql = createSql('react-native-sql-storage');
-const api = createApi(sql);
+const api = createApi(sql, path.join(appDataDir, 'files'));
 createApiRpcServer(api);
 
 function createSql(type: 'sql.js' | 'react-native-sql-storage') {

@@ -15,6 +15,7 @@ import {createApiRpcClient} from './components/api-rpc-client';
 import {createSqlReactNativeSqlStorageRpcServer} from './components/sql-react-native-sql-storage-rpc-server';
 import {Overrides} from '@memita-2/ui';
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import DocumentPicker from 'react-native-document-picker';
 const QRCodeScannerAny = QRCodeScanner as any;
 
 export default function App() {
@@ -42,5 +43,12 @@ const overrides: Overrides = {
         cameraStyle={{width, height}}
       />
     );
+  },
+  async pickFiles() {
+    const response = await DocumentPicker.pick({
+      type: [DocumentPicker.types.allFiles],
+      allowMultiSelection: true,
+    });
+    return response.map(item => item.uri);
   },
 };

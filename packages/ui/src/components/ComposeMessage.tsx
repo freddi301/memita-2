@@ -1,7 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import prettyBytes from "pretty-bytes";
 import React from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { Attachment } from "../api";
 import { useTheme } from "../theme";
 import { OverridesContext, useApi } from "../ui";
@@ -24,7 +31,7 @@ export function ComposeMessage({
   const { pickFiles } = React.useContext(OverridesContext);
   const api = useApi();
   return (
-    <React.Fragment>
+    <View>
       {attachments.length > 0 && (
         <View
           style={{
@@ -87,7 +94,7 @@ export function ComposeMessage({
         style={{
           flexDirection: "row",
           backgroundColor: theme.backgroundColorSecondary,
-          alignItems: "center",
+          alignItems: "flex-end",
           borderTopWidth: 1,
           borderTopColor: theme.borderColor,
         }}
@@ -99,44 +106,40 @@ export function ComposeMessage({
             flex: 1,
             color: theme.textColor,
             marginLeft: 16,
-            paddingVertical: 0,
-            marginVertical: 8,
+            marginVertical: 0,
+            paddingVertical: Platform.select({ web: 16, android: 8 }),
+            textAlignVertical: "center",
           }}
           multiline
-          numberOfLines={content.split("\n").length}
-        ></TextInput>
-        <View style={{ height: "100%", justifyContent: "flex-end" }}>
-          <View style={{ flexDirection: "row" }}>
-            <Pressable
-              onPress={() => {
-                pickFiles().then((filePaths) => {
-                  filePaths.forEach((filePath) => {
-                    api.getAttachment(filePath).then(({ size, hash }) => {
-                      onAttachmentsChange([
-                        ...attachments,
-                        { size, hash, name: getFileNameFromPath(filePath) },
-                      ]);
-                    });
+          numberOfLines={Math.min(Math.max(content.split("\n").length, 1), 10)}
+        />
+        <View style={{ flexDirection: "row" }}>
+          <Pressable
+            onPress={() => {
+              pickFiles().then((filePaths) => {
+                filePaths.forEach((filePath) => {
+                  api.getAttachment(filePath).then(({ size, hash }) => {
+                    onAttachmentsChange([
+                      ...attachments,
+                      { size, hash, name: getFileNameFromPath(filePath) },
+                    ]);
                   });
                 });
-              }}
-              style={{ padding: 16 }}
-            >
-              <FontAwesomeIcon
-                icon={"paperclip"}
-                color={theme.actionTextColor}
-              />
-            </Pressable>
-            <Pressable onPress={onSend} style={{ padding: 16 }}>
-              <FontAwesomeIcon
-                icon={"paper-plane"}
-                color={theme.actionTextColor}
-              />
-            </Pressable>
-          </View>
+              });
+            }}
+            style={{ padding: 16 }}
+          >
+            <FontAwesomeIcon icon={"paperclip"} color={theme.actionTextColor} />
+          </Pressable>
+          <Pressable onPress={onSend} style={{ padding: 16 }}>
+            <FontAwesomeIcon
+              icon={"paper-plane"}
+              color={theme.actionTextColor}
+            />
+          </Pressable>
         </View>
       </View>
-    </React.Fragment>
+    </View>
   );
 }
 
