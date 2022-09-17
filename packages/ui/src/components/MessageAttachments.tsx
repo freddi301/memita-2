@@ -56,6 +56,7 @@ export function MessageAttachments({ attachments }: MessageAttachmentsProps) {
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: 8,
+                  justifyContent: "center",
                 }}
               >
                 <Text style={{ color: theme.textColor }}>

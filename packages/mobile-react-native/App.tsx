@@ -48,7 +48,10 @@ const overrides: Overrides = {
     const response = await DocumentPicker.pick({
       type: [DocumentPicker.types.allFiles],
       allowMultiSelection: true,
+      copyTo: 'cachesDirectory',
     });
-    return response.map(item => item.uri);
+    return response.flatMap(item =>
+      item.fileCopyUri ? [item.fileCopyUri.slice(5)] : [],
+    );
   },
 };

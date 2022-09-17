@@ -75,6 +75,7 @@ export function ComposeMessage({
                     style={{
                       paddingHorizontal: 16,
                       paddingVertical: 8,
+                      justifyContent: "center",
                     }}
                   >
                     <Text style={{ color: theme.textColor }}>
@@ -115,17 +116,17 @@ export function ComposeMessage({
         />
         <View style={{ flexDirection: "row" }}>
           <Pressable
-            onPress={() => {
-              pickFiles().then((filePaths) => {
-                filePaths.forEach((filePath) => {
-                  api.getAttachment(filePath).then(({ size, hash }) => {
-                    onAttachmentsChange([
-                      ...attachments,
-                      { size, hash, name: getFileNameFromPath(filePath) },
-                    ]);
-                  });
-                });
-              });
+            onPress={async () => {
+              const filePaths = await pickFiles();
+              onAttachmentsChange([
+                ...attachments,
+                ...(await Promise.all(
+                  filePaths.map(async (filePath) => {
+                    const { size, hash } = await api.getAttachment(filePath);
+                    return { size, hash, name: getFileNameFromPath(filePath) };
+                  })
+                )),
+              ]);
             }}
             style={{ padding: 16 }}
           >
