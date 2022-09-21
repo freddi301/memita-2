@@ -1,146 +1,69 @@
 import { Duplex } from "stream";
 import { Api } from "@memita-2/ui";
-import {
-  createDuplexCbor,
-  createRpcClient,
-  createRpcServer,
-} from "./components/rpc";
-import { Sql } from "./components/sql";
-import {
-  createNonce,
-  cryptoHashFunction,
-  decrypt,
-  encrypt,
-  sign,
-  verify,
-} from "./components/crypto";
-import { Contact, DirectMessage, PublicMessage } from "@memita-2/ui";
+import { createDuplexCbor, createRpcClient, createRpcServer } from "./components/rpc";
+import { createNonce, cryptoHashFunction, decrypt, encrypt, sign, verify } from "./components/crypto";
+import { Contact, PrivateMessage, PublicMessage } from "@memita-2/ui";
 import { createMultiplexer } from "./components/multiplexer";
+import { TablesDataGatewayInstance } from "./tables";
+import _ from "lodash";
 
-export function createSync({ sql, api }: { sql: Sql; api: Api }) {
+export function createSync({ api, tables }: { api: Api; tables: TablesDataGatewayInstance }) {
   type Repository<Data> = {
-    getHashes(
-      requirerAuthor: string,
-      providerAuthor: string
-    ): Promise<Array<string>>;
+    getHashes(requirerAuthor: string, providerAuthor: string): Promise<Array<string>>;
     hasHash(hash: string): Promise<boolean>;
-    getData(
-      requirerAuthor: string,
-      providerAuthor: string,
-      hash: string
-    ): Promise<Data | undefined>;
+    getData(requirerAuthor: string, providerAuthor: string, hash: string): Promise<Data | undefined>;
   };
   const contactsRepository: Repository<Contact> = {
     async getHashes(requirerAuthor, providerAuthor) {
-      return (
-        await sql`
-        SELECT crypto_hash
-        FROM contacts
-        WHERE account = ${requirerAuthor} AND account = ${providerAuthor}
-      `.all()
-      ).map(({ crypto_hash }: any) => crypto_hash);
+      if (requirerAuthor !== providerAuthor) return [];
+      return (await tables.table("contacts").query({ where: { account: requirerAuthor } })).map((contact) => contact.crypto_hash);
     },
     async hasHash(hash) {
-      return (
-        (
-          await sql`
-          SELECT crypto_hash
-          FROM contacts
-          WHERE crypto_hash = ${hash}
-        `.all()
-        ).map(({ crypto_hash }: any) => crypto_hash).length > 0
-      );
+      return await tables.table("contacts").has({ crypto_hash: hash });
     },
     async getData(requirerAuthor, providerAuthor, hash) {
-      return (
-        await sql`
-          SELECT account, author, nickname, label, version_timestamp
-          FROM contacts
-          WHERE
-            account = ${requirerAuthor} AND
-            account = ${providerAuthor} AND
-            crypto_hash = ${hash}
-        `.all()
-      )[0] as any;
+      if (requirerAuthor !== providerAuthor) return;
+      return _.omit(await tables.table("contacts").get({ crypto_hash: hash }), ["crypto_hash"]);
     },
   };
 
-  const directMessagesRepository: Repository<DirectMessage> = {
+  const privateMessagesRepository: Repository<PrivateMessage> = {
     async getHashes(requirerAuthor, providerAuthor) {
-      return (
-        await sql`
-        SELECT crypto_hash
-        FROM direct_messages
-        WHERE
-         (author = ${requirerAuthor} OR recipient = ${providerAuthor}) OR
-         (author = ${providerAuthor} OR recipient = ${requirerAuthor})
-      `.all()
-      ).map(({ crypto_hash }: any) => crypto_hash);
+      const sent = (await tables.table("private_messages").query({ where: { author: providerAuthor, recipient: requirerAuthor } })).map(
+        (privateMessage) => privateMessage.crypto_hash
+      );
+      const received = (await tables.table("private_messages").query({ where: { author: requirerAuthor, recipient: providerAuthor } })).map(
+        (privateMessage) => privateMessage.crypto_hash
+      );
+      return [...sent, ...received];
     },
     async hasHash(hash) {
-      return (
-        (
-          await sql`
-            SELECT crypto_hash
-            FROM direct_messages
-            WHERE crypto_hash = ${hash}
-          `.all()
-        ).map(({ crypto_hash }: any) => crypto_hash).length > 0
-      );
+      return await tables.table("private_messages").has({ crypto_hash: hash });
     },
     async getData(requirerAuthor, providerAuthor, hash) {
-      return (
-        await sql`
-          SELECT author, recipient, quote, salt, content, attachments, version_timestamp
-          FROM direct_messages
-          WHERE
-            (
-              (author = ${requirerAuthor} OR recipient = ${providerAuthor}) OR
-              (author = ${providerAuthor} OR recipient = ${requirerAuthor})
-            ) AND
-            crypto_hash = ${hash}
-        `.all()
-      ).map((directMessage: any) => ({
-        ...directMessage,
-        attachments: JSON.parse(directMessage.attachments),
-      }))[0] as any;
+      const privateMessage = await tables.table("private_messages").get({ crypto_hash: hash });
+      if (!privateMessage) return;
+      if (
+        (privateMessage.author === providerAuthor && privateMessage.recipient === requirerAuthor) ||
+        (privateMessage.author === requirerAuthor && privateMessage.recipient === providerAuthor)
+      )
+        return _.omit({ ...privateMessage, attachments: JSON.parse(privateMessage.attachments) }, ["crypto_hash"]);
     },
   };
 
   const publicMessagesRepository: Repository<PublicMessage> = {
     async getHashes(requirerAuthor, providerAuthor) {
-      return (
-        await sql`
-        SELECT crypto_hash
-        FROM public_messages
-        WHERE author = ${providerAuthor}         
-      `.all()
-      ).map(({ crypto_hash }: any) => crypto_hash);
-    },
-    async hasHash(hash) {
-      return (
-        (
-          await sql`
-            SELECT crypto_hash
-            FROM public_messages
-            WHERE crypto_hash = ${hash}
-          `.all()
-        ).map(({ crypto_hash }: any) => crypto_hash).length > 0
+      return (await tables.table("public_messages").query({ where: { author: providerAuthor } })).map(
+        (publicMessage) => publicMessage.crypto_hash
       );
     },
+    async hasHash(hash) {
+      return await tables.table("public_messages").has({ crypto_hash: hash });
+    },
     async getData(requirerAuthor, providerAuthor, hash) {
-      return (
-        await sql`
-          SELECT author, quote, salt, content, attachments, version_timestamp
-          FROM public_messages
-          WHERE
-            author = ${providerAuthor} AND     
-            crypto_hash = ${hash}
-        `.all()
-      ).map((publicMessage: any) => ({
-        ...publicMessage,
-        attachments: JSON.parse(publicMessage.attachments),
-      }))[0] as any;
+      const publicMessage = await tables.table("public_messages").get({ crypto_hash: hash });
+      if (!publicMessage) return;
+      return _.omit({ ...publicMessage, attachments: JSON.parse(publicMessage.attachments) }, ["crypto_hash"]);
     },
   };
 
@@ -150,85 +73,33 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
       const authors = accounts.map((account) => account.author);
       return authors;
     },
-    async listContacts(
-      requirerAuthor: string,
-      providerAuthor: string
-    ): Promise<Array<string>> {
+    async listContacts(requirerAuthor: string, providerAuthor: string): Promise<Array<string>> {
       return await contactsRepository.getHashes(requirerAuthor, providerAuthor);
     },
-    async getContact(
-      requirerAuthor: string,
-      providerAuthor: string,
-      nonce: string,
-      hash: string
-    ): Promise<Uint8Array | undefined> {
-      const contact = await contactsRepository.getData(
-        requirerAuthor,
-        providerAuthor,
-        hash
-      );
+    async getContact(requirerAuthor: string, providerAuthor: string, nonce: string, hash: string): Promise<Uint8Array | undefined> {
+      const contact = await contactsRepository.getData(requirerAuthor, providerAuthor, hash);
       if (!contact) return;
       const account = await api.getAccount({ author: providerAuthor });
       if (!account) return;
-      const encrypted = await encrypt(
-        contact,
-        nonce,
-        account.secret,
-        requirerAuthor
-      );
+      const encrypted = await encrypt(contact, nonce, account.secret, requirerAuthor);
       return encrypted;
     },
-    async listDirectMessages(
-      requirerAuthor: string,
-      providerAuthor: string
-    ): Promise<Array<string>> {
-      return await directMessagesRepository.getHashes(
-        requirerAuthor,
-        providerAuthor
-      );
+    async listPrivateMessages(requirerAuthor: string, providerAuthor: string): Promise<Array<string>> {
+      return await privateMessagesRepository.getHashes(requirerAuthor, providerAuthor);
     },
-    async getDirectMessage(
-      requirerAuthor: string,
-      providerAuthor: string,
-      nonce: string,
-      hash: string
-    ): Promise<Uint8Array | undefined> {
-      const directMessage = await directMessagesRepository.getData(
-        requirerAuthor,
-        providerAuthor,
-        hash
-      );
-      if (!directMessage) return;
+    async getPrivateMessage(requirerAuthor: string, providerAuthor: string, nonce: string, hash: string): Promise<Uint8Array | undefined> {
+      const privateMessage = await privateMessagesRepository.getData(requirerAuthor, providerAuthor, hash);
+      if (!privateMessage) return;
       const account = await api.getAccount({ author: providerAuthor });
       if (!account) return;
-      const encrypted = await encrypt(
-        directMessage,
-        nonce,
-        account.secret,
-        requirerAuthor
-      );
+      const encrypted = await encrypt(privateMessage, nonce, account.secret, requirerAuthor);
       return encrypted;
     },
-    async listPublicMessages(
-      requirerAuthor: string,
-      providerAuthor: string
-    ): Promise<Array<string>> {
-      return await publicMessagesRepository.getHashes(
-        requirerAuthor,
-        providerAuthor
-      );
+    async listPublicMessages(requirerAuthor: string, providerAuthor: string): Promise<Array<string>> {
+      return await publicMessagesRepository.getHashes(requirerAuthor, providerAuthor);
     },
-    async getPublicMessage(
-      requirerAuthor: string,
-      providerAuthor: string,
-      nonce: string,
-      hash: string
-    ): Promise<Uint8Array | undefined> {
-      const publicMessage = await directMessagesRepository.getData(
-        requirerAuthor,
-        providerAuthor,
-        hash
-      );
+    async getPublicMessage(requirerAuthor: string, providerAuthor: string, nonce: string, hash: string): Promise<Uint8Array | undefined> {
+      const publicMessage = await privateMessagesRepository.getData(requirerAuthor, providerAuthor, hash);
       if (!publicMessage) return;
       const account = await api.getAccount({ author: providerAuthor });
       if (!account) return;
@@ -248,17 +119,9 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
   }: {
     localAccount: { author: string; secret: string };
     remoteAuthor: string;
-    list(
-      requirerAuthor: string,
-      providerAuthor: string
-    ): Promise<Array<string>>;
+    list(requirerAuthor: string, providerAuthor: string): Promise<Array<string>>;
     has(hash: string): Promise<boolean>;
-    get(
-      requirerAuthor: string,
-      providerAuthor: string,
-      nonce: string,
-      hash: string
-    ): Promise<Uint8Array | undefined>;
+    get(requirerAuthor: string, providerAuthor: string, nonce: string, hash: string): Promise<Uint8Array | undefined>;
     add(data: Data): Promise<void>;
     type: "encrypted" | "signed";
   }) {
@@ -269,9 +132,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
         const data = await get(localAccount.author, remoteAuthor, nonce, hash);
         if (!data) throw new Error("mising");
         const opened =
-          type === "encrypted"
-            ? await decrypt(data, nonce, localAccount.secret, remoteAuthor)
-            : await verify(data, remoteAuthor);
+          type === "encrypted" ? await decrypt(data, nonce, localAccount.secret, remoteAuthor) : await verify(data, remoteAuthor);
         if ((await cryptoHashFunction(opened)) !== hash) {
           throw new Error("corrupt");
         }
@@ -292,9 +153,7 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
           throw new Error();
         }
       });
-      const objectStream = createDuplexCbor(
-        multiplexer.createStream(Buffer.from("blocks"))
-      );
+      const objectStream = createDuplexCbor(multiplexer.createStream(Buffer.from("blocks")));
       const client = createRpcClient<typeof rpcServer>(objectStream);
       const sync = async () => {
         const localAccounts = await api.getAccounts({});
@@ -316,10 +175,10 @@ export function createSync({ sql, api }: { sql: Sql; api: Api }) {
               await syncTable({
                 localAccount,
                 remoteAuthor,
-                list: client.listDirectMessages,
-                has: directMessagesRepository.hasHash,
-                get: client.getDirectMessage,
-                add: api.addDirectMessage,
+                list: client.listPrivateMessages,
+                has: privateMessagesRepository.hasHash,
+                get: client.getPrivateMessage,
+                add: api.addPrivateMessage,
                 type: "encrypted",
               });
               await syncTable({

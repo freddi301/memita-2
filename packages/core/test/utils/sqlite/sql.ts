@@ -1,1 +1,1 @@
-export { createSql } from "./sqlite3";
+export { createSqlDatabaseSqlite3 as createSqlDatabase } from "./sqlite3";

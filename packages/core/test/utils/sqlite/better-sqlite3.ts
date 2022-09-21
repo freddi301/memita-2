@@ -1,21 +1,17 @@
 import Database from "better-sqlite3";
-import { Sql } from "../../../src/components/sql";
+import { SqlDatabase } from "../../../src/components/TablesDataGateway";
 
-export function createSql(): Sql {
+export function createSqlDatabaseBetterSqlite3(): SqlDatabase {
   const db = new Database(":memory:");
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
-    async run() {
-      db.prepare(strings.join("?")).run(values);
+  return {
+    async run(query, values) {
+      db.prepare(query).run(values);
     },
-    async all() {
-      return db.prepare(strings.join("?")).all(values);
+    async all(query, values) {
+      return db.prepare(query).all(values);
     },
-    text() {
-      return strings.join("");
+    async close() {
+      db.close();
     },
-  });
-  sql.close = async () => {
-    db.close();
   };
-  return sql;
 }

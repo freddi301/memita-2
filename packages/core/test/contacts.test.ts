@@ -1,8 +1,9 @@
 import { createApi } from "../src/api";
-import { createSql } from "./utils/sqlite/sql";
+import { createTables } from "../src/tables";
+import { createSqlDatabase } from "./utils/sqlite/sql";
 
 test("contacts aggregation", async () => {
-  const api = await createApi(createSql());
+  const api = await createApi({ tables: await createTables(await createSqlDatabase()), filesPath: "" });
   expect(await api.getContacts({ account: "fred" })).toEqual([]);
   const contactA = {
     account: "fred",
@@ -21,19 +22,17 @@ test("contacts aggregation", async () => {
     version_timestamp: 2,
   };
   await api.addContact(contactB);
-  expect(await api.getContacts({ account: "fred", label: "" })).toEqual([]);
+  expect(await api.getContacts({ account: "fred" })).toEqual([]);
   expect(
     await api.getContacts({
       account: "fred",
       nickname: "Macco",
-      label: "deleted",
     })
   ).toEqual([contactB]);
   expect(
     await api.getContacts({
       account: "fred",
       nickname: "Fred",
-      label: "deleted",
     })
   ).toEqual([]);
   await api.stop();

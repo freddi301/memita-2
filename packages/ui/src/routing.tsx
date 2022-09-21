@@ -3,7 +3,6 @@ import { ContactScreen } from "./screens/ContactScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { ContactsScreen } from "./screens/ContactsScreen";
 import { ConversationScreen } from "./screens/ConversationScreen";
-import { DatabaseScreen } from "./screens/DatabaseScreen";
 import { ConversationsScreen } from "./screens/ConversationsScreen";
 import { NavigationScreen } from "./screens/NavigationScreen";
 import {
@@ -33,7 +32,6 @@ export type Routes = {
   ChooseAccount: { account: undefined };
   CreateNewAccount: { account: undefined };
   YourAccount: { account: string };
-  Database: { account: string };
   Connectivity: { account: string };
   Settings: { account: string };
   Navigation: { account: string };
@@ -60,7 +58,6 @@ const mapping: {
   Navigation: NavigationScreen,
   Settings: SettingsScreen,
   Connectivity: ConnectivityScreen,
-  Database: DatabaseScreen,
   Contacts: ContactsScreen,
   Contact: ContactScreen,
   Profile: ProfileScreen,

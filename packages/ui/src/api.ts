@@ -33,7 +33,7 @@ export type Contact = {
   version_timestamp: number;
 };
 
-export type DirectMessage = {
+export type PrivateMessage = {
   author: string;
   recipient: string;
   quote: string;
@@ -64,7 +64,6 @@ export type Api = {
   deleteAccount(account: Account): Promise<void>;
   getAccount(params: { author: string }): Promise<Account | undefined>;
   getAccounts(params: {}): Promise<Array<Account>>;
-  getDatabase(): Promise<Record<string, Array<unknown>>>;
   addContact(contact: Contact): Promise<void>;
   getContact(params: {
     account: string;
@@ -73,15 +72,14 @@ export type Api = {
   getContacts(params: {
     account: string;
     nickname?: string;
-    label?: string;
   }): Promise<Array<Contact>>;
-  addDirectMessage(message: DirectMessage): Promise<void>;
+  addPrivateMessage(message: PrivateMessage): Promise<void>;
   getAttachment(path: string): Promise<{ size: number; hash: string }>;
   getAttachmentUri(hash: string): Promise<string>;
   getConversation(params: {
     account: string;
     other: string;
-  }): Promise<Array<DirectMessage>>;
+  }): Promise<Array<PrivateMessage>>;
   getConversations(params: { account: string }): Promise<
     Array<{
       author: string;

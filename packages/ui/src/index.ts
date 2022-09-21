@@ -3,7 +3,7 @@ export type {
   Account,
   Settings,
   Contact,
-  DirectMessage,
+  PrivateMessage,
   PublicMessage,
 } from "./api";
 export { Ui } from "./ui";

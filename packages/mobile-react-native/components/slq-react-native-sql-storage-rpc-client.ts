@@ -1,7 +1,7 @@
-import {Sql} from '@memita-2/core';
+import {SqlDatabase} from '@memita-2/core';
 import rn_bridge from 'rn-bridge';
 
-export function createSqlReactNativeSqlStorageRpcClient(): Sql {
+export function createSqlReactNativeSqlStorageRpcClient(): SqlDatabase {
   const pendingRequests = new Map<
     number,
     {resolve(value: any): void; reject(error: any): void}
@@ -18,26 +18,24 @@ export function createSqlReactNativeSqlStorageRpcClient(): Sql {
       }
     }
   });
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => {
-    const doIt = () =>
-      new Promise<any>((resolve, reject) => {
-        const id = Math.random();
-        pendingRequests.set(id, {resolve, reject});
-        rn_bridge.channel.send({
-          scope: 'sql',
-          id,
-          query: strings.join('?'),
-          parameters: values,
-        });
+  const doIt = (query: string, values: Array<string | number>) =>
+    new Promise<any>((resolve, reject) => {
+      const id = Math.random();
+      pendingRequests.set(id, {resolve, reject});
+      rn_bridge.channel.send({
+        scope: 'sql',
+        id,
+        query: query,
+        parameters: values,
       });
-    return {
-      run: doIt,
-      all: doIt,
-      text() {
-        return strings.join('');
-      },
-    };
+    });
+  return {
+    async run(query, values) {
+      await doIt(query, values);
+    },
+    async all(query, values) {
+      return await doIt(query, values);
+    },
+    async close() {},
   };
-  sql.close = async () => {};
-  return sql;
 }

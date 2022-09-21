@@ -1,62 +1,32 @@
 import type { Api } from "@memita-2/ui";
-import { Sql } from "./components/sql";
 import { createSync } from "./sync";
-import { createTables, optimizeDb } from "./tables";
-import {
-  cryptoCreateAsymmetricKeyPair,
-  cryptoHashFunction,
-  cryptoHashStream,
-} from "./components/crypto";
+import { TablesDataGatewayInstance } from "./tables";
+import { cryptoCreateAsymmetricKeyPair, cryptoHashFunction, cryptoHashStream } from "./components/crypto";
 import { createHyperSwarm } from "./connectivity/swarm/hyperSwarm";
 import { createBridgeClient } from "./connectivity/bridge/bridgeClient";
 import { createBridgeServer } from "./connectivity/bridge/bridgeServer";
 import { createLanSwarm } from "./connectivity/swarm/lanSwarm";
 import fs from "fs";
 import path from "path";
+import _ from "lodash";
 
-export async function createApi(sql: Sql, filesPath: string) {
+export async function createApi({ tables, filesPath }: { filesPath: string; tables: TablesDataGatewayInstance }) {
   let stopped = false;
-  await optimizeDb(sql);
-  await createTables(sql);
   const api: Api = {
-    async getDatabase() {
-      return {
-        accounts: await sql`SELECT * from accounts`.all(),
-        contacts: await sql`SELECT * from contacts`.all(),
-        channels: await sql`SELECT * from channels`.all(),
-        direct_messages: await sql`SELECT * from direct_messages`.all(),
-        public_messages: await sql`SELECT * from public_messages`.all(),
-      };
-    },
     async addAccount({ author, secret, nickname, settings }) {
-      await sql`
-        INSERT OR REPLACE INTO accounts (author, secret, nickname, settings)
-        VALUES (${author}, ${secret}, ${nickname}, ${JSON.stringify(settings)})
-      `.run();
+      await tables.table("accounts").set({ author, secret, nickname, settings: JSON.stringify(settings) });
       await connectAccounts();
     },
     async deleteAccount({ author }) {
-      await sql`
-        DELETE FROM accounts WHERE author = ${author}
-      `.run();
+      await tables.table("accounts").del({ author });
       await disconnectAccounts();
     },
     async getAccount({ author }) {
-      const result = (
-        await sql`
-          SELECT author, secret, nickname, settings
-          FROM accounts
-          WHERE author = ${author}
-      `.all()
-      )[0] as any;
+      const result = await tables.table("accounts").get({ author });
       if (result) return { ...result, settings: JSON.parse(result.settings) };
     },
     async getAccounts({}) {
-      const result = (await sql`
-      SELECT author, secret, nickname, settings
-      FROM accounts
-      ORDER BY nickname ASC
-    `.all()) as any;
+      const result = await tables.table("accounts").query({ order: [["nickname", "ascending"]] });
       return result.map((account: any) => ({
         ...account,
         settings: JSON.parse(account.settings),
@@ -74,47 +44,35 @@ export async function createApi(sql: Sql, filesPath: string) {
         label,
         version_timestamp,
       });
-      await sql`
-        INSERT OR REPLACE INTO contacts (crypto_hash, account, author, nickname, label, version_timestamp)
-        VALUES (${crypto_hash}, ${account}, ${author}, ${nickname}, ${label}, ${version_timestamp})
-      `.run();
+      await tables.table("contacts").set({
+        crypto_hash,
+        account,
+        author,
+        nickname,
+        label,
+        version_timestamp,
+      });
     },
     async getContact({ account, author }) {
-      return (
-        await sql`
-          SELECT account, author, nickname, label, MAX(version_timestamp) AS version_timestamp
-          FROM contacts
-          WHERE account=${account} AND author=${author}
-          GROUP BY account, author
-        `.all()
-      )[0] as any;
+      const all = await tables.table("contacts").query({ where: { account, author } });
+      return _.maxBy(all, (contact) => contact.version_timestamp);
     },
-    async getContacts({
-      account,
-      nickname = "DONTFILTER",
-      label = "DONTFILTER",
-    }) {
-      const nicknameSearch = "%" + asSearch(nickname) + "%";
-      return (await sql`
-        SELECT account, author, nickname, label, MAX(version_timestamp) AS version_timestamp
-        FROM contacts
-        WHERE account = ${account}
-        GROUP BY author
-        HAVING
-          (nickname LIKE CASE WHEN ${nickname} = 'DONTFILTER' THEN nickname ELSE ${nicknameSearch} END) AND
-          (label = CASE WHEN ${label} = 'DONTFILTER' THEN label ELSE ${label} END)
-        ORDER BY nickname ASC
-      `.all()) as any;
+    async getContacts({ account, nickname }) {
+      const all = await tables.table("contacts").query({ where: { account } });
+      return _.filter(
+        _.orderBy(
+          _.values(
+            _.mapValues(
+              _.groupBy(all, (contact) => contact.author),
+              (contacts) => _.maxBy(contacts, (contact) => contact.version_timestamp)!
+            )
+          ),
+          (contact) => contact.nickname
+        ),
+        (contact) => (nickname ? contact.nickname.includes(nickname) : true)
+      );
     },
-    async addDirectMessage({
-      author,
-      recipient,
-      quote,
-      salt,
-      content,
-      attachments,
-      version_timestamp,
-    }) {
+    async addPrivateMessage({ author, recipient, quote, salt, content, attachments, version_timestamp }) {
       const crypto_hash = await cryptoHashFunction({
         author,
         recipient,
@@ -124,19 +82,9 @@ export async function createApi(sql: Sql, filesPath: string) {
         attachments,
         version_timestamp,
       });
-      await sql`
-        INSERT OR REPLACE INTO direct_messages (crypto_hash, author, recipient, quote, salt, content, attachments, version_timestamp)
-        VALUES (
-          ${crypto_hash},
-          ${author},
-          ${recipient},
-          ${quote},
-          ${salt},
-          ${content},
-          ${JSON.stringify(attachments)},
-          ${version_timestamp}
-        )
-      `.run();
+      await tables
+        .table("private_messages")
+        .set({ crypto_hash, author, recipient, quote, salt, content, attachments: JSON.stringify(attachments), version_timestamp });
     },
     async getAttachment(filePath: string) {
       const { size } = await fs.promises.stat(filePath);
@@ -150,47 +98,52 @@ export async function createApi(sql: Sql, filesPath: string) {
       return path.join(filesPath, hash);
     },
     async getConversation({ account, other }) {
-      const result = (await sql`
-        SELECT author, recipient, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
-        FROM direct_messages
-        WHERE
-          (author = ${account} AND recipient = ${other}) OR
-          (author = ${other} AND recipient = ${account})
-        GROUP BY author, recipient, salt
-        ORDER BY MAX(version_timestamp) ASC
-      `.all()) as any;
-      return result.map((directMessage: any) => ({
-        ...directMessage,
-        attachments: JSON.parse(directMessage.attachments),
-      }));
+      const all = await tables.table("private_messages").query({});
+      const filtered = _.filter(
+        all,
+        (privateMessage) =>
+          (privateMessage.author === account && privateMessage.recipient === other) ||
+          (privateMessage.author === other && privateMessage.recipient === account)
+      );
+      const grouped = _.groupBy(
+        filtered,
+        (privateMessage) => `${privateMessage.author}-${privateMessage.recipient}-${privateMessage.salt}`
+      );
+      const mostRecent = _.mapValues(
+        grouped,
+        (privateMessages) => _.maxBy(privateMessages, (privateMessage) => privateMessage.version_timestamp)!
+      );
+      const ordered = _.orderBy(mostRecent, (privateMessage) => privateMessage.version_timestamp);
+      return ordered.map((privateMessage) => ({ ...privateMessage, attachments: JSON.parse(privateMessage.attachments) }));
     },
     async getConversations({ account }) {
-      return (await sql`
-        SELECT
-          direct_messages.author AS author,
-          direct_messages.recipient AS recipient,
-          contacts.nickname AS nickname,
-          direct_messages.content AS content,
-          MAX(direct_messages.version_timestamp) AS version_timestamp
-        FROM direct_messages
-        JOIN contacts ON
-          contacts.account = ${account} AND
-          (direct_messages.author = contacts.author OR direct_messages.recipient = contacts.author)
-        WHERE direct_messages.author = ${account} OR direct_messages.recipient = ${account}
-        GROUP BY
-          MAX(direct_messages.author, direct_messages.recipient),
-          MIN(direct_messages.author, direct_messages.recipient)
-        ORDER BY MAX(direct_messages.version_timestamp) DESC
-      `.all()) as any;
+      const all = await tables.table("private_messages").query({});
+      const filtered = _.filter(all, (privateMessage) => privateMessage.author === account || privateMessage.recipient === account);
+      const grouped = _.groupBy(
+        filtered,
+        (privateMessage) =>
+          `${_.max([privateMessage.author, privateMessage.recipient])}-${_.min([privateMessage.author, privateMessage.recipient])}`
+      );
+      const mostRecent = _.mapValues(
+        grouped,
+        (privateMessages) => _.maxBy(privateMessages, (privateMessage) => privateMessage.version_timestamp)!
+      );
+      const ordered = _.orderBy(mostRecent, (privateMessage) => privateMessage.version_timestamp);
+      return Promise.all(
+        ordered.map(async (privateMessage) => {
+          const other = privateMessage.author === account ? privateMessage.recipient : privateMessage.author;
+          const contact = await api.getContact({ account, author: other });
+          return {
+            author: privateMessage.author,
+            recipient: privateMessage.recipient,
+            nickname: contact?.nickname ?? "",
+            content: privateMessage.content,
+            version_timestamp: privateMessage.version_timestamp,
+          };
+        })
+      );
     },
-    async addPublicMessage({
-      author,
-      quote,
-      salt,
-      content,
-      attachments,
-      version_timestamp,
-    }) {
+    async addPublicMessage({ author, quote, salt, content, attachments, version_timestamp }) {
       const crypto_hash = await cryptoHashFunction({
         author,
         quote,
@@ -199,43 +152,30 @@ export async function createApi(sql: Sql, filesPath: string) {
         attachments,
         version_timestamp,
       });
-      await sql`
-        INSERT OR REPLACE INTO public_messages (crypto_hash, author, quote, salt, content, attachments, version_timestamp)
-        VALUES (
-          ${crypto_hash},
-          ${author},
-          ${quote},
-          ${salt},
-          ${content},
-          ${JSON.stringify(attachments)},
-          ${version_timestamp}
-        )
-      `.run();
+      await tables
+        .table("public_messages")
+        .set({ crypto_hash, author, quote, salt, content, attachments: JSON.stringify(attachments), version_timestamp });
     },
     async getPublicMessages({ account, author }) {
-      const result = (await sql`
-        SELECT author, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
-        FROM public_messages
-        WHERE author = ${author}
-        GROUP BY author, salt
-        ORDER BY MAX(version_timestamp) DESC
-      `.all()) as any;
-      return result.map((publicMessage: any) => ({
-        ...publicMessage,
-        attachments: JSON.parse(publicMessage.attachments),
-      }));
+      const all = await tables.table("public_messages").query({});
+      const filtered = _.filter(all, (publicMessage) => publicMessage.author === author);
+      const grouped = _.groupBy(filtered, (publicMessage) => `${publicMessage.author}-${publicMessage.salt}`);
+      const mostRecent = _.mapValues(
+        grouped,
+        (publicMessages) => _.maxBy(publicMessages, (publicMessage) => publicMessage.version_timestamp)!
+      );
+      const ordered = _.orderBy(mostRecent, (publicMessage) => -publicMessage.version_timestamp);
+      return ordered.map((publicMessage) => ({ ...publicMessage, attachments: JSON.parse(publicMessage.attachments) }));
     },
     async getFeed({ account }) {
-      const result = (await sql`
-        SELECT author, quote, salt, content, attachments, MAX(version_timestamp) AS version_timestamp
-        FROM public_messages
-        GROUP BY author, salt
-        ORDER BY MAX(version_timestamp) DESC
-      `.all()) as any;
-      return result.map((publicMessage: any) => ({
-        ...publicMessage,
-        attachments: JSON.parse(publicMessage.attachments),
-      }));
+      const all = await tables.table("public_messages").query({});
+      const grouped = _.groupBy(all, (publicMessage) => `${publicMessage.author}-${publicMessage.salt}`);
+      const mostRecent = _.mapValues(
+        grouped,
+        (publicMessages) => _.maxBy(publicMessages, (publicMessage) => publicMessage.version_timestamp)!
+      );
+      const ordered = _.orderBy(mostRecent, (publicMessage) => -publicMessage.version_timestamp);
+      return ordered.map((publicMessage) => ({ ...publicMessage, attachments: JSON.parse(publicMessage.attachments) }));
     },
     async getConnections(account) {
       const instances = connectivityModuleInstances.get(account);
@@ -276,17 +216,13 @@ export async function createApi(sql: Sql, filesPath: string) {
           await instances.bridgeServer.stop();
           await instances.lan.stop();
         }
-        await sql.close();
+        await tables.close();
       }
       await syncLoop;
     },
   };
 
-  function asSearch(string: string) {
-    return string.replace(/[^a-zA-z0-9]/g, "");
-  }
-
-  const { onConnection, sync } = createSync({ sql, api });
+  const { onConnection, sync } = createSync({ api, tables });
   const syncLoop = (async () => {
     while (!stopped) {
       await sync();
@@ -300,25 +236,18 @@ export async function createApi(sql: Sql, filesPath: string) {
     bridgeClients: Array<ReturnType<typeof createBridgeClient>>;
     lan: ReturnType<typeof createLanSwarm>;
   };
-  const connectivityModuleInstances = new Map<
-    string,
-    ConnectivityModuleInstances
-  >();
+  const connectivityModuleInstances = new Map<string, ConnectivityModuleInstances>();
 
   await connectAccounts();
   async function connectAccounts() {
     const accounts = await api.getAccounts({});
     for (const account of accounts) {
-      let instances = connectivityModuleInstances.get(
-        account.author
-      ) as ConnectivityModuleInstances;
+      let instances = connectivityModuleInstances.get(account.author) as ConnectivityModuleInstances;
       if (!instances) {
         instances = {
           hyperswarm: createHyperSwarm(onConnection),
           bridgeServer: createBridgeServer(),
-          bridgeClients: account.settings.connectivity.bridge.clients.map(() =>
-            createBridgeClient(onConnection)
-          ),
+          bridgeClients: account.settings.connectivity.bridge.clients.map(() => createBridgeClient(onConnection)),
           lan: createLanSwarm(onConnection),
         };
         connectivityModuleInstances.set(account.author, instances);
@@ -333,11 +262,7 @@ export async function createApi(sql: Sql, filesPath: string) {
       } else {
         await instances.bridgeServer.stop();
       }
-      for (
-        let index = 0;
-        index < account.settings.connectivity.bridge.clients.length;
-        index++
-      ) {
+      for (let index = 0; index < account.settings.connectivity.bridge.clients.length; index++) {
         const bridge = account.settings.connectivity.bridge.clients[index];
         const instance = instances.bridgeClients[index];
         if (bridge.enabled) {

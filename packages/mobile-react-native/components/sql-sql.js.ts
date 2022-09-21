@@ -1,37 +1,33 @@
-import type {Sql} from '@memita-2/core';
+import type {SqlDatabase} from '@memita-2/core';
 import initSqlJs from 'sql.js';
 import rn_bridge from 'rn-bridge';
 
-export function createSqlSqljs(): Sql {
-  const initSQL = initSqlJs({
+export async function createSqlSqljs(): Promise<SqlDatabase> {
+  const initSQL = await initSqlJs({
     locateFile: file => `${process.cwd()}/sql.js/dist/${file}`,
   });
-  initSQL.then(() => {
-    rn_bridge.channel.send({scope: 'log', message: 'sql.js db ready'});
-  });
-  const db = initSQL.then(SQL => new SQL.Database());
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => {
-    const doIt = async () => {
-      const result = (await db).exec(strings.join('?'), values);
-      if (!result[0]) {
-        return [];
-      }
-      return result[0].values.map(row =>
-        Object.fromEntries(
-          row.map((value, index) => [result[0].columns[index], value]),
-        ),
-      ) as any;
-    };
-    return {
-      run: doIt,
-      all: doIt,
-      text() {
-        return strings.join('');
-      },
-    };
+  rn_bridge.channel.send({scope: 'log', message: 'sql.js db ready'});
+  const db = new initSQL.Database();
+  const doIt = async (query: string, values: Array<string | number>) => {
+    const result = db.exec(query, values);
+    if (!result[0]) {
+      return [];
+    }
+    return result[0].values.map(row =>
+      Object.fromEntries(
+        row.map((value, index) => [result[0].columns[index], value]),
+      ),
+    ) as any;
   };
-  sql.close = async () => {
-    (await db).close();
+  return {
+    async run(query, values) {
+      await doIt(query, values);
+    },
+    async all(query, values) {
+      return await doIt(query, values);
+    },
+    async close() {
+      db.close();
+    },
   };
-  return sql;
 }

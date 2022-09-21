@@ -1,12 +1,13 @@
 import { Account } from "@memita-2/ui";
 import { createApi } from "../src/api";
 import { createBridgeServer } from "../src/connectivity/bridge/bridgeServer";
-import { createSql } from "./utils/sqlite/sql";
+import { createTables } from "../src/tables";
+import { createSqlDatabase } from "./utils/sqlite/sql";
 
 jest.setTimeout(30 * 1000);
 
 test("account", async () => {
-  const api = await createApi(createSql());
+  const api = await createApi({ tables: await createTables(await createSqlDatabase()), filesPath: "" });
   expect(await api.getAccounts({})).toEqual([]);
   const accountA: Account = {
     author: "fred",
@@ -48,7 +49,7 @@ test("account", async () => {
 });
 
 test("account delete", async () => {
-  const api = await createApi(createSql());
+  const api = await createApi({ tables: await createTables(await createSqlDatabase()), filesPath: "" });
   expect(await api.getAccounts({})).toEqual([]);
   const bridgeServer = createBridgeServer();
   await bridgeServer.start();

@@ -1,5 +1,5 @@
 import rn_bridge from 'rn-bridge';
-import {createApi} from '@memita-2/core';
+import {createApi, createTables} from '@memita-2/core';
 import path from 'path';
 import os from 'os';
 import {createApiRpcServer} from './components/api-rpc-server.js';
@@ -35,11 +35,16 @@ process.on('uncaughtException', (err: Error | string) => {
   });
 });
 
-const sql = createSql('react-native-sql-storage');
-const api = createApi(sql, path.join(appDataDir, 'files'));
-createApiRpcServer(api);
+async function start() {
+  const sqlDatabase = await createSqlDatabase('react-native-sql-storage');
+  const tables = await createTables(sqlDatabase);
+  const filesPath = path.join(appDataDir, 'files');
+  const api = createApi({tables, filesPath});
+  createApiRpcServer(api);
+}
+start();
 
-function createSql(type: 'sql.js' | 'react-native-sql-storage') {
+function createSqlDatabase(type: 'sql.js' | 'react-native-sql-storage') {
   switch (type) {
     case 'sql.js':
       return createSqlSqljs();

@@ -20,9 +20,8 @@ import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
-import { Attachment, DirectMessage } from "../api";
+import { Attachment, PrivateMessage } from "../api";
 import { DevAlert } from "../components/DevAlert";
-import prettyBytes from "pretty-bytes";
 import { ComposeMessage } from "../components/ComposeMessage";
 import { MessageAttachments } from "../components/MessageAttachments";
 
@@ -57,9 +56,9 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const accountQuery = useQuery(["account", { account }], async () => {
     return await api.getAccount({ author: account });
   });
-  const addDirectMessageMutation = useMutation(
-    async (message: DirectMessage) => {
-      await api.addDirectMessage(message);
+  const addPrivateMessageMutation = useMutation(
+    async (message: PrivateMessage) => {
+      await api.addPrivateMessage(message);
     },
     {
       onSuccess() {
@@ -74,7 +73,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const send = () => {
     const version_timestamp = Date.now();
     const salt = String(Math.random());
-    addDirectMessageMutation.mutate({
+    addPrivateMessageMutation.mutate({
       author: account,
       recipient: other ?? "",
       quote: "",
@@ -84,7 +83,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
       version_timestamp,
     });
   };
-  const ref = React.useRef<FlatList<DirectMessage>>(null);
+  const ref = React.useRef<FlatList<PrivateMessage>>(null);
   const isAtEnd = React.useRef(true);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

@@ -17,14 +17,15 @@ export type TablesDataGateway<
   ): {
     set(row: TypeOfRow<Tables[T]["columns"]>): Promise<void>;
     has(key: Pick<TypeOfRow<Tables[T]["columns"]>, Tables[T]["primaryKey"][number]>): Promise<boolean>;
-    get(key: Pick<TypeOfRow<Tables[T]["columns"]>, Tables[T]["primaryKey"][number]>): Promise<TypeOfRow<Tables[T]["columns"]> | null>;
+    get(key: Pick<TypeOfRow<Tables[T]["columns"]>, Tables[T]["primaryKey"][number]>): Promise<TypeOfRow<Tables[T]["columns"]> | undefined>;
     all(): Promise<Array<TypeOfRow<Tables[T]["columns"]>>>;
     del(key: Pick<TypeOfRow<Tables[T]["columns"]>, Tables[T]["primaryKey"][number]>): Promise<void>;
     query(params: {
-      where: Partial<TypeOfRow<Tables[T]["columns"]>>;
-      order: Array<[keyof TypeOfRow<Tables[T]["columns"]>, "ascending" | "descending"]>;
-    }): Promise<TypeOfRow<Tables[T]["columns"]>>;
+      where?: Partial<TypeOfRow<Tables[T]["columns"]>>;
+      order?: Array<[keyof TypeOfRow<Tables[T]["columns"]>, "ascending" | "descending"]>;
+    }): Promise<Array<TypeOfRow<Tables[T]["columns"]>>>;
   };
+  close(): Promise<void>;
 };
 
 type TypeOfRow<R extends Record<string, "string" | "number">> = { [K in keyof R]: { string: string; number: number }[R[K]] };
@@ -55,7 +56,7 @@ export async function createSqlTablesDataGateway<
         return `${columnName} ${type} NOT NULL`;
       })
       .join(", ");
-    return `CREATE TABLE ${tableName as string} (${columns})`;
+    return `CREATE TABLE ${tableName as string} (${columns}, PRIMARY KEY (${tables[tableName].primaryKey.join(", ")}))`;
   }
   async function checkSchema() {
     function uniformSpaces(sqlText: string) {
@@ -128,19 +129,29 @@ export async function createSqlTablesDataGateway<
         },
         async query({ order, where }) {
           const columns = columnNames.join(", ");
-          const clauses = Object.keys(where)
-            .map((columnName) => `${columnName as string} = ?`)
-            .join(" AND ");
+          const clauses =
+            where &&
+            Object.keys(where)
+              .map((columnName) => `${columnName as string} = ?`)
+              .join(" AND ");
           const orderingToSql = {
             ascending: "ASC",
             descending: "DESC",
           };
-          const ordering = order.map(([columnName, verse]) => `${columnName as string} ${orderingToSql[verse]}`);
-          const query = `SELECT ${columns} FROM ${tableName as string} WHERE ${clauses} ORDER BY ${ordering}`;
-          const result = await db.all(query, Object.values(where));
+          const ordering = order && order.map(([columnName, verse]) => `${columnName as string} ${orderingToSql[verse]}`);
+          const query = `
+            SELECT ${columns}
+            FROM ${tableName as string}
+            ${clauses ? `WHERE ${clauses}` : ""}
+            ${ordering ? `ORDER BY ${ordering}` : ""}
+          `;
+          const result = await db.all(query, where ? Object.values(where) : []);
           return result as any;
         },
       };
+    },
+    async close() {
+      await db.close();
     },
   };
 }

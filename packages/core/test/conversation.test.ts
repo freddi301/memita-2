@@ -1,12 +1,11 @@
 import { createApi } from "../src/api";
-import { createSql } from "./utils/sqlite/sql";
+import { createTables } from "../src/tables";
+import { createSqlDatabase } from "./utils/sqlite/sql";
 
 test("conversation aggregation", async () => {
-  const api = await createApi(createSql());
-  expect(
-    await api.getConversation({ account: "fred", other: "alice" })
-  ).toEqual([]);
-  const directMessageA = {
+  const api = await createApi({ tables: await createTables(await createSqlDatabase()), filesPath: "" });
+  expect(await api.getConversation({ account: "fred", other: "alice" })).toEqual([]);
+  const privateMessageA = {
     author: "fred",
     recipient: "alice",
     quote: "",
@@ -15,27 +14,15 @@ test("conversation aggregation", async () => {
     attachments: [],
     version_timestamp: 1,
   };
-  await api.addDirectMessage(directMessageA);
-  expect(
-    await api.getConversation({ account: "fred", other: "alice" })
-  ).toEqual([directMessageA]);
-  expect(
-    await api.getConversation({ account: "alice", other: "fred" })
-  ).toEqual([directMessageA]);
-  expect(
-    await api.getConversation({ account: "fred", other: "nobody" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "alice", other: "nobody" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "nobody", other: "fred" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "nobody", other: "alice" })
-  ).toEqual([]);
+  await api.addPrivateMessage(privateMessageA);
+  expect(await api.getConversation({ account: "fred", other: "alice" })).toEqual([privateMessageA]);
+  expect(await api.getConversation({ account: "alice", other: "fred" })).toEqual([privateMessageA]);
+  expect(await api.getConversation({ account: "fred", other: "nobody" })).toEqual([]);
+  expect(await api.getConversation({ account: "alice", other: "nobody" })).toEqual([]);
+  expect(await api.getConversation({ account: "nobody", other: "fred" })).toEqual([]);
+  expect(await api.getConversation({ account: "nobody", other: "alice" })).toEqual([]);
 
-  const directMessageB = {
+  const privateMessageB = {
     author: "alice",
     recipient: "fred",
     quote: "",
@@ -44,18 +31,10 @@ test("conversation aggregation", async () => {
     attachments: [],
     version_timestamp: 2,
   };
-  await api.addDirectMessage(directMessageB);
-  expect(
-    await api.getConversation({ account: "fred", other: "alice" })
-  ).toEqual([directMessageA, directMessageB]);
-  expect(
-    await api.getConversation({ account: "alice", other: "fred" })
-  ).toEqual([directMessageA, directMessageB]);
-  expect(
-    await api.getConversation({ account: "nobody", other: "fred" })
-  ).toEqual([]);
-  expect(
-    await api.getConversation({ account: "nobody", other: "alice" })
-  ).toEqual([]);
+  await api.addPrivateMessage(privateMessageB);
+  expect(await api.getConversation({ account: "fred", other: "alice" })).toEqual([privateMessageA, privateMessageB]);
+  expect(await api.getConversation({ account: "alice", other: "fred" })).toEqual([privateMessageA, privateMessageB]);
+  expect(await api.getConversation({ account: "nobody", other: "fred" })).toEqual([]);
+  expect(await api.getConversation({ account: "nobody", other: "alice" })).toEqual([]);
   await api.stop();
 });

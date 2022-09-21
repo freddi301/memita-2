@@ -31,7 +31,6 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
     async () => {
       return await api.getContacts({
         account,
-        label: "",
         nickname: searchTextDebounced || undefined,
       });
     }

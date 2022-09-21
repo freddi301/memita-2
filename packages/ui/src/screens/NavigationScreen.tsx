@@ -194,27 +194,6 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
             <I18n en="Connectivity" it="Connettività" />
           </Text>
         </Pressable>
-        <Pressable
-          onPress={() => {
-            routing.push("Database", { account });
-          }}
-          style={{
-            flexDirection: "row",
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            alignItems: "center",
-          }}
-        >
-          <FontAwesomeIcon icon={"database"} color={theme.actionTextColor} />
-          <Text
-            style={{
-              color: theme.textColor,
-              marginLeft: 16,
-            }}
-          >
-            <I18n en="Database" it="Database" />
-          </Text>
-        </Pressable>
       </ScrollView>
     </View>
   );

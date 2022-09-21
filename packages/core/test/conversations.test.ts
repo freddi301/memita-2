@@ -1,10 +1,11 @@
 import { createApi } from "../src/api";
-import { createSql } from "./utils/sqlite/sql";
+import { createTables } from "../src/tables";
+import { createSqlDatabase } from "./utils/sqlite/sql";
 
 test("conversations aggregation", async () => {
-  const api = await createApi(createSql());
+  const api = await createApi({ tables: await createTables(await createSqlDatabase()), filesPath: "" });
   expect(await api.getConversations({ account: "fred" })).toEqual([]);
-  await api.addDirectMessage({
+  await api.addPrivateMessage({
     author: "fred",
     recipient: "alice",
     quote: "",
@@ -30,7 +31,7 @@ test("conversations aggregation", async () => {
       version_timestamp: 1,
     },
   ]);
-  await api.addDirectMessage({
+  await api.addPrivateMessage({
     author: "alice",
     recipient: "fred",
     quote: "",
@@ -48,7 +49,7 @@ test("conversations aggregation", async () => {
       version_timestamp: 2,
     },
   ]);
-  await api.addDirectMessage({
+  await api.addPrivateMessage({
     author: "fred",
     recipient: "chris",
     quote: "",

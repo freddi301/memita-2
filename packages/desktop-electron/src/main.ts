@@ -1,9 +1,10 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { createApi } from "@memita-2/core";
-import { Sql } from "@memita-2/core";
+import { SqlDatabase } from "@memita-2/core";
 import Database from "better-sqlite3";
 import sqlite3 from "sqlite3";
+import { createTables } from "@memita-2/core/dist/tables";
 
 (async () => {
   await app.whenReady();
@@ -18,8 +19,10 @@ import sqlite3 from "sqlite3";
     return;
   }
   const title = `Memita 2 ${filePaths[0]}`;
-  const sql = createSql(path.join(filePaths[0], "db.db"));
-  const api = await createApi(sql, path.join(filePaths[0], "files"));
+  const sqlDatabase = createSqlDatabase(path.join(filePaths[0], "db.db"));
+  const tables = await createTables(sqlDatabase);
+  const filesPath = path.join(filePaths[0], "files");
+  const api = await createApi({ filesPath, tables });
   for (const [methodName, method] of Object.entries(api)) {
     ipcMain.handle(methodName, (event, ...args) => (method as any)(...args));
   }
@@ -81,58 +84,48 @@ function installExtensions() {
     });
 }
 
-function createSql(path: string) {
-  if (process.platform === "win32") return createSqlSqlite3(path);
-  return createSqlBetterSqlite3(path);
+function createSqlDatabase(path: string) {
+  if (process.platform === "win32") return createSqlDatabaseSqlite3(path);
+  return createSqlDatabaseBetterSqlite3(path);
 }
 
-function createSqlSqlite3(path: string): Sql {
+function createSqlDatabaseSqlite3(path: string): SqlDatabase {
   const db = sqlite3.cached.Database(path);
   sqlite3.verbose();
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => {
-    const doIt = () =>
-      new Promise<any>((resolve, reject) => {
-        db.all(strings.join("?"), values, (error, rows) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(rows as any);
-          }
-        });
-      });
-    return {
-      run: doIt,
-      all: doIt,
-      text() {
-        return strings.join("");
-      },
-    };
+  return {
+    run(query, values) {
+      return new Promise((resolve, reject) =>
+        db.run(query, values, (error) => (error ? reject(error) : resolve()))
+      );
+    },
+    all(query, values) {
+      return new Promise((resolve, reject) =>
+        db.all(query, values, (error, rows) =>
+          error ? reject(error) : resolve(rows)
+        )
+      );
+    },
+    close() {
+      return new Promise<void>((resolve, reject) =>
+        db.close((error) => (error ? reject(error) : resolve(undefined)))
+      );
+    },
   };
-  sql.close = () => {
-    return new Promise<void>((resolve, reject) =>
-      db.close((error) => (error ? reject(error) : resolve(undefined)))
-    );
-  };
-  return sql;
 }
 
-function createSqlBetterSqlite3(path: string): Sql {
+function createSqlDatabaseBetterSqlite3(path: string): SqlDatabase {
   const db = new Database(path);
-  const sql = (strings: TemplateStringsArray, ...values: any[]) => ({
-    text() {
-      return strings.join("");
+  return {
+    async run(query, values) {
+      db.prepare(query).run(values);
     },
-    async run() {
-      db.prepare(strings.join("?")).run(values);
+    async all(query, values) {
+      return db.prepare(query).all(values);
     },
-    async all() {
-      return db.prepare(strings.join("?")).all(values);
+    async close() {
+      db.close();
     },
-  });
-  sql.close = async () => {
-    db.close();
   };
-  return sql;
 }
 
 ipcMain.handle("pickFiles", async (event, ...args) => {
