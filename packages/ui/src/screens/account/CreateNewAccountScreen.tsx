@@ -13,9 +13,9 @@ import { useTheme } from "../../theme";
 import { useApi } from "../../ui";
 import { BackButton } from "../../components/BackButton";
 import { SimpleInput } from "../../components/SimpleInput";
-import { Account, Settings } from "../../api";
 import { I18n } from "../../components/I18n";
 import { Avatar } from "../../components/Avatar";
+import { Settings } from "@memita-2/core";
 
 export function CreateNewAccountScreen({
   ...original
@@ -25,27 +25,24 @@ export function CreateNewAccountScreen({
   const [nickname, setNickname] = React.useState("");
   const api = useApi();
   const queryClient = useQueryClient();
-  const addAccountMutation = useMutation(
-    async (account: Account) => {
-      await api.addAccount(account);
+  const createAccountMutation = useMutation(
+    async ({
+      nickname,
+      settings,
+    }: {
+      nickname: string;
+      settings: Settings;
+    }) => {
+      return await api.createAccount({ nickname, settings });
     },
     {
-      onSuccess(data, account) {
-        queryClient.invalidateQueries(["account"]);
+      onSuccess({ account }) {
+        queryClient.invalidateQueries(["accounts"]);
         routing.back();
-        routing.push("Navigation", { account: account.author });
+        routing.push("Navigation", { account: account });
       },
     }
   );
-  const createNewAccount = async () => {
-    const { author, secret } = await api.generateAccount();
-    addAccountMutation.mutate({
-      author,
-      secret,
-      nickname,
-      settings: defaultSettings,
-    });
-  };
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -89,7 +86,15 @@ export function CreateNewAccountScreen({
             />
           }
         />
-        <Pressable onPress={createNewAccount} style={{ padding: 16 }}>
+        <Pressable
+          onPress={() => {
+            createAccountMutation.mutate({
+              nickname,
+              settings: defaultSettings,
+            });
+          }}
+          style={{ padding: 16 }}
+        >
           <Text
             style={{
               color: theme.actionTextColor,

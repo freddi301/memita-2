@@ -19,7 +19,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const contactQuery = useQuery(
     ["contact", { account, author }],
     async () => {
-      return await api.getContact({ account, author });
+      return await api.getContact({ account, contact: author });
     },
     {
       enabled: account !== author,
@@ -28,7 +28,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
   const accountQuery = useQuery(
     ["account", { account }],
     async () => {
-      return await api.getAccount({ author: account });
+      return await api.getAccount({ account });
     },
     {
       enabled: account === author,
@@ -85,7 +85,7 @@ export function ProfileScreen({ account, author }: Routes["Profile"]) {
         ) : (
           <Pressable
             onPress={() => {
-              routing.push("Contact", { account, author });
+              routing.push("Contact", { account, contact: author });
             }}
             style={{ padding: 16 }}
           >

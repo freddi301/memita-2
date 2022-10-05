@@ -15,10 +15,10 @@ export function FeedScreen({ account }: Routes["Navigation"]) {
   const theme = useTheme();
   const api = useApi();
   const accountQuery = useQuery(["account", { account }], async () => {
-    return await api.getAccount({ author: account });
+    return await api.getAccount({ account });
   });
   const feedQuery = useQuery(["feed", { account }], async () => {
-    return await api.getFeed({ account });
+    return await api.getPublicMessagesFeed({ account });
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

@@ -30,11 +30,11 @@ export function ConversationsScreen({ account }: Routes["Conversations"]) {
   const conversationsQuery = useQuery(
     ["conversations", { account }],
     async () => {
-      return await api.getConversations({ account });
+      return await api.getPrivateConversations({ account });
     }
   );
-  const accountQuery = useQuery(["account", { author: account }], async () => {
-    return await api.getAccount({ author: account });
+  const accountQuery = useQuery(["account", { account }], async () => {
+    return await api.getAccount({ account });
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
@@ -105,8 +105,13 @@ export function ConversationsScreen({ account }: Routes["Conversations"]) {
       <FlatList
         data={conversationsQuery.data}
         renderItem={({ item }) => {
-          const datetime = DateTime.fromMillis(item.version_timestamp);
-          const other = item.author === account ? item.recipient : item.author;
+          const datetime = DateTime.fromMillis(
+            item.lastMessage.version_timestamp
+          );
+          const other =
+            item.lastMessage.author === account
+              ? item.contact.account
+              : item.lastMessage.author;
           return (
             <Pressable
               onPress={() => {
@@ -128,7 +133,7 @@ export function ConversationsScreen({ account }: Routes["Conversations"]) {
                       flex: 1,
                     }}
                   >
-                    {item.nickname}
+                    {item.contact.nickname}
                   </Text>
                   <Text
                     style={{
@@ -148,7 +153,7 @@ export function ConversationsScreen({ account }: Routes["Conversations"]) {
                     overflow: "hidden",
                   }}
                 >
-                  {item.content}
+                  {item.lastMessage.content}
                 </Text>
               </View>
             </Pressable>

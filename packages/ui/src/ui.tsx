@@ -1,6 +1,6 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { Api } from "./api";
+import { UiApi } from "@memita-2/core";
 import { Router } from "./routing";
 
 const { library } = require("@fortawesome/fontawesome-svg-core");
@@ -9,7 +9,7 @@ library.add(fas);
 
 const queryClient = new QueryClient();
 
-const ApiContext = React.createContext<Api>(null as any);
+const ApiContext = React.createContext<UiApi>(null as any);
 
 export function useApi() {
   return React.useContext(ApiContext);
@@ -27,7 +27,7 @@ export type Overrides = {
 };
 
 type UiProps = {
-  api: Api;
+  api: UiApi;
   overrides: Overrides;
 };
 export function Ui({ api, overrides }: UiProps) {

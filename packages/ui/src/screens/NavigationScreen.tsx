@@ -15,8 +15,8 @@ export function NavigationScreen({ account }: Routes["Navigation"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
-  const accountQuery = useQuery(["account", { author: account }], async () => {
-    return await api.getAccount({ author: account });
+  const accountQuery = useQuery(["account", { account }], async () => {
+    return await api.getAccount({ account });
   });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

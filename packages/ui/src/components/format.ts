@@ -1,3 +1,6 @@
-export function formatAuthor(author: string) {
-  return `#${author.slice(0, 4)}...${author.slice(-4)}`;
+import { AccountId } from "@memita-2/core";
+
+export function formatAuthor(accountId: AccountId) {
+  const readableString = AccountId.toReadableString(accountId);
+  return `#${readableString.slice(0, 4)}...${readableString.slice(-4)}`;
 }

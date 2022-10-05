@@ -14,13 +14,13 @@ import { useTheme } from "../../theme";
 import { OverridesContext, useApi } from "../../ui";
 import { BackButton } from "../../components/BackButton";
 import { SimpleInput } from "../../components/SimpleInput";
-import { Account } from "../../api";
 import { I18n, useI18n } from "../../components/I18n";
 import { Avatar } from "../../components/Avatar";
 import { DevAlert } from "../../components/DevAlert";
 import QRCode from "react-native-qrcode-svg";
 import { HorizontalLoader } from "../../components/HorizontalLoader";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { AccountId, Settings } from "@memita-2/core";
 const QRCodeAny = QRCode as any;
 
 export function YourAccountScreen({ account }: Routes["YourAccount"]) {
@@ -30,9 +30,9 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
   const api = useApi();
   const queryClient = useQueryClient();
   const accountQuery = useQuery(
-    ["account", { author: account }],
+    ["account", { account }],
     async () => {
-      return await api.getAccount({ author: account });
+      return await api.getAccount({ account });
     },
     {
       onSuccess(account) {
@@ -40,9 +40,17 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
       },
     }
   );
-  const addAccountMutation = useMutation(
-    async (account: Account) => {
-      await api.addAccount(account);
+  const updateAccountMutation = useMutation(
+    async ({
+      account,
+      nickname,
+      settings,
+    }: {
+      account: AccountId;
+      nickname: string;
+      settings: Settings;
+    }) => {
+      await api.updateAccount({ account, nickname, settings });
     },
     {
       onSuccess() {
@@ -51,8 +59,8 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
     }
   );
   const deleteAccountMutation = useMutation(
-    async (account: Account) => {
-      await api.deleteAccount(account);
+    async ({ account }: { account: AccountId }) => {
+      await api.deleteAccount({ account });
     },
     {
       onSuccess() {
@@ -107,18 +115,20 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
         <Pressable
           onPress={async () => {
             if (accountQuery.data) {
-              if (
-                await DevAlert.alert(promptDelete, [
-                  { text: cancelDelete, value: false },
-                  { text: confirmDelete, value: true },
-                ])
-              ) {
-                deleteAccountMutation.mutate(accountQuery.data, {
-                  onSuccess() {
-                    routing.back();
-                    routing.back();
-                  },
-                });
+              const deleteConfirmed = await DevAlert.alert(promptDelete, [
+                { text: cancelDelete, value: false },
+                { text: confirmDelete, value: true },
+              ]);
+              if (deleteConfirmed) {
+                deleteAccountMutation.mutate(
+                  { account },
+                  {
+                    onSuccess() {
+                      routing.back();
+                      routing.back();
+                    },
+                  }
+                );
               }
             }
           }}
@@ -147,10 +157,12 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
               label={<I18n en="Nickname" it="Soprannome" />}
               value={nickname}
               onChangeText={setNickname}
-              onBlur={() =>
-                accountQuery.data &&
-                addAccountMutation.mutate({ ...accountQuery.data, nickname })
-              }
+              onBlur={() => {
+                if (accountQuery.data) {
+                  const { settings } = accountQuery.data;
+                  updateAccountMutation.mutate({ account, nickname, settings });
+                }
+              }}
               description={
                 <I18n
                   en="An friendly name to help you remeber which account this is. It is visible only to you"
@@ -162,7 +174,7 @@ export function YourAccountScreen({ account }: Routes["YourAccount"]) {
         </View>
         <SimpleInput
           label={<I18n en="Author" it="Autore" />}
-          value={account}
+          value={AccountId.toReadableString(account)}
           onChangeText={() => {}}
           editable={false}
           multiline={2}

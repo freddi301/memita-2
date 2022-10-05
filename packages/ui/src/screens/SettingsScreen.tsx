@@ -1,7 +1,7 @@
+import { AccountId, Settings } from "@memita-2/core";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Account, Settings } from "../api";
 import { BackButton } from "../components/BackButton";
 import { I18n } from "../components/I18n";
 import { Routes } from "../routing";
@@ -13,13 +13,21 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
   const theme = useTheme();
   const queryClient = useQueryClient();
   const api = useApi();
-  const accountQuery = useQuery(["account", { author: account }], async () => {
-    return await api.getAccount({ author: account });
+  const accountQuery = useQuery(["account", { account }], async () => {
+    return await api.getAccount({ account });
   });
   const settings = accountQuery.data?.settings ?? defaultSettings;
-  const accountMutation = useMutation(
-    async (account: Account) => {
-      await api.addAccount(account);
+  const updateAccountMutation = useMutation(
+    async ({
+      account,
+      nickname,
+      settings,
+    }: {
+      account: AccountId;
+      nickname: string;
+      settings: Settings;
+    }) => {
+      await api.updateAccount({ account, nickname, settings });
     },
     {
       onSuccess() {
@@ -29,7 +37,8 @@ export function SettingsScreen({ account }: Routes["Settings"]) {
   );
   const setSettings = (settings: Settings) => {
     if (accountQuery.data) {
-      accountMutation.mutate({ ...accountQuery.data, settings });
+      const { nickname } = accountQuery.data;
+      updateAccountMutation.mutate({ account, nickname, settings });
     }
   };
   return (

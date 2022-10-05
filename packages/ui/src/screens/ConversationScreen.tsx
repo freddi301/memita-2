@@ -3,7 +3,6 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   Text,
   TextInput,
   View,
@@ -20,10 +19,10 @@ import { Avatar } from "../components/Avatar";
 import { DateTime } from "luxon";
 import { I18n } from "../components/I18n";
 import { formatAuthor } from "../components/format";
-import { Attachment, PrivateMessage } from "../api";
 import { DevAlert } from "../components/DevAlert";
 import { ComposeMessage } from "../components/ComposeMessage";
 import { MessageAttachments } from "../components/MessageAttachments";
+import { AccountId, Attachment, CryptoHash } from "@memita-2/core";
 
 export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const api = useApi();
@@ -36,7 +35,7 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
   const conversationQuery = useQuery(
     ["conversation", { account, other }],
     async () => {
-      return await api.getConversation({ account, other });
+      return await api.getPrivateConversation({ account, other });
     },
     {
       refetchInterval: 1000,
@@ -47,18 +46,33 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
       },
     }
   );
-  const contactQuery = useQuery(
-    ["contact", { account, author: other }],
-    async () => {
-      return await api.getContact({ account, author: other });
-    }
-  );
-  const accountQuery = useQuery(["account", { account }], async () => {
-    return await api.getAccount({ author: account });
+  const contactQuery = useQuery(["contact", { account, other }], async () => {
+    return await api.getContact({ account, contact: other });
   });
-  const addPrivateMessageMutation = useMutation(
-    async (message: PrivateMessage) => {
-      await api.addPrivateMessage(message);
+  const accountQuery = useQuery(["account", { account }], async () => {
+    return await api.getAccount({ account });
+  });
+  const createPrivateMessageMutation = useMutation(
+    async ({
+      author,
+      recipient,
+      creation_timestamp,
+      content,
+      attachments,
+    }: {
+      author: AccountId;
+      recipient: AccountId;
+      creation_timestamp: number;
+      content: string;
+      attachments: Array<Attachment>;
+    }) => {
+      await api.createPrivateMessage({
+        author,
+        recipient,
+        creation_timestamp,
+        content,
+        attachments,
+      });
     },
     {
       onSuccess() {
@@ -69,21 +83,28 @@ export function ConversationScreen({ account, other }: Routes["Conversation"]) {
     }
   );
   const [content, setContent] = React.useState("");
-  const [attachments, setAttachments] = React.useState<Array<Attachment>>([]);
+  const [attachments, setAttachments] = React.useState<
+    Array<{ size: number; name: string; hash: CryptoHash }>
+  >([]);
   const send = () => {
-    const version_timestamp = Date.now();
-    const salt = String(Math.random());
-    addPrivateMessageMutation.mutate({
+    const creation_timestamp = Date.now();
+    createPrivateMessageMutation.mutate({
       author: account,
       recipient: other ?? "",
-      quote: "",
-      salt,
+      creation_timestamp,
       content,
       attachments,
-      version_timestamp,
     });
   };
-  const ref = React.useRef<FlatList<PrivateMessage>>(null);
+  const ref = React.useRef<
+    FlatList<{
+      author: AccountId;
+      recipient: AccountId;
+      content: string;
+      attachments: Array<Attachment>;
+      version_timestamp: number;
+    }>
+  >(null);
   const isAtEnd = React.useRef(true);
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>

@@ -33,10 +33,10 @@ export function ChooseAccountScreen() {
         style={{
           width: 200,
         }}
-        renderItem={({ item: { author, nickname } }) => (
+        renderItem={({ item: { account, nickname } }) => (
           <Pressable
             onPress={() => {
-              routing.push("Navigation", { account: author });
+              routing.push("Navigation", { account });
             }}
             style={{
               flexDirection: "row",
@@ -63,7 +63,7 @@ export function ChooseAccountScreen() {
                   color: theme.textColor,
                 }}
               >
-                {formatAuthor(author)}
+                {formatAuthor(account)}
               </Text>
             </View>
           </Pressable>

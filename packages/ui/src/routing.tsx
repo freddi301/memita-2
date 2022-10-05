@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 import { ThemeContext, themes } from "./theme";
-import { LanguageContext } from "./components/I18n";
+import { Language, LanguageContext } from "./components/I18n";
 import { useQuery, useQueryClient } from "react-query";
 import { ConnectivityScreen } from "./screens/ConnectivityScreen";
 import { ChooseAccountScreen } from "./screens/account/ChooseAccountScreen";
@@ -27,22 +27,23 @@ import { YourAccountScreen } from "./screens/account/YourAccountScreen";
 import { ComposePublicMessageScreen } from "./screens/ComposePublicMessageScreen";
 import { FeedScreen } from "./screens/FeedScreen";
 import { FileViewScreen } from "./screens/FileViewScreen";
+import { AccountId, CryptoHash } from "@memita-2/core";
 
 export type Routes = {
   ChooseAccount: { account: undefined };
   CreateNewAccount: { account: undefined };
-  YourAccount: { account: string };
-  Connectivity: { account: string };
-  Settings: { account: string };
-  Navigation: { account: string };
-  Contacts: { account: string };
-  Contact: { account: string; author?: string };
-  Profile: { account: string; author: string };
-  Conversations: { account: string };
-  Conversation: { account: string; other: string };
-  ComposePublicMessage: { account: string };
-  Feed: { account: string };
-  FileView: { account: undefined; hash: string };
+  YourAccount: { account: AccountId };
+  Connectivity: { account: AccountId };
+  Settings: { account: AccountId };
+  Navigation: { account: AccountId };
+  Contacts: { account: AccountId };
+  Contact: { account: AccountId; contact?: AccountId };
+  Profile: { account: AccountId; author: AccountId };
+  Conversations: { account: AccountId };
+  Conversation: { account: AccountId; other: AccountId };
+  ComposePublicMessage: { account: AccountId };
+  Feed: { account: AccountId };
+  FileView: { account: undefined; hash: CryptoHash };
 };
 
 type Route = {
@@ -144,7 +145,7 @@ export function Router({ initial }: RoutesProps) {
   const accountQuery = useQuery(
     ["account", { author: route.parameters.account }],
     async () => {
-      return await api.getAccount({ author: route.parameters.account ?? "" });
+      return await api.getAccount({ account: route.parameters.account! });
     },
     { enabled: route.parameters.account !== undefined }
   );
@@ -164,52 +165,55 @@ export function Router({ initial }: RoutesProps) {
       }
     />
   );
-  if (!(settings.animations === "enabled")) {
-    const Screen = mapping[route.screen] as any;
-    return (
-      <RoutingContext.Provider value={value}>
-        <ThemeContext.Provider value={themes[settings.theme]}>
-          <LanguageContext.Provider value={settings.language}>
-            {StatusBar}
-            <Screen {...route.parameters} />
-          </LanguageContext.Provider>
-        </ThemeContext.Provider>
-      </RoutingContext.Provider>
-    );
-  }
   return (
     <RoutingContext.Provider value={value}>
       <ThemeContext.Provider value={themes[settings.theme]}>
-        <LanguageContext.Provider value={settings.language}>
-          <View style={{ position: "relative", flex: 1 }}>
-            {statusBar}
-            {stack.map((route, i) => {
+        <LanguageContext.Provider value={settings.language as Language}>
+          {(() => {
+            if (!(settings.animations === "enabled")) {
               const Screen = mapping[route.screen] as any;
               return (
-                <Animated.View
-                  key={route.salt}
-                  style={{
-                    display: !isAnimating && i !== index ? "none" : "flex",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    transform: [
-                      {
-                        translateX: Animated.add(indexAnimation, i).interpolate(
-                          {
-                            inputRange: [0, 1 * stack.length],
-                            outputRange: [0, width * stack.length],
-                          }
-                        ),
-                      },
-                    ],
-                  }}
-                >
+                <React.Fragment>
+                  {StatusBar}
                   <Screen {...route.parameters} />
-                </Animated.View>
+                </React.Fragment>
               );
-            })}
-          </View>
+            } else {
+              return (
+                <View style={{ position: "relative", flex: 1 }}>
+                  {statusBar}
+                  {stack.map((route, i) => {
+                    const Screen = mapping[route.screen] as any;
+                    return (
+                      <Animated.View
+                        key={route.salt}
+                        style={{
+                          display:
+                            !isAnimating && i !== index ? "none" : "flex",
+                          width: "100%",
+                          height: "100%",
+                          position: "absolute",
+                          transform: [
+                            {
+                              translateX: Animated.add(
+                                indexAnimation,
+                                i
+                              ).interpolate({
+                                inputRange: [0, 1 * stack.length],
+                                outputRange: [0, width * stack.length],
+                              }),
+                            },
+                          ],
+                        }}
+                      >
+                        <Screen {...route.parameters} />
+                      </Animated.View>
+                    );
+                  })}
+                </View>
+              );
+            }
+          })()}
         </LanguageContext.Provider>
       </ThemeContext.Provider>
     </RoutingContext.Provider>

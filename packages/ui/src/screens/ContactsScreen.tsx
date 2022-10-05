@@ -26,15 +26,9 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const searchTextDebounced = useDebounce(searchText, 300);
-  const contactsQuery = useQuery(
-    ["contacts", { account, label: "", searchTextDebounced }],
-    async () => {
-      return await api.getContacts({
-        account,
-        nickname: searchTextDebounced || undefined,
-      });
-    }
-  );
+  const contactsQuery = useQuery(["contacts", { account }], async () => {
+    return await api.getContacts({ account });
+  });
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundColorPrimary }}>
       <View
@@ -105,10 +99,10 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
       </View>
       <FlatList
         data={contactsQuery.data}
-        renderItem={({ item: { author, nickname } }) => (
+        renderItem={({ item: { account, contact, nickname } }) => (
           <Pressable
             onPress={() => {
-              routing.push("Profile", { account, author });
+              routing.push("Profile", { account, author: contact });
             }}
           >
             <View
@@ -134,7 +128,7 @@ export function ContactsScreen({ account }: Routes["Contacts"]) {
                     color: theme.textColor,
                   }}
                 >
-                  {formatAuthor(author)}
+                  {formatAuthor(contact)}
                 </Text>
               </View>
             </View>

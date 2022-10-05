@@ -1,21 +1,26 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useTheme } from "../theme";
 import { Avatar } from "../components/Avatar";
 import { useQuery } from "react-query";
 import { useApi } from "../ui";
 import { DateTime } from "luxon";
 import { MessageAttachments } from "../components/MessageAttachments";
-import { PublicMessage } from "../api";
 import { formatAuthor } from "./format";
 import { useRouting } from "../routing";
+import { AccountId, Attachment } from "@memita-2/core";
 
 export function PublicMessageView({
   account,
   publicMessage: { author, content, attachments, version_timestamp },
 }: {
-  account: string;
-  publicMessage: PublicMessage;
+  account: AccountId;
+  publicMessage: {
+    author: AccountId;
+    content: string;
+    attachments: Array<Attachment>;
+    version_timestamp: number;
+  };
 }) {
   const theme = useTheme();
   const routing = useRouting();
@@ -24,7 +29,7 @@ export function PublicMessageView({
   const contactQuery = useQuery(
     ["contact", { author }],
     async () => {
-      return await api.getContact({ account, author });
+      return await api.getContact({ account, contact: author });
     },
     {
       enabled: account !== author,
@@ -33,7 +38,7 @@ export function PublicMessageView({
   const accountQuery = useQuery(
     ["account", { account }],
     async () => {
-      return await api.getAccount({ author: account });
+      return await api.getAccount({ account });
     },
     {
       enabled: account === author,

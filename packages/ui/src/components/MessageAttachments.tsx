@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { Attachment } from "@memita-2/core";
 import prettyBytes from "pretty-bytes";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Attachment } from "../api";
 import { useRouting } from "../routing";
 import { useTheme } from "../theme";
 

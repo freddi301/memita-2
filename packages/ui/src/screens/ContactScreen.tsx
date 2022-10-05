@@ -9,40 +9,53 @@ import { BackButton } from "../components/BackButton";
 import { SimpleInput } from "../components/SimpleInput";
 import { HorizontalLoader } from "../components/HorizontalLoader";
 import { I18n } from "../components/I18n";
+import { AccountId } from "@memita-2/core";
 
 export function ContactScreen({ account, ...original }: Routes["Contact"]) {
   const routing = useRouting();
   const theme = useTheme();
   const api = useApi();
   const contactQuery = useQuery(
-    ["contact", { account, author: original.author }],
+    ["contact", { account, contact: original.contact }],
     async () => {
       return await api.getContact({
         account,
-        author: original.author ?? "",
+        contact: original.contact!,
       });
-    }
+    },
+    { enabled: original.contact !== undefined }
   );
-  const addContactMutation = useMutation(
-    async ({ author, nickname }: { author: string; nickname: string }) => {
+  const updateContactMutation = useMutation(
+    async ({
+      account,
+      contact,
+      nickname,
+    }: {
+      account: AccountId;
+      contact: AccountId;
+      nickname: string;
+    }) => {
       const version_timestamp = Date.now();
-      await api.addContact({
+      await api.updateContact({
         account,
-        author,
+        contact,
         nickname,
-        label: "",
         version_timestamp,
       });
     }
   );
   const deleteContactMutation = useMutation(
-    async (author: string) => {
+    async ({
+      account,
+      contact,
+    }: {
+      account: AccountId;
+      contact: AccountId;
+    }) => {
       const version_timestamp = Date.now();
-      await api.addContact({
+      await api.deleteContact({
         account,
-        author,
-        nickname,
-        label: "deleted",
+        contact,
         version_timestamp,
       });
     },
@@ -52,7 +65,9 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
       },
     }
   );
-  const [author, setAuthor] = React.useState(original.author ?? "");
+  const [contact, setContact] = React.useState(
+    original.contact ? AccountId.toReadableString(original.contact) : ""
+  );
   const [nickname, setNickname] = React.useState("");
   const [invite, setInvite] = React.useState("");
   React.useEffect(() => {
@@ -63,7 +78,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
   React.useEffect(() => {
     const match = invite.match(/[a-fA-F0-9]{64}/);
     if (match && match[0]) {
-      setAuthor(match[0]);
+      setContact(match[0]);
     }
   }, [invite]);
   const [isQrCodeScannerOpen, setIsQrCodeScannerOpen] = React.useState(false);
@@ -88,31 +103,38 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             flex: 1,
           }}
         >
-          {original.author ? (
+          {original.contact ? (
             <I18n en="Contact" it="Contatto" />
           ) : (
             <I18n en="Add new contact" it="Aggiungi nuovo contatto" />
           )}
         </Text>
-        {original.author && (
+        {original.contact && (
           <Pressable
             onPress={() => {
-              deleteContactMutation.mutate(author, {
-                onSuccess() {
-                  routing.back();
-                },
-              });
+              deleteContactMutation.mutate(
+                { account, contact: AccountId.fromReadableString(contact) },
+                {
+                  onSuccess() {
+                    routing.back();
+                  },
+                }
+              );
             }}
             style={{ padding: 16 }}
           >
             <FontAwesomeIcon icon={"trash"} color={theme.actionTextColor} />
           </Pressable>
         )}
-        {!original.author && (
+        {!original.contact && (
           <Pressable
             onPress={() => {
-              addContactMutation.mutate(
-                { author, nickname },
+              updateContactMutation.mutate(
+                {
+                  account,
+                  contact: AccountId.fromReadableString(contact),
+                  nickname,
+                },
                 {
                   onSuccess() {
                     routing.back();
@@ -134,9 +156,9 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
       >
         <SimpleInput
           label={<I18n en="Author" it="Autore" />}
-          value={author}
-          onChangeText={setAuthor}
-          editable={original.author === undefined}
+          value={contact}
+          onChangeText={setContact}
+          editable={original.contact === undefined}
           description={
             <I18n
               en="A unique combinations of letters that identifies your contact's account"
@@ -149,7 +171,13 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
           label={<I18n en="Nickname" it="Soprannome" />}
           value={nickname}
           onChangeText={setNickname}
-          onBlur={() => addContactMutation.mutate({ author, nickname })}
+          onBlur={() =>
+            updateContactMutation.mutate({
+              account,
+              contact: AccountId.fromReadableString(contact),
+              nickname,
+            })
+          }
           description={
             <I18n
               en="A friendly name to help you remeber the person who owns this account. It is visible only to you."
@@ -157,7 +185,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             />
           }
         />
-        {!original.author && (
+        {!original.contact && (
           <SimpleInput
             label={<I18n en="Invite" it="Invito" />}
             value={invite}
@@ -171,7 +199,7 @@ export function ContactScreen({ account, ...original }: Routes["Contact"]) {
             }
           />
         )}
-        {!original.author && (
+        {!original.contact && (
           <View style={{ alignItems: "center" }}>
             <Pressable
               onPress={() => {

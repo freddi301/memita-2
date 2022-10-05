@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { Attachment } from "@memita-2/core";
 import prettyBytes from "pretty-bytes";
 import React from "react";
 import {
@@ -9,7 +10,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Attachment } from "../api";
 import { useTheme } from "../theme";
 import { OverridesContext, useApi } from "../ui";
 
