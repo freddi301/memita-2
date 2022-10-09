@@ -35,10 +35,7 @@ export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
   // if (!stream.writableObjectMode)
   //   throw new Error("stream must be writable object mode");
   let nextRequestId = 0;
-  const pendingRequests = new Map<
-    number,
-    { resolve(data: any): void; reject(error: any): void }
-  >();
+  const pendingRequests = new Map<number, { resolve(data: any): void; reject(error: any): void }>();
   stream.on("data", (data) => {
     const message = data as RpcResponse<RPC, keyof RPC>;
     const pendingRequest = pendingRequests.get(message.id);
@@ -57,9 +54,7 @@ export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
     {},
     {
       get(target, propery, receiver) {
-        return async <Method extends keyof RPC>(
-          ...parameters: Parameters<RPC[Method]>
-        ) => {
+        return async <Method extends keyof RPC>(...parameters: Parameters<RPC[Method]>) => {
           const method = propery as Method;
           const id = nextRequestId++;
           const message: RpcRequest<RPC, Method> = {
@@ -78,19 +73,14 @@ export function createRpcClient<RPC extends RpcShape>(stream: Duplex) {
               reject(new Error("stream closed"));
             }
           });
-          return new Promise((resolve, reject) =>
-            pendingRequests.set(message.id, { resolve, reject })
-          );
+          return new Promise((resolve, reject) => pendingRequests.set(message.id, { resolve, reject }));
         };
       },
     }
   ) as RPC;
 }
 
-export function createRpcServer<RPC extends RpcShape>(
-  server: RPC,
-  stream: Duplex
-) {
+export function createRpcServer<RPC extends RpcShape>(server: RPC, stream: Duplex) {
   // if (!stream.readableObjectMode)
   //   throw new Error("stream must be readable object mode");
   // if (!stream.writableObjectMode)
@@ -138,10 +128,8 @@ export function createRpcServer<RPC extends RpcShape>(
 }
 
 export function createDuplexCbor(stream: Duplex) {
-  if (stream.readableObjectMode)
-    throw new Error("stream must be readable buffer mode");
-  if (stream.writableObjectMode)
-    throw new Error("stream must be writable buffer mode");
+  if (stream.readableObjectMode) throw new Error("stream must be readable buffer mode");
+  if (stream.writableObjectMode) throw new Error("stream must be writable buffer mode");
   const encoder = new cbor.Encoder();
   const decoder = new cbor.Decoder();
   pipeline(encoder, stream, () => {});

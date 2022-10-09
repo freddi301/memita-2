@@ -21,14 +21,16 @@ export type TablesDataGateway<
     all(): Promise<Array<TypeOfRow<Tables[T]["columns"]>>>;
     del(key: Pick<TypeOfRow<Tables[T]["columns"]>, Tables[T]["primaryKey"][number]>): Promise<void>;
     query(params: {
-      where?: Partial<TypeOfRow<Tables[T]["columns"]>>;
+      filter?: Partial<TypeOfRow<Tables[T]["columns"]>>;
       order?: Array<[keyof TypeOfRow<Tables[T]["columns"]>, "ascending" | "descending"]>;
     }): Promise<Array<TypeOfRow<Tables[T]["columns"]>>>;
   };
   close(): Promise<void>;
 };
 
-type TypeOfRow<R extends Record<string, "string" | "number">> = { [K in keyof R]: { string: string; number: number }[R[K]] };
+type TypeOfRow<R extends Record<string, "string" | "number">> = {
+  [K in keyof R]: { string: string; number: number; buffer: Buffer }[R[K]];
+};
 
 export async function createSqlTablesDataGateway<
   Tables extends {
@@ -52,7 +54,7 @@ export async function createSqlTablesDataGateway<
   function createTableDefinition(tableName: keyof Tables) {
     const columns = Object.entries(tables[tableName].columns)
       .map(([columnName, columnType]) => {
-        const type = { string: "TEXT", number: "INTEGER" }[columnType];
+        const type = { string: "TEXT", number: "INTEGER", buffer: "BLOB" }[columnType];
         return `${columnName} ${type} NOT NULL`;
       })
       .join(", ");
@@ -127,7 +129,7 @@ export async function createSqlTablesDataGateway<
             tables[tableName].primaryKey.map((columnName) => key[columnName])
           );
         },
-        async query({ order, where }) {
+        async query({ order, filter: where }) {
           const columns = columnNames.join(", ");
           const clauses =
             where &&

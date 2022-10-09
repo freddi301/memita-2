@@ -3,10 +3,7 @@ import { Duplex, PassThrough, Readable, Writable, once } from "stream";
 
 const MAX_CHUNK_SIZE = 1024;
 
-export function createMultiplexer(
-  stream: Duplex,
-  onStream: (substream: Duplex, header: Buffer) => void
-) {
+export function createMultiplexer(stream: Duplex, onStream: (substream: Duplex, header: Buffer) => void) {
   checkSetup(stream);
   const subStreams = new Map<
     number,
@@ -50,10 +47,7 @@ export function createMultiplexer(
   async function loop() {
     await new Promise((resolve) => setTimeout(resolve, 100));
     for (const [subStreamId, subStream] of subStreams) {
-      const bytesToRead = Math.min(
-        subStream.writable.readableLength,
-        MAX_CHUNK_SIZE
-      );
+      const bytesToRead = Math.min(subStream.writable.readableLength, MAX_CHUNK_SIZE);
       const data = subStream.writable.read(bytesToRead);
       if (data) {
         await new Promise((resolve, reject) =>
@@ -118,10 +112,8 @@ export function createMultiplexer(
 }
 
 function checkSetup(stream: Duplex) {
-  if (stream.readableObjectMode)
-    throw new Error("carrier stream readable mode must be binary");
-  if (stream.readableObjectMode)
-    throw new Error("carrier stream writable mode must be binary");
+  if (stream.readableObjectMode) throw new Error("carrier stream readable mode must be binary");
+  if (stream.readableObjectMode) throw new Error("carrier stream writable mode must be binary");
   if (stream.readableFlowing) throw new Error("carrier stream must be paused");
 }
 
